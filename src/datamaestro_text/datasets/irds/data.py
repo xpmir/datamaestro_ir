@@ -6,7 +6,6 @@ from typing import Dict, Iterator, List, NamedTuple, Tuple, Type
 
 import ir_datasets
 import ir_datasets.datasets as _irds
-from datamaestro.record import RecordType, record_type
 from experimaestro import Config, Meta, Option, Param
 from ir_datasets.formats import (
     GenericDoc,
@@ -20,23 +19,15 @@ from ir_datasets.indices import PickleLz4FullStore
 import datamaestro_text.data.ir as ir
 import datamaestro_text.data.ir.formats as formats
 from datamaestro_text.data.conversation.base import (
-    AnswerDocumentID,
-    AnswerEntry,
-    ConversationHistoryItem,
     ConversationTreeNode,
     DecontextualizedDictItem,
     EntryType,
 )
 from datamaestro_text.data.ir.base import (
     AdhocAssessedTopic,
-    DocumentRecord,
-    IDItem,
-    Record,
+    IDTextRecord,
     SimpleAdhocAssessment,
     SimpleTextItem,
-    TopicRecord,
-    UrlItem,
-    create_record,
 )
 
 # Interface between ir_datasets and datamaestro:
@@ -55,7 +46,7 @@ class IRDSId(Config):
     def dataset(self):
         return ir_datasets.load(self.irds)
 
-    def iter(self) -> Iterator[Record]:
+    def iter(self) -> Iterator[IDTextRecord]:
         """Returns an iterator over topics"""
         for query in self.dataset.queries_iter():
             yield self.factory(query)
@@ -97,11 +88,12 @@ class tuple_constructor:
             f"source({source_cls.__qualname__})={source_fields}/{self.id_field} [vs] target={self.fields}"
         )
 
-    def __call__(self, recordtype, entry):
+    def __call__(self, entry):
         values = tuple(getattr(entry, key) for key in self.fields)
-        return recordtype(
-            IDItem(getattr(entry, self.id_field)), self.target_cls(*values)
-        )
+        return {
+            "id": getattr(entry, self.id_field),
+            "text_item": self.target_cls(*values),
+        }
 
 
 class Documents(ir.DocumentStore, IRDSId):
@@ -201,14 +193,14 @@ class Documents(ir.DocumentStore, IRDSId):
     def __setstate__(self, state):
         self.id, self.irds = state
 
-    def iter(self) -> Iterator[ir.DocumentRecord]:
+    def iter(self) -> Iterator[ir.IDTextRecord]:
         """Returns an iterator over adhoc documents"""
         for doc in self._docs:
-            yield self.converter(self.document_recordtype, doc)
+            yield self.converter(doc)
 
     def iter_documents_from(self, start=0):
         for doc in self._docs[start:]:
-            yield self.converter(self.document_recordtype, doc)
+            yield self.converter(doc)
 
     @property
     def documentcount(self):
@@ -240,23 +232,16 @@ class Documents(ir.DocumentStore, IRDSId):
     def docid_internal2external(self, ix: int):
         return self._docs[ix].doc_id
 
-    def document_ext(self, docid: str) -> DocumentRecord:
-        return self.converter(self.document_recordtype, self.store.get(docid))
+    def document_ext(self, docid: str) -> IDTextRecord:
+        return self.converter(self.store.get(docid))
 
-    def documents_ext(self, docids: List[str]) -> DocumentRecord:
+    def documents_ext(self, docids: List[str]) -> IDTextRecord:
         """Returns documents given their external IDs (optimized for batch)"""
         retrieved = self.store.get_many(docids)
-        return [
-            self.converter(self.document_recordtype, retrieved[docid])
-            for docid in docids
-        ]
+        return [self.converter(retrieved[docid]) for docid in docids]
 
     def document_int(self, ix):
-        return self.converter(self.document_recordtype, self._docs[ix])
-
-    @cached_property
-    def document_recordtype(self):
-        return record_type(IDItem, self.converter.target_cls)
+        return self.converter(self._docs[ix])
 
     @cached_property
     def converter(self):
@@ -289,10 +274,10 @@ class LZ4DocumentStore(ir.DocumentStore, ABC):
     def docid_internal2external(self, ix: int):
         return getattr(self._docs[ix], self.store._id_field)
 
-    def document_ext(self, docid: str) -> DocumentRecord:
+    def document_ext(self, docid: str) -> IDTextRecord:
         return self.converter(self.store.get(docid))
 
-    def documents_ext(self, docids: List[str]) -> DocumentRecord:
+    def documents_ext(self, docids: List[str]) -> IDTextRecord:
         """Returns documents given their external IDs (optimized for batch)"""
         retrieved = self.store.get_many(docids)
         return [self.converter(retrieved[docid]) for docid in docids]
@@ -302,7 +287,7 @@ class LZ4DocumentStore(ir.DocumentStore, ABC):
         """Converts a document from LZ4 tuples to a document record"""
         ...
 
-    def iter(self) -> Iterator[DocumentRecord]:
+    def iter(self) -> Iterator[IDTextRecord]:
         """Returns an iterator over documents"""
         return map(self.converter, self.store.__iter__())
 
@@ -332,22 +317,22 @@ class LZ4JSONLDocumentStore(LZ4DocumentStore):
     """
 
     def converter(self, data):
-        return DocumentRecord(IDItem(data["id"]), SimpleTextItem(data["text"]))
+        return {"id": data["id"], "text_item": SimpleTextItem(data["text"])}
 
 
 class TopicsHandler(ABC):
     @abstractmethod
-    def topic_int(self, internal_topic_id: int) -> TopicRecord:
+    def topic_int(self, internal_topic_id: int) -> IDTextRecord:
         """Returns a document given its internal ID"""
         ...
 
     @abstractmethod
-    def topic_ext(self, external_topic_id: str) -> TopicRecord:
+    def topic_ext(self, external_topic_id: str) -> IDTextRecord:
         """Returns a document given its external ID"""
         ...
 
     @abstractmethod
-    def iter(self) -> Iterator[TopicRecord]:
+    def iter(self) -> Iterator[IDTextRecord]:
         """Returns an iterator over topics"""
         ...
 
@@ -359,15 +344,15 @@ class SimpleTopicsHandler(TopicsHandler):
         self.target_cls = converter.target_cls
         converter.check(topics.dataset.queries_cls())
 
-    def topic_int(self, internal_topic_id: int) -> TopicRecord:
+    def topic_int(self, internal_topic_id: int) -> IDTextRecord:
         """Returns a document given its internal ID"""
         return self.topics_list[internal_topic_id]
 
-    def topic_ext(self, external_topic_id: int) -> TopicRecord:
+    def topic_ext(self, external_topic_id: int) -> IDTextRecord:
         """Returns a document given its external ID"""
         return self.topics_map[external_topic_id]
 
-    def iter(self) -> Iterator[TopicRecord]:
+    def iter(self) -> Iterator[IDTextRecord]:
         """Returns an iterator over topics"""
         yield from self.topics_list
 
@@ -384,7 +369,7 @@ class SimpleTopicsHandler(TopicsHandler):
         topic_map = {}
         topic_list = []
         for query in self._topics.dataset.queries_iter():
-            record = self.converter(self._topics.topic_recordtype, query)
+            record = self.converter(query)
             topic_map[query.query_id] = record
             topic_list.append(record)
 
@@ -443,23 +428,19 @@ class Topics(ir.TopicsStore, IRDSId):
         return self.dataset.queries_count()
 
     @cached_property
-    def topic_recordtype(self) -> RecordType:
-        return record_type(IDItem, self.handler.target_cls)
-
-    @cached_property
     def handler(self):
         handler = Topics.HANDLERS[self.dataset.queries_cls()](self)
         return handler
 
-    def topic_int(self, internal_topic_id: int) -> TopicRecord:
+    def topic_int(self, internal_topic_id: int) -> IDTextRecord:
         """Returns a document given its internal ID"""
         return self.handler.topic_int(internal_topic_id)
 
-    def topic_ext(self, external_topic_id: str) -> TopicRecord:
+    def topic_ext(self, external_topic_id: str) -> IDTextRecord:
         """Returns a document given its external ID"""
         return self.handler.topic_ext(external_topic_id)
 
-    def iter(self) -> Iterator[TopicRecord]:
+    def iter(self) -> Iterator[IDTextRecord]:
         """Returns an iterator over topics"""
         return self.handler.iter()
 
@@ -470,17 +451,17 @@ class TrecBackgroundLinkingTopicsHandler(TopicsHandler):
 
     @cached_property
     def ext2records(self):
-        return {record[IDItem].id: record for record in self.records}
+        return {record["id"]: record for record in self.records}
 
-    def topic_int(self, internal_topic_id: int) -> TopicRecord:
+    def topic_int(self, internal_topic_id: int) -> IDTextRecord:
         """Returns a document given its internal ID"""
         return self.records[internal_topic_id]
 
-    def topic_ext(self, external_topic_id: str) -> TopicRecord:
+    def topic_ext(self, external_topic_id: str) -> IDTextRecord:
         """Returns a document given its external ID"""
         return self.ext2records[external_topic_id]
 
-    def iter(self) -> Iterator[ir.TopicRecord]:
+    def iter(self) -> Iterator[ir.IDTextRecord]:
         """Returns an iterator over topics"""
         return iter(self.records)
 
@@ -490,14 +471,14 @@ class TrecBackgroundLinkingTopicsHandler(TopicsHandler):
             records = []
 
             for query in self.dataset.dataset.queries_iter():
-                topic = Record(
-                    IDItem(query.query_id),
+                topic = {
+                    "id": query.query_id,
                     # Following BEIR documentation, we use title of documents as queries: https://github.com/beir-cellar/beir/blob/main/examples/dataset/README.md#queries-and-qrels
-                    SimpleTextItem(
+                    "text_item": SimpleTextItem(
                         self.dataset.dataset.docs_store().get(query.doc_id).title
                     ),
-                    UrlItem(query.url),
-                )
+                    "url": query.url,
+                }
                 records.append(topic)
         except Exception:
             logging.exception("Error while computing topic records")
@@ -517,17 +498,17 @@ class CastTopicsHandler(TopicsHandler):
 
     @cached_property
     def ext2records(self):
-        return {record[IDItem].id: record for record in self.records}
+        return {record["id"]: record for record in self.records}
 
-    def topic_int(self, internal_topic_id: int) -> TopicRecord:
+    def topic_int(self, internal_topic_id: int) -> IDTextRecord:
         """Returns a document given its internal ID"""
         return self.records[internal_topic_id]
 
-    def topic_ext(self, external_topic_id: str) -> TopicRecord:
+    def topic_ext(self, external_topic_id: str) -> IDTextRecord:
         """Returns a document given its external ID"""
         return self.ext2records[external_topic_id]
 
-    def iter(self) -> Iterator[ir.TopicRecord]:
+    def iter(self) -> Iterator[ir.IDTextRecord]:
         """Returns an iterator over topics"""
         return iter(self.records)
 
@@ -550,15 +531,13 @@ class CastTopicsHandler(TopicsHandler):
 
                 is_new_conversation = topic_number != query.topic_number
 
-                topic = Record(
-                    IDItem(query.query_id),
-                    SimpleTextItem(query.raw_utterance),
-                    decontextualized,
-                    ConversationHistoryItem(
-                        [] if is_new_conversation else node.conversation(False)
-                    ),
-                    EntryType.USER_QUERY,
-                )
+                topic = {
+                    "id": query.query_id,
+                    "text_item": SimpleTextItem(query.raw_utterance),
+                    "decontextualized": decontextualized,
+                    "history": [] if is_new_conversation else node.conversation(False),
+                    "entry_type": EntryType.USER_QUERY,
+                }
 
                 if is_new_conversation:
                     conversation = []
@@ -572,10 +551,10 @@ class CastTopicsHandler(TopicsHandler):
                 conversation.append(node)
                 node = node.add(
                     ConversationTreeNode(
-                        Record(
-                            AnswerDocumentID(self.get_canonical_result_id(query)),
-                            EntryType.SYSTEM_ANSWER,
-                        )
+                        {
+                            "answer_document_id": self.get_canonical_result_id(query),
+                            "entry_type": EntryType.SYSTEM_ANSWER,
+                        }
                     )
                 )
                 conversation.append(node)
@@ -616,28 +595,26 @@ class Cast2022TopicsHandler(CastTopicsHandler):
                 parent = nodes[query.parent_id] if query.parent_id else None
 
                 if query.participant == "User":
-                    topic = Record(
-                        IDItem(query.query_id),
-                        SimpleTextItem(query.raw_utterance),
-                        DecontextualizedDictItem(
+                    topic = {
+                        "id": query.query_id,
+                        "text_item": SimpleTextItem(query.raw_utterance),
+                        "decontextualized": DecontextualizedDictItem(
                             "manual",
                             {
                                 "manual": query.manual_rewritten_utterance,
                             },
                         ),
-                        ConversationHistoryItem(
-                            parent.conversation(False) if parent else []
-                        ),
-                        EntryType.USER_QUERY,
-                    )
+                        "history": parent.conversation(False) if parent else [],
+                        "entry_type": EntryType.USER_QUERY,
+                    }
                     node = ConversationTreeNode(topic)
                     records.append(topic)
                 else:
                     node = ConversationTreeNode(
-                        Record(
-                            AnswerEntry(query.response),
-                            EntryType.SYSTEM_ANSWER,
-                        )
+                        {
+                            "answer": query.response,
+                            "entry_type": EntryType.SYSTEM_ANSWER,
+                        }
                     )
 
                 nodes[query.query_id] = node
@@ -668,10 +645,11 @@ class CastDocHandler:
     def target_cls(self):
         return formats.TitleUrlDocument
 
-    def __call__(self, _, doc: _irds.trec_cast.CastDoc):
-        return Record(
-            IDItem(doc.doc_id), formats.SimpleTextItem(" ".join(doc.passages))
-        )
+    def __call__(self, doc: _irds.trec_cast.CastDoc):
+        return {
+            "id": doc.doc_id,
+            "text_item": formats.SimpleTextItem(" ".join(doc.passages)),
+        }
 
 
 class CastPassageDocHandler:
@@ -682,11 +660,11 @@ class CastPassageDocHandler:
     def target_cls(self):
         return formats.TitleUrlDocument
 
-    def __call__(self, _, doc: _irds.trec_cast.CastPassageDoc):
-        return Record(
-            IDItem(doc.doc_id),
-            formats.TitleUrlDocument(doc.text, doc.title, doc.url),
-        )
+    def __call__(self, doc: _irds.trec_cast.CastPassageDoc):
+        return {
+            "id": doc.doc_id,
+            "text_item": formats.TitleUrlDocument(doc.text, doc.title, doc.url),
+        }
 
 
 Documents.CONVERTERS[_irds.trec_cast.CastDoc] = CastDocHandler()
@@ -706,21 +684,11 @@ class TrainingTriplets(ir.TrainingTriplets, IRDSId):
 
     CONVERTERS = {
         GenericDocPair: lambda qid, doc1_id, doc2_id: (
-            create_record(id=qid),
-            create_record(id=doc1_id),
-            create_record(id=doc2_id),
+            {"id": qid},
+            {"id": doc1_id},
+            {"id": doc2_id},
         )
     }
-
-    @cached_property
-    def topic_recordtype(self) -> RecordType:
-        """The set of records for topics"""
-        return record_type(IDItem)
-
-    @cached_property
-    def document_recordtype(self) -> RecordType:
-        """The class for documents"""
-        return record_type(IDItem)
 
     @cached_property
     def converter(self):
@@ -728,7 +696,7 @@ class TrainingTriplets(ir.TrainingTriplets, IRDSId):
 
     def iter(
         self,
-    ) -> Iterator[Tuple[ir.TopicRecord, ir.DocumentRecord, ir.DocumentRecord]]:
+    ) -> Iterator[Tuple[ir.IDRecord, ir.IDRecord, ir.IDRecord]]:
         ds = self.dataset
 
         logging.info("Starting to generate triplets")

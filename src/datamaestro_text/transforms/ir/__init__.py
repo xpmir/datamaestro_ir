@@ -4,7 +4,6 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 from experimaestro import Config, Task, Param, Annotated, pathgenerator, Option, tqdm
 import numpy as np
-from datamaestro.record import RecordType
 import datamaestro_text.data.ir as ir
 from datamaestro_text.utils.shuffle import shuffle
 
@@ -28,28 +27,12 @@ class StoreTrainingTripletTopicAdapter(ir.TrainingTriplets):
     data: Param[ir.TrainingTriplets]
     """Input data"""
 
-    def __validate__(self):
-        assert self.data.topic_recordtype.has(ir.IDItem), (
-            f"Topics {self.data.topic_recordtype}"
-            f" have no ID: {self.data.topic_recordtype.itemtypes}"
-        )
-
     def iter(self):
         for topic, doc1, doc2 in self.data.iter():
-            yield self.store.topic_ext(topic[ir.IDItem].id), doc1, doc2
+            yield self.store.topic_ext(topic["id"]), doc1, doc2
 
     def count(self):
         return self.data.count()
-
-    @property
-    def topic_recordtype(self) -> RecordType:
-        """The class for topics"""
-        return self.store.topic_recordtype
-
-    @property
-    def document_recordtype(self) -> RecordType:
-        """The class for documents"""
-        return self.data.document_recordtype
 
 
 class StoreTrainingTripletDocumentAdapter(ir.TrainingTriplets):
@@ -63,21 +46,16 @@ class StoreTrainingTripletDocumentAdapter(ir.TrainingTriplets):
     data: Param[ir.TrainingTriplets]
     """Input data"""
 
-    def __validate__(self):
-        assert self.data.document_recordtype.has(ir.IDItem), "Documents have no ID"
-
     def iter(self):
         for topic, doc1, doc2 in self.data.iter():
-            doc1, doc2 = self.store.documents_ext(
-                [doc1[ir.IDItem].id, doc2[ir.IDItem].id]
-            )
+            doc1, doc2 = self.store.documents_ext([doc1["id"], doc2["id"]])
             yield topic, doc1, doc2
 
     def batch_iter(self, size: int):
         for triplets in self.data.batch_iter(size):
             docids = []
             for topic, doc1, doc2 in triplets:
-                docids.extend(doc1[ir.IDItem].id, doc2[ir.IDItem].id)
+                docids.extend(doc1["id"], doc2["id"])
             docs_iter = iter(self.store.documents_ext(docids))
             for triplet in triplets:
                 triplet[1] = next(docs_iter)
@@ -86,16 +64,6 @@ class StoreTrainingTripletDocumentAdapter(ir.TrainingTriplets):
 
     def count(self):
         return self.data.count()
-
-    @property
-    def topic_recordtype(self) -> RecordType:
-        """The class for topics"""
-        return self.store.topic_recordtype
-
-    @property
-    def document_recordtype(self) -> RecordType:
-        """The class for documents"""
-        return self.data.document_recordtype
 
 
 class ShuffledTrainingTripletsLines(Task):
@@ -128,25 +96,6 @@ class ShuffledTrainingTripletsLines(Task):
     tmp_path: Annotated[Path, pathgenerator("tmp")]
     """Path where temporary files will be stored"""
 
-    def __validate__(self):
-        if self.topic_ids:
-            assert self.data.topic_recordtype.has(ir.IDItem), (
-                f"No topic ID in the source data ({self.data.topic_recordtype})"
-            )
-        else:
-            assert self.data.topic_recordtype.has(ir.TextItem), (
-                f"No topic text in the source data ({self.data.topic_recordtype})"
-            )
-
-        if self.doc_ids:
-            assert self.data.document_recordtype.has(ir.IDItem), (
-                "No doc ID in the source data"
-            )
-        else:
-            assert self.data.document_recordtype.has(ir.TextItem), (
-                "No doc text in the source data"
-            )
-
     def task_outputs(self, dep):
         return dep(
             ir.TrainingTripletsLines.C(
@@ -166,22 +115,22 @@ class ShuffledTrainingTripletsLines(Task):
         if self.topic_ids:
 
             def get_query(query):
-                return query[ir.IDItem].id
+                return query["id"]
 
         else:
 
             def get_query(query):
-                return query[ir.TextItem].text
+                return query["text_item"].text
 
         if self.doc_ids:
 
             def get_doc(doc):
-                return doc[ir.IDItem].id
+                return doc["id"]
 
         else:
 
             def get_doc(doc):
-                return doc.text
+                return doc["text_item"].text
 
         def triplegenerator():
             logging.info("Starting to output triples")
@@ -224,5 +173,5 @@ class TopicWrapper(Config, ABC):
     """Modify topics on the fly using a topic wrapper"""
 
     @abstractmethod
-    def __call__(topic: ir.TopicRecord) -> ir.TopicRecord:
+    def __call__(topic: ir.IDTextRecord) -> ir.IDTextRecord:
         """Transforms a topic into another topic"""

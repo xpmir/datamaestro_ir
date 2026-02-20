@@ -11,7 +11,6 @@ from datamaestro_text.data.ir import (
     AdhocResults,
     Measure,
 )
-from datamaestro_text.data.ir.formats import TrecTopicRecord
 
 
 class TrecTopics(Topics):
@@ -24,10 +23,6 @@ class TrecTopics(Topics):
         import datamaestro_text.interfaces.trec as trec
 
         yield from trec.parse_query_format(self.path)
-
-    @property
-    def topic_recordtype(self):
-        return TrecTopicRecord
 
 
 class TrecAdhocAssessments(AdhocAssessments):

@@ -1,10 +1,8 @@
-from functools import cached_property
 from pathlib import Path
 
 from experimaestro import Param, Meta
-from datamaestro.record import Record, RecordType
 import datamaestro_text.data.ir as ir
-from datamaestro_text.data.ir.base import IDItem, SimpleTextItem
+from datamaestro_text.data.ir.base import SimpleTextItem
 from datamaestro_text.interfaces.plaintext import read_tsv
 
 
@@ -23,14 +21,9 @@ class Topics(ir.Topics):
 
     def iter(self):
         return (
-            Record(IDItem(qid), SimpleTextItem(title))
+            {"id": qid, "text_item": SimpleTextItem(title)}
             for qid, title in read_tsv(self.path)
         )
-
-    @cached_property
-    def topic_recordtype(self) -> RecordType:
-        """The class for topics"""
-        return RecordType(IDItem, SimpleTextItem)
 
 
 class Documents(ir.Documents):

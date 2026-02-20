@@ -30,6 +30,7 @@ dependencies = [
     "ir_datasets>=0.5.8",
     "attrs",
     "experimaestro",
+    "typing_extensions",
 ]
 
 [project.urls]

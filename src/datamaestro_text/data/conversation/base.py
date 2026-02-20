@@ -1,19 +1,18 @@
 from abc import ABC, abstractmethod
 from enum import Enum
-from datamaestro_text.data.ir.base import IDItem, SimpleTextItem
+from datamaestro_text.data.ir.base import TextItem
 from experimaestro import Param
-from typing import Dict, Iterator, List, Optional, Sequence, Tuple
+from typing import Dict, Iterator, List, Optional, Sequence, Tuple, TypedDict
 from attr import define
-from datamaestro.record import record_type
 from datamaestro.data import Base
-from datamaestro.record import Record, Item
-from datamaestro_text.data.ir import TopicRecord, Topics
+from datamaestro_text.data.ir import Topics
 from datamaestro_text.utils.iter import FactoryIterable, LazyList
+from typing_extensions import ReadOnly
 
 # ---- Basic types
 
 
-class EntryType(Item, Enum):
+class EntryType(Enum):
     """Type of record"""
 
     USER_QUERY = 0
@@ -21,7 +20,7 @@ class EntryType(Item, Enum):
     CLARIFYING_QUESTION = 2
 
 
-class DecontextualizedItem(Item):
+class DecontextualizedItem:
     """A topic record with decontextualized versions of the topic"""
 
     @abstractmethod
@@ -36,7 +35,6 @@ class SimpleDecontextualizedItem(DecontextualizedItem):
 
     decontextualized_query: str
 
-    @abstractmethod
     def get_decontextualized_query(self, mode=None) -> str:
         """Returns the decontextualized query"""
         assert mode is None
@@ -57,29 +55,7 @@ class DecontextualizedDictItem(DecontextualizedItem):
 
 
 @define
-class AnswerEntry(Item):
-    """A system answer"""
-
-    answer: str
-    """The system answer"""
-
-
-@define
-class AnswerDocumentID(Item):
-    """An answer as a document ID"""
-
-    document_id: str
-
-
-@define
-class AnswerDocumentURL(Item):
-    """An answer as a document ID"""
-
-    url: str
-
-
-@define
-class RetrievedEntry(Item):
+class RetrievedEntry:
     """List of system-retrieved documents and their relevance"""
 
     documents: List[str]
@@ -89,23 +65,20 @@ class RetrievedEntry(Item):
     """List of relevance status (optional), with start/stop position"""
 
 
-@define
-class ClarifyingQuestionEntry(Item):
-    """A system-generated clarifying question"""
-
-    pass
+class ConversationEntry(TypedDict, total=False):
+    id: ReadOnly[str]
+    text_item: ReadOnly[TextItem]
+    entry_type: ReadOnly[EntryType]
+    decontextualized: ReadOnly[DecontextualizedItem]
+    history: ReadOnly["ConversationHistory"]
+    answer: ReadOnly[str]
+    answer_document_id: ReadOnly[str]
+    answer_url: ReadOnly[str]
+    retrieved: ReadOnly[RetrievedEntry]
 
 
 #: The conversation
-ConversationHistory = Sequence[Record]
-
-
-@define
-class ConversationHistoryItem(Item):
-    """A user interaction contextualized within a conversation"""
-
-    history: ConversationHistory
-    """The history"""
+ConversationHistory = Sequence[ConversationEntry]
 
 
 # ---- Abstract conversation representation
@@ -113,7 +86,7 @@ class ConversationHistoryItem(Item):
 
 class ConversationNode:
     @abstractmethod
-    def entry(self) -> Record:
+    def entry(self) -> ConversationEntry:
         """The current conversation entry"""
         ...
 
@@ -148,9 +121,9 @@ class SingleConversationTree(ConversationTree, ABC):
     """Simple conversations, based on a sequence of entries"""
 
     id: str
-    history: List[Record]
+    history: List[ConversationEntry]
 
-    def __init__(self, id: Optional[str], history: List[Record]):
+    def __init__(self, id: Optional[str], history: List[ConversationEntry]):
         """Create a simple conversation
 
         :param history: The entries, in **reverse** order (i.e. more ancient first)
@@ -158,7 +131,7 @@ class SingleConversationTree(ConversationTree, ABC):
         self.history = history or []
         self.id = id
 
-    def add(self, entry: Record):
+    def add(self, entry: ConversationEntry):
         self.history.insert(0, entry)
 
     def __iter__(self) -> Iterator[ConversationNode]:
@@ -176,18 +149,18 @@ class SingleConversationTreeNode(ConversationNode):
     index: int
 
     @property
-    def entry(self) -> Record:
+    def entry(self) -> ConversationEntry:
         return self.tree.history[self.index]
 
     @entry.setter
-    def entry(self, record: Record):
+    def entry(self, record: ConversationEntry):
         try:
             self.tree.history[self.index] = record
         except Exception as e:
             print(e)
             raise
 
-    def history(self) -> Sequence[Record]:
+    def history(self) -> Sequence[ConversationEntry]:
         return self.tree.history[self.index + 1 :]
 
     def parent(self) -> Optional[ConversationNode]:
@@ -208,7 +181,7 @@ class SingleConversationTreeNode(ConversationNode):
 class ConversationTreeNode(ConversationNode, ConversationTree):
     """A conversation tree node"""
 
-    entry: Record
+    entry: ConversationEntry
     _parent: Optional["ConversationTreeNode"]
     _children: List["ConversationTreeNode"]
 
@@ -261,22 +234,18 @@ class ConversationUserTopics(Topics):
 
     conversations: Param[ConversationDataset]
 
-    topic_recordtype = record_type(IDItem, SimpleTextItem)
-
-    def iter(self) -> Iterator[TopicRecord]:
+    def iter(self) -> Iterator[ConversationEntry]:
         """Returns an iterator over topics"""
         # Extracts topics from conversations, Each user query is a topic (can perform retrieval on it)
         # TODO: merge with xpmir.learning.DatasetConversationBase -> same logic
 
-        records: List[TopicRecord] = []
+        records: List[ConversationEntry] = []
         for conversation in self.conversations.__iter__():
             nodes = [
                 node
                 for node in conversation
-                if node.entry[EntryType] == EntryType.USER_QUERY
+                if node.entry["entry_type"] == EntryType.USER_QUERY
             ]
             for node in nodes:
-                records.append(
-                    node.entry.update(ConversationHistoryItem(node.history()))
-                )
+                records.append({**node.entry, "history": node.history()})
         return iter(records)

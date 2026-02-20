@@ -4,11 +4,10 @@ import re
 from datamaestro_text.data.ir import AdhocRunDict
 from datamaestro_text.data.ir.base import (
     AdhocAssessedTopic,
-    TopicRecord,
+    IDTextRecord,
     SimpleAdhocAssessment,
-    IDItem,
 )
-from datamaestro_text.data.ir.formats import TrecTopicRecord, TrecTopic
+from datamaestro_text.data.ir.formats import TrecTopic
 
 # --- Runs
 
@@ -64,7 +63,7 @@ def cleanup(s: Optional[str]) -> str:
     return s.replace("\t", " ").strip() if s is not None else ""
 
 
-def parse_query_format(file, xml_prefix=None) -> Iterator[TopicRecord]:
+def parse_query_format(file, xml_prefix=None) -> Iterator[IDTextRecord]:
     """Parse TREC XML query format"""
     if xml_prefix is None:
         xml_prefix = ""
@@ -77,10 +76,12 @@ def parse_query_format(file, xml_prefix=None) -> Iterator[TopicRecord]:
                 continue
             elif line.startswith("</top>"):
                 if num:
-                    yield TrecTopicRecord(
-                        IDItem(num),
-                        TrecTopic(cleanup(title), cleanup(desc), cleanup(narr)),
-                    )
+                    yield {
+                        "id": num,
+                        "text_item": TrecTopic(
+                            cleanup(title), cleanup(desc), cleanup(narr)
+                        ),
+                    }
                 num, title, desc, narr, reading = None, None, None, None, None
             elif line.startswith("<num>"):
                 num = line[len("<num>") :].replace("Number:", "").strip()

@@ -2,21 +2,18 @@ from typing import Iterator, List, Optional
 from attr import define
 import json
 from datamaestro.data import File
-from datamaestro.record import Record
 
 from datamaestro_text.data.ir.base import (
-    IDItem,
     SimpleTextItem,
 )
 
 
 from .base import (
-    AnswerDocumentURL,
-    AnswerEntry,
     ConversationTree,
     EntryType,
     SimpleDecontextualizedItem,
     SingleConversationTree,
+    ConversationEntry,
 )
 from . import ConversationDataset
 
@@ -63,7 +60,7 @@ class QReCCDataset(ConversationDataset, File):
         return iter(data)
 
     def __iter__(self) -> Iterator[ConversationTree]:
-        history: List[Record] = []
+        history: List[ConversationEntry] = []
         current_id: Optional[str] = None
 
         for entry in self.entries():
@@ -78,20 +75,20 @@ class QReCCDataset(ConversationDataset, File):
 
             # Add to current
             history.append(
-                Record(
-                    IDItem(f"{entry.conversation_no}#{entry.turn_no}"),
-                    SimpleTextItem(entry.question),
-                    AnswerDocumentURL(entry.answer_url),
-                    SimpleDecontextualizedItem(entry.rewrite),
-                    EntryType.USER_QUERY,
-                )
+                {
+                    "id": f"{entry.conversation_no}#{entry.turn_no}",
+                    "text_item": SimpleTextItem(entry.question),
+                    "answer_url": entry.answer_url,
+                    "decontextualized": SimpleDecontextualizedItem(entry.rewrite),
+                    "entry_type": EntryType.USER_QUERY,
+                }
             )
 
             history.append(
-                Record(
-                    AnswerEntry(entry.answer),
-                    EntryType.SYSTEM_ANSWER,
-                )
+                {
+                    "answer": entry.answer,
+                    "entry_type": EntryType.SYSTEM_ANSWER,
+                }
             )
 
         # Yields the last one

@@ -1,9 +1,8 @@
 from functools import cached_property
 from typing import Tuple, List
 from attrs import define
-from datamaestro.record import record_type
 from ir_datasets.datasets.wapo import WapoDocMedia
-from .base import TextItem, SimpleTextItem, IDItem
+from .base import TextItem, SimpleTextItem
 from ir_datasets.datasets.cord19 import Cord19FullTextSection
 
 
@@ -205,9 +204,6 @@ class TrecTopic(SimpleTextItem):
     narrative: str
 
 
-TrecTopicRecord = record_type(IDItem, TrecTopic)
-
-
 @define
 class DprW100Query(TextItem):
     text: str
@@ -215,10 +211,11 @@ class DprW100Query(TextItem):
 
 
 @define
-class TrecBackgroundLinkingQuery(IDItem):
+class TrecBackgroundLinkingQuery:
     query_id: str
     doc_id: str
     url: str
 
-    def get_text(self):
+    @property
+    def text(self) -> str:
         raise NotImplementedError()

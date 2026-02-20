@@ -1,22 +1,10 @@
 from abc import ABC, abstractmethod
+from typing import List, TypedDict
 from attrs import define
-from typing import List
-from datamaestro.record import Record, Item
+from typing_extensions import ReadOnly
 
 
-TopicRecord = DocumentRecord = Record
-
-
-@define()
-class ScoredItem(Item):
-    """A score associated with the document"""
-
-    score: float
-    """A retrieval score associated with this record (e.g. of the first-stage
-    retriever)"""
-
-
-class TextItem(Item, ABC):
+class TextItem(ABC):
     @property
     @abstractmethod
     def text(self) -> str:
@@ -28,27 +16,6 @@ class SimpleTextItem(TextItem):
     """A topic/document with a text record"""
 
     text: str
-
-
-@define
-class InternalIDItem(Item, ABC):
-    """A topic/document with an internal ID"""
-
-    id: int
-
-
-@define
-class IDItem(Item, ABC):
-    """A topic/document with an external ID"""
-
-    id: str
-
-
-@define
-class UrlItem(Item):
-    """An url item"""
-
-    url: str
 
 
 @define
@@ -71,11 +38,19 @@ class AdhocAssessedTopic:
     """List of assessments for this topic"""
 
 
-def create_record(*items: Item, id: str = None, text: str = None) -> Record:
-    """Easy creation of a text/id item"""
-    extra_items = []
-    if id is not None:
-        extra_items.append(IDItem(id))
-    if text is not None:
-        extra_items.append(SimpleTextItem(text))
-    return Record(*items, *extra_items)
+class IDRecord(TypedDict):
+    """A record with just an ID"""
+
+    id: ReadOnly[str]
+
+
+class TextRecord(TypedDict):
+    """A record with just a text item"""
+
+    text_item: ReadOnly[TextItem]
+
+
+class IDTextRecord(IDRecord, TextRecord):
+    """A record with an ID and a text item"""
+
+    pass

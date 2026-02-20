@@ -6,12 +6,9 @@ from pathlib import Path
 from typing import List, NamedTuple
 from datamaestro_text.utils.files import TQDMFileReader
 from experimaestro import Constant
-from datamaestro.record import Record
 from datamaestro_text.data.ir.base import (
-    DocumentRecord,
-    IDItem,
+    IDTextRecord,
     SimpleTextItem,
-    UrlItem,
 )
 from datamaestro_text.datasets.irds.data import LZ4DocumentStore
 from datamaestro_text.data.ir.formats import OrConvQADocument
@@ -32,10 +29,10 @@ class OrConvQADocumentStore(LZ4DocumentStore):
 
     data_cls = NAMED_TUPLE
 
-    def converter(self, data: NAMED_TUPLE) -> Record:
+    def converter(self, data: NAMED_TUPLE) -> IDTextRecord:
         fields = data._asdict()
         del fields["id"]
-        return Record(OrConvQADocument(**fields), IDItem(data.id))
+        return {"id": data.id, "text_item": OrConvQADocument(**fields)}
 
 
 class IKatClueWeb22DocumentStore(LZ4DocumentStore):
@@ -119,6 +116,8 @@ class IKatClueWeb22DocumentStore(LZ4DocumentStore):
     index_fields: Constant[List[str]] = ["id"]
 
     def converter(self, data):
-        return DocumentRecord(
-            IDItem(data.id), SimpleTextItem(data.contents), UrlItem(data.url)
-        )
+        return {
+            "id": data.id,
+            "text_item": SimpleTextItem(data.contents),
+            "url": data.url,
+        }

@@ -6,25 +6,20 @@ from functools import cached_property
 import logging
 from pathlib import Path
 from attrs import define
-from typing import Callable, Dict, Iterator, List, Optional, Tuple, Type
+from typing import Callable, Dict, Iterator, List, Optional, Tuple, Union
 import random
 from experimaestro import Config
 from datamaestro.definitions import datatasks, Param, Meta
 from datamaestro.data import Base
 from datamaestro_text.utils.files import auto_open
 from datamaestro_text.utils.iter import BatchIterator
-from datamaestro.record import record_type, RecordType
 from .base import (  # noqa: F401
-    # Record items
-    IDItem,
+    # Record types
     TextItem,
-    InternalIDItem,
-    TopicRecord,
-    DocumentRecord,
+    IDRecord,
+    TextRecord,
+    IDTextRecord,
     SimpleTextItem,
-    ScoredItem,
-    # Create records
-    create_record,
     # Other things
     AdhocAssessment,
     AdhocAssessedTopic,
@@ -43,14 +38,14 @@ class Documents(Base):
     count: Meta[Optional[int]]
     """Number of documents"""
 
-    def iter(self) -> Iterator[DocumentRecord]:
+    def iter(self) -> Iterator[IDTextRecord]:
         """Returns an iterator over documents"""
         raise self.iter_documents()
 
-    def iter_documents(self) -> Iterator[DocumentRecord]:
+    def iter_documents(self) -> Iterator[IDTextRecord]:
         return self.iter()
 
-    def iter_documents_from(self, start=0) -> Iterator[DocumentRecord]:
+    def iter_documents_from(self, start=0) -> Iterator[IDTextRecord]:
         """Iterate over a range of documents
 
         Can be specialized in a subclass for faster access
@@ -72,7 +67,7 @@ class Documents(Base):
         By default, use iter_documents, which is not really efficient.
         """
         for doc in self.iter():
-            yield doc[IDItem].id
+            yield doc["id"]
 
     @property
     def documentcount(self):
@@ -81,12 +76,6 @@ class Documents(Base):
             return self.count
 
         raise NotImplementedError(f"For class {self.__class__}")
-
-    @property
-    @abstractmethod
-    def document_recordtype(self) -> Type[DocumentRecord]:
-        """The class for documents"""
-        ...
 
 
 class FileAccess(Enum):
@@ -119,16 +108,16 @@ class DocumentStore(Documents):
         """Converts an internal collection ID (integer) to an external ID"""
         raise NotImplementedError(f"For class {self.__class__}")
 
-    def document_int(self, internal_docid: int) -> DocumentRecord:
+    def document_int(self, internal_docid: int) -> IDTextRecord:
         """Returns a document given its internal ID"""
         docid = self.docid_internal2external(internal_docid)
         return self.document_ext(docid)
 
-    def document_ext(self, docid: str) -> DocumentRecord:
+    def document_ext(self, docid: str) -> IDTextRecord:
         """Returns a document given its external ID"""
         raise NotImplementedError(f"document() in {self.__class__}")
 
-    def documents_ext(self, docids: List[str]) -> List[DocumentRecord]:
+    def documents_ext(self, docids: List[str]) -> List[IDTextRecord]:
         """Returns documents given their external ID
 
         By default, just look using `document_ext`, but some store might
@@ -138,7 +127,7 @@ class DocumentStore(Documents):
 
     def iter_sample(
         self, randint: Optional[Callable[[int], int]]
-    ) -> Iterator[DocumentRecord]:
+    ) -> Iterator[IDTextRecord]:
         """Sample documents from the dataset"""
         length = self.documentcount
         randint = randint or (lambda max: random.randint(0, max - 1))
@@ -163,7 +152,7 @@ class Topics(Base, ABC):
     """A set of topics with associated IDs"""
 
     @abstractmethod
-    def iter(self) -> Iterator[TopicRecord]:
+    def iter(self) -> Iterator[IDTextRecord]:
         """Returns an iterator over topics"""
         ...
 
@@ -174,11 +163,6 @@ class Topics(Base, ABC):
         """Returns the number of topics if known"""
         return None
 
-    @property
-    @abstractmethod
-    def topic_recordtype(self) -> Type[TopicRecord]:
-        """The class for topics"""
-
 
 AdhocTopics = Topics
 
@@ -187,11 +171,11 @@ class TopicsStore(Topics):
     """Adhoc topics store"""
 
     @abstractmethod
-    def topic_int(self, internal_topic_id: int) -> TopicRecord:
+    def topic_int(self, internal_topic_id: int) -> IDTextRecord:
         """Returns a document given its internal ID"""
 
     @abstractmethod
-    def topic_ext(self, external_topic_id: int) -> TopicRecord:
+    def topic_ext(self, external_topic_id: int) -> IDTextRecord:
         """Returns a document given its external ID"""
 
 
@@ -249,7 +233,11 @@ class Measure(Config):
     pass
 
 
-Triplets = Tuple[TopicRecord, DocumentRecord, DocumentRecord]
+#: A single record in a triplet (may have only id or only text_item)
+TripletRecord = Union[IDRecord, TextRecord, IDTextRecord]
+
+#: A training triplet: (topic, positive doc, negative doc)
+Triplets = Tuple[TripletRecord, TripletRecord, TripletRecord]
 
 
 class TrainingTriplets(Base, ABC):
@@ -272,18 +260,6 @@ class TrainingTriplets(Base, ABC):
         """Returns the number of triplets or None"""
         return None
 
-    @property
-    @abstractmethod
-    def topic_recordtype(self) -> RecordType:
-        """The set of records for topics"""
-        ...
-
-    @property
-    @abstractmethod
-    def document_recordtype(self) -> RecordType:
-        """The class for documents"""
-        ...
-
 
 class TrainingTripletsLines(TrainingTriplets):
     """Training triplets with one line per triple (query texts)"""
@@ -305,38 +281,30 @@ class TrainingTripletsLines(TrainingTriplets):
 
     @cached_property
     def _doc(self):
-        return lambda doc: self.document_recordtype(
-            IDItem(doc) if self.doc_ids else SimpleTextItem(doc)
-        )
+        if self.doc_ids:
+            return lambda doc: {"id": doc}
+        else:
+            return lambda doc: {"text_item": SimpleTextItem(doc)}
 
     @cached_property
     def _topic(self):
-        return lambda q: self.topic_recordtype(
-            IDItem(q) if self.topic_ids else SimpleTextItem(q)
-        )
-
-    @cached_property
-    def topic_recordtype(self) -> Type[TopicRecord]:
-        """The class for topics"""
-        return record_type(IDItem) if self.topic_ids else record_type(SimpleTextItem)
-
-    @cached_property
-    def document_recordtype(self) -> Type[DocumentRecord]:
-        """The class for documents"""
-        return record_type(IDItem) if self.doc_ids else record_type(SimpleTextItem)
+        if self.topic_ids:
+            return lambda q: {"id": q}
+        else:
+            return lambda q: {"text_item": SimpleTextItem(q)}
 
 
 @define(kw_only=True)
 class PairwiseSample(ABC):
     """A a query with positive and negative samples"""
 
-    topics: List[TopicRecord]
+    topics: List[IDTextRecord]
     """The topic(s)"""
 
-    positives: List[DocumentRecord]
+    positives: List[IDTextRecord]
     """Relevant documents"""
 
-    negatives: Dict[str, List[DocumentRecord]]
+    negatives: Dict[str, List[IDTextRecord]]
     """Non relevant documents, organized in a dictionary where keys
     are the algorithm used to retrieve the negatives"""
 

@@ -3,16 +3,14 @@ from attr import define, field
 import json
 import logging
 from datamaestro.data import File
-from datamaestro.record import Record
 
 from datamaestro_text.data.ir.base import (
-    IDItem,
     SimpleTextItem,
 )
 
 
 from .base import (
-    AnswerEntry,
+    ConversationEntry,
     ConversationTree,
     EntryType,
     SimpleDecontextualizedItem,
@@ -109,7 +107,7 @@ class IkatConversations(ConversationDataset, File):
 
     def __iter__(self) -> Iterator[ConversationTree]:
         for entry in self.entries():
-            history: List[Record] = []
+            history: List[ConversationEntry] = []
 
             for turn in entry.responses:
                 turn: IkatConversationEntry = turn  # Ensure type is correct
@@ -117,26 +115,22 @@ class IkatConversations(ConversationDataset, File):
 
                 # USER QUERY record
                 history.append(
-                    Record(
-                        IDItem(query_id),
-                        SimpleTextItem(turn.user_utterance),
-                        SimpleDecontextualizedItem(turn.resolved_utterance),
-                        EntryType.USER_QUERY,
-                    )
+                    {
+                        "id": query_id,
+                        "text_item": SimpleTextItem(turn.user_utterance),
+                        "decontextualized": SimpleDecontextualizedItem(
+                            turn.resolved_utterance
+                        ),
+                        "entry_type": EntryType.USER_QUERY,
+                    }
                 )
-
-                # Build citation info (stubbed relevance to match format)
-                relevances = {}
-                if turn.relevant_ptkbs:
-                    # Example: just use first as relevant (can be improved)
-                    relevances[0] = (0, None)  # No position info in this structure
 
                 # SYSTEM ANSWER record
                 history.append(
-                    Record(
-                        AnswerEntry(turn.response),
-                        EntryType.SYSTEM_ANSWER,
-                    )
+                    {
+                        "answer": turn.response,
+                        "entry_type": EntryType.SYSTEM_ANSWER,
+                    }
                 )
 
             # Ensure reverse if needed for compatibility (optional)

@@ -352,6 +352,7 @@ dependencies = [
     { name = "datamaestro" },
     { name = "experimaestro" },
     { name = "ir-datasets" },
+    { name = "typing-extensions" },
 ]
 
 [package.dev-dependencies]
@@ -379,6 +380,7 @@ requires-dist = [
     { name = "datamaestro", specifier = ">=1.8.0" },
     { name = "experimaestro" },
     { name = "ir-datasets", specifier = ">=0.5.8" },
+    { name = "typing-extensions" },
 ]
 
 [package.metadata.requires-dev]

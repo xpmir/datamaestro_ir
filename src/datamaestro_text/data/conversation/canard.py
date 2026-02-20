@@ -1,16 +1,16 @@
 from typing import Iterator, List
 from attr import define
 import json
-from datamaestro.record import Record
 from datamaestro.data import File
 from datamaestro_text.data.conversation.base import (
     ConversationDataset,
+    ConversationEntry,
     ConversationTree,
     SingleConversationTree,
     SimpleDecontextualizedItem,
     EntryType,
 )
-from datamaestro_text.data.ir import IDItem, SimpleTextItem
+from datamaestro_text.data.ir.base import SimpleTextItem
 
 
 @define(kw_only=True)
@@ -54,7 +54,7 @@ class CanardDataset(ConversationDataset, File):
             )
 
     def __iter__(self) -> Iterator[ConversationTree]:
-        history: list[Record] = []
+        history: list[ConversationEntry] = []
         current_id = None
 
         for entry in self.entries():
@@ -73,33 +73,36 @@ class CanardDataset(ConversationDataset, File):
                 # we interpret them as two user queries
                 assert len(entry.history) == 2
                 history.extend(
-                    Record(
-                        SimpleTextItem(text),
-                        EntryType.USER_QUERY,
-                    )
+                    {
+                        "text_item": SimpleTextItem(text),
+                        "entry_type": EntryType.USER_QUERY,
+                    }
                     for text in entry.history
                 )
             else:
                 # The utterance before the last is the last user query
-                assert entry.history[-2] == history[-1][SimpleTextItem].text, (
+                assert entry.history[-2] == history[-1]["text_item"].text, (
                     f"{entry.dialogue_id} {entry.history} / {history[-4:-1]}"
                 )
 
                 # The last utterance is the system side
                 history.append(
-                    Record(SimpleTextItem(entry.history[-1]), EntryType.SYSTEM_ANSWER)
+                    {
+                        "text_item": SimpleTextItem(entry.history[-1]),
+                        "entry_type": EntryType.SYSTEM_ANSWER,
+                    }
                 )
 
             assert len(entry.history) == len(history)
 
             # Add to current
             history.append(
-                Record(
-                    IDItem(f"{entry.dialogue_id}-{entry.query_no}"),
-                    SimpleTextItem(entry.query),
-                    SimpleDecontextualizedItem(entry.rewrite),
-                    EntryType.USER_QUERY,
-                )
+                {
+                    "id": f"{entry.dialogue_id}-{entry.query_no}",
+                    "text_item": SimpleTextItem(entry.query),
+                    "decontextualized": SimpleDecontextualizedItem(entry.rewrite),
+                    "entry_type": EntryType.USER_QUERY,
+                }
             )
 
         if current_id:

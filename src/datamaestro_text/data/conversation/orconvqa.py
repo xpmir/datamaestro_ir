@@ -2,16 +2,14 @@ from typing import Iterator, List, Optional
 from attr import define
 import json
 from datamaestro.data import File
-from datamaestro.record import Record
 
 from datamaestro_text.data.ir.base import (
-    IDItem,
     SimpleTextItem,
 )
 
 
 from .base import (
-    AnswerEntry,
+    ConversationEntry,
     ConversationTree,
     EntryType,
     RetrievedEntry,
@@ -84,7 +82,7 @@ class OrConvQADataset(ConversationDataset, File):
                 )
 
     def __iter__(self) -> Iterator[ConversationTree]:
-        history: List[Record] = []
+        history: List[ConversationEntry] = []
         current_id: Optional[str] = None
 
         for entry in self.entries():
@@ -100,12 +98,12 @@ class OrConvQADataset(ConversationDataset, File):
 
             # Add to current
             history.append(
-                Record(
-                    IDItem(entry.query_id),
-                    SimpleTextItem(entry.query),
-                    SimpleDecontextualizedItem(entry.rewrite),
-                    EntryType.USER_QUERY,
-                )
+                {
+                    "id": entry.query_id,
+                    "text_item": SimpleTextItem(entry.query),
+                    "decontextualized": SimpleDecontextualizedItem(entry.rewrite),
+                    "entry_type": EntryType.USER_QUERY,
+                }
             )
 
             relevances = {}
@@ -118,11 +116,11 @@ class OrConvQADataset(ConversationDataset, File):
             )
 
             history.append(
-                Record(
-                    AnswerEntry(entry.answer.text),
-                    RetrievedEntry(entry.evidences, relevances),
-                    EntryType.SYSTEM_ANSWER,
-                )
+                {
+                    "answer": entry.answer.text,
+                    "retrieved": RetrievedEntry(entry.evidences, relevances),
+                    "entry_type": EntryType.SYSTEM_ANSWER,
+                }
             )
 
         # Yields the last one
