@@ -40,7 +40,7 @@ class Documents(Base):
 
     def iter(self) -> Iterator[IDTextRecord]:
         """Returns an iterator over documents"""
-        raise self.iter_documents()
+        return self.iter_documents()
 
     def iter_documents(self) -> Iterator[IDTextRecord]:
         return self.iter()
