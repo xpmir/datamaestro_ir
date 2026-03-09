@@ -43,6 +43,7 @@ Topics
 Dataset-specific Topics
 -----------------------
 
+.. autoxpmconfig:: datamaestro_text.data.ir.beir.BeirTopics
 .. autoxpmconfig:: datamaestro_text.data.ir.trec.TrecTopics
 .. autoxpmconfig:: datamaestro_text.data.ir.cord19.Topics
 .. autoxpmconfig:: datamaestro_text.datasets.irds.data.Topics
@@ -68,6 +69,7 @@ Dataset-specific documents
 
 .. autoxpmconfig:: datamaestro_text.data.ir.cord19.Documents
 .. autoxpmconfig:: datamaestro_text.data.ir.trec.TipsterCollection
+.. autoxpmconfig:: datamaestro_text.data.ir.beir.BeirDocumentStore
 .. autoxpmconfig:: datamaestro_text.data.ir.stores.MsMarcoPassagesStore
 .. autoxpmconfig:: datamaestro_text.data.ir.stores.OrConvQADocumentStore
 .. autoxpmconfig:: datamaestro_text.data.ir.stores.IKatClueWeb22DocumentStore
@@ -79,6 +81,7 @@ Assessments
 .. autoxpmconfig:: datamaestro_text.data.ir.AdhocAssessments
     :members:
 
+.. autoxpmconfig:: datamaestro_text.data.ir.beir.BeirAssessments
 .. autoxpmconfig:: datamaestro_text.data.ir.trec.TrecAdhocAssessments
 .. autoxpmconfig:: datamaestro_text.datasets.irds.data.AdhocAssessments
 

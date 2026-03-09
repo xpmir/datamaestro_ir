@@ -39,6 +39,33 @@ Example usage:
        neg_doc = triplet.negative
 
 
+BEIR Benchmark
+--------------
+
+The `BEIR <https://github.com/beir-cellar/beir>`_ (Benchmarking IR) benchmark
+is a heterogeneous collection of diverse IR tasks for evaluating zero-shot
+retrieval models. It includes datasets from question answering, fact
+verification, citation prediction, and more.
+
+.. dm:datasets:: org.beir text
+
+Example usage:
+
+.. code-block:: python
+
+   from datamaestro import prepare_dataset
+
+   # Load a single-split dataset
+   adhoc = prepare_dataset("org.beir.scidocs")
+
+   # Load a multi-split dataset
+   adhoc = prepare_dataset("org.beir.nfcorpus_test")
+
+   # Access components
+   for doc in adhoc.documents.iter():
+       print(doc["id"], doc["text_item"].text)
+
+
 TIPSTER Collections
 -------------------
 
