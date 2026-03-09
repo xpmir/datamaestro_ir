@@ -35,6 +35,7 @@ Topics
     :members: iter, count
 
 .. autoxpmconfig:: datamaestro_text.data.ir.csv.Topics
+.. autoxpmconfig:: datamaestro_text.data.ir.FilteredTopics
 .. autoxpmconfig:: datamaestro_text.data.ir.TopicsStore
 
 .. autoxpmconfig:: datamaestro_text.transforms.ir.TopicWrapper
@@ -67,6 +68,7 @@ Dataset-specific documents
 
 .. autoxpmconfig:: datamaestro_text.data.ir.cord19.Documents
 .. autoxpmconfig:: datamaestro_text.data.ir.trec.TipsterCollection
+.. autoxpmconfig:: datamaestro_text.data.ir.stores.MsMarcoPassagesStore
 .. autoxpmconfig:: datamaestro_text.data.ir.stores.OrConvQADocumentStore
 .. autoxpmconfig:: datamaestro_text.data.ir.stores.IKatClueWeb22DocumentStore
 .. autoxpmconfig:: datamaestro_text.datasets.irds.data.Documents
@@ -115,6 +117,8 @@ Document Index
 
 .. autoxpmconfig:: datamaestro_text.data.ir.DocumentStore
     :members: documentcount, docid_internal2external, document_int, document_ext, iter_sample
+
+.. autoxpmconfig:: datamaestro_text.data.ir.CompressedDocumentStore
 
 .. autoxpmconfig:: datamaestro_text.data.ir.AdhocIndex
     :members: termcount, term_df

@@ -8,21 +8,59 @@ MS MARCO: A Human Generated MAchineReading COmprehension Dataset. In CoCo@NIPS.
 See [https://github.com/microsoft/MSMARCO-Passage-Ranking](https://github.com/microsoft/MSMARCO-Passage-Ranking) for more details
 """
 
+import logging
+import re
+from pathlib import Path
+
 from datamaestro.annotations.agreement import useragreement
-from datamaestro.data import Folder
 from datamaestro.download.single import FileDownloader
-from datamaestro.download import reference
+from datamaestro.download import FileResource, reference
 from datamaestro.definitions import Dataset, datatasks, datatags, dataset
 from datamaestro.download.archive import TarDownloader
 from datamaestro_text.data.ir import RerankAdhoc, Adhoc, TrainingTripletsLines
 from datamaestro_text.data.ir.csv import (
     Topics,
     AdhocRunWithText,
-    Documents,
 )
 from datamaestro_text.data.ir.trec import TrecAdhocAssessments
+from datamaestro_text.data.ir.stores import MsMarcoPassagesStore
+from datamaestro_text.download.docstore import docstore_builder
 from datamaestro.utils import HashCheck
 from hashlib import md5
+
+
+class qids_file(FileResource):
+    """Resource that writes query IDs to a file (one per line)."""
+
+    def __init__(self, varname, qids):
+        super().__init__(f"{varname}.txt", varname=varname)
+        self._qids = qids
+
+    def _download(self, destination):
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        with open(destination, "wt") as fp:
+            for qid in sorted(self._qids):
+                fp.write(f"{qid}\n")
+
+
+class judged_qids(FileResource):
+    """Resource that extracts judged query IDs from a qrels reference.
+
+    Produces a text file with one query ID per line.
+    """
+
+    def __init__(self, qrels_ref):
+        super().__init__("judged_qids.txt")
+        self.qrels_ref = qrels_ref
+        self._dependencies.append(qrels_ref)
+
+    def _download(self, destination):
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        assessments = self.qrels_ref.prepare()
+        qids = {topic.topic_id for topic in assessments.iter()}
+        with open(destination, "wt") as fp:
+            for qid in sorted(qids):
+                fp.write(f"{qid}\n")
 
 
 # User agreement
@@ -36,23 +74,6 @@ http://www.msmarco.org/dataset.aspx""",
 # --- Document collection
 
 
-# TODO: Not ideal since it would be better to have small versions right away
-# instead of downloading again the MS Marco Collection
-@lua
-@dataset(url="https://github.com/microsoft/MSMARCO-Passage-Ranking")
-class CollectionEtc(Dataset):
-    """Documents and some more files"""
-
-    DATA = TarDownloader(
-        "data",
-        url="https://msmarco.blob.core.windows.net/msmarcoranking/collectionandqueries.tar.gz",
-        checker=HashCheck("31644046b18952c1386cd4564ba2ae69", md5),
-    )
-
-    def config(self) -> Folder:
-        return Folder.C(path=self.DATA.path)
-
-
 @lua
 @dataset(size="2.9GB")
 class Collection(Dataset):
@@ -60,12 +81,73 @@ class Collection(Dataset):
 
     This file contains each passage in the larger MSMARCO dataset.
 
-    Format is TSV (PID \\t Passage)"""
+    Format is TSV (pid \\t content)"""
 
-    DATA = reference(varname="data", reference=CollectionEtc)
+    DOC_COUNT = 8_841_823
 
-    def config(self) -> Documents:
-        return Documents.C(path=self.DATA.prepare().path / "collection.tsv")
+    DOCUMENTS = TarDownloader(
+        "documents",
+        url="https://msmarco.z22.web.core.windows.net/msmarcoranking/collection.tar.gz",
+        checker=HashCheck("87dd01826da3e2ad45447ba5af577628", md5),
+        transient=True,
+    )
+
+    @staticmethod
+    def _reader(source: Path):
+        """Reads MS MARCO passages TSV (pid, content).
+
+        Fixes the encoding issues in the MS MARCO passage collection where
+        some characters are latin-1 encoded within otherwise UTF-8 text.
+        Approach from ir_datasets (FixEncoding).
+        """
+        # Regexes to find suspicious byte sequences (latin-1 within UTF-8)
+        sus = "[\x80-\xff]"
+        has_sus = re.compile(sus)
+        regexes = [
+            re.compile(f"(...{sus}|..{sus}.|.{sus}..|{sus}...)"),
+            re.compile(f"(..{sus}|.{sus}.|{sus}..)"),
+            re.compile(f"(.{sus}|{sus}.)"),
+        ]
+
+        num_fixed = 0
+        with open(source / "collection.tsv", "rb") as fp:
+            for line in fp:
+                line = line.decode("utf-8")
+                _pid, content = line.rstrip("\n").split("\t", 1)
+                # Fast path: skip encoding fix for lines without suspicious chars
+                if has_sus.search(content):
+                    for regex in regexes:
+                        pos = 0
+                        while pos < len(content):
+                            match = regex.search(content, pos=pos)
+                            if not match:
+                                break
+                            try:
+                                fixed = (
+                                    match.group().encode("latin1").decode("utf8")
+                                )
+                                if len(fixed) == 1:
+                                    content = (
+                                        content[: match.start()]
+                                        + fixed
+                                        + content[match.end() :]
+                                    )
+                                    num_fixed += 1
+                            except UnicodeError:
+                                pass
+                            pos = match.start() + 1
+                yield {}, content.encode("utf-8")
+        logging.info("Fixed encoding in %d passages", num_fixed)
+
+    store = docstore_builder(
+        DOCUMENTS,
+        iter_factory=_reader,
+        keys=[],
+        doc_count=DOC_COUNT
+    )
+
+    def config(self) -> MsMarcoPassagesStore:
+        return MsMarcoPassagesStore.C(path=self.store.path, count=self.DOC_COUNT)
 
 
 # --- Train
@@ -81,7 +163,7 @@ class TrainRun(Dataset):
 
     RUN = TarDownloader(
         "run",
-        url="https://msmarco.blob.core.windows.net/msmarcoranking/top1000.train.tar.gz",
+        url="https://msmarco.z22.web.core.windows.net/msmarcoranking/top1000.train.tar.gz",
         checker=HashCheck("d99fdbd5b2ea84af8aa23194a3263052", md5),
     )
 
@@ -94,7 +176,7 @@ class TrainRun(Dataset):
 class TrainQueries(Dataset):
     QUERIES = TarDownloader(
         "queries",
-        url="https://msmarco.blob.core.windows.net/msmarcoranking/queries.tar.gz",
+        url="https://msmarco.z22.web.core.windows.net/msmarcoranking/queries.tar.gz",
         files=["queries.train.tsv"],
         checker=HashCheck("c177b2795d5f2dcc524cf00fcd973be1", md5),
     )
@@ -108,7 +190,7 @@ class TrainQueries(Dataset):
 class TrainQrels(Dataset):
     QRELS = FileDownloader(
         "qrels.tsv",
-        url="https://msmarco.blob.core.windows.net/msmarcoranking/qrels.train.tsv",
+        url="https://msmarco.z22.web.core.windows.net/msmarcoranking/qrels.train.tsv",
         checker=HashCheck("733fb9fe12d93e497f7289409316eccf", md5),
     )
 
@@ -161,7 +243,7 @@ class TrainIdtriples(Dataset):
     TRIPLES = FileDownloader(
         "triples.tsv",
         size=1_841_693_309,
-        url="https://msmarco.blob.core.windows.net/msmarcoranking/qidpidtriples.train.full.2.tsv.gz",
+        url="https://msmarco.z22.web.core.windows.net/msmarcoranking/qidpidtriples.train.full.2.tsv.gz",
         checker=HashCheck("4e58f45f82f3fe99e3239ecffd8ed371", md5),
     )
 
@@ -181,7 +263,7 @@ class TrainTexttriplesSmall(Dataset):
     TRIPLES = FileDownloader(
         "triples.tsv",
         size=7_930_881_353,
-        url="https://msmarco.blob.core.windows.net/msmarcoranking/triples.train.small.tar.gz",
+        url="https://msmarco.z22.web.core.windows.net/msmarcoranking/triples.train.small.tar.gz",
         checker=HashCheck("c13bf99ff23ca691105ad12eab837f84", md5),
     )
 
@@ -199,7 +281,7 @@ class TrainTexttripleFull(Dataset):
     TRIPLES = FileDownloader(
         "triples.tsv",
         size=77_877_731_328,
-        url="https://msmarco.blob.core.windows.net/msmarcoranking/triples.train.full.tar.gz",
+        url="https://msmarco.z22.web.core.windows.net/msmarcoranking/triples.train.full.tar.gz",
         checker=HashCheck("8d509d484ea1971e792b812ae4800c6f", md5),
     )
 
@@ -217,7 +299,7 @@ class TrainTexttripleFull(Dataset):
 class DevQueries(Dataset):
     QUERIES = TarDownloader(
         "queries",
-        url="https://msmarco.blob.core.windows.net/msmarcoranking/queries.tar.gz",
+        url="https://msmarco.z22.web.core.windows.net/msmarcoranking/queries.tar.gz",
         files=["queries.dev.tsv"],
         checker=HashCheck("c177b2795d5f2dcc524cf00fcd973be1", md5),
     )
@@ -231,7 +313,7 @@ class DevQueries(Dataset):
 class DevRun(Dataset):
     RUN = TarDownloader(
         "run",
-        url="https://msmarco.blob.core.windows.net/msmarcoranking/top1000.dev.tar.gz",
+        url="https://msmarco.z22.web.core.windows.net/msmarcoranking/top1000.dev.tar.gz",
         checker=HashCheck("8c140662bdf123a98fbfe3bb174c5831", md5),
     )
 
@@ -244,7 +326,7 @@ class DevRun(Dataset):
 class DevQrels(Dataset):
     QRELS = FileDownloader(
         "qrels.tsv",
-        url="https://msmarco.blob.core.windows.net/msmarcoranking/qrels.dev.tsv",
+        url="https://msmarco.z22.web.core.windows.net/msmarcoranking/qrels.dev.tsv",
         checker=HashCheck("9157ccaeaa8227f91722ba5770787b16", md5),
     )
 
@@ -289,7 +371,7 @@ class DevWithrun(Dataset):
 class EvalWithrun(Dataset):
     RUN = TarDownloader(
         "run",
-        url="https://msmarco.blob.core.windows.net/msmarcoranking/top1000.eval.tar.gz",
+        url="https://msmarco.z22.web.core.windows.net/msmarcoranking/top1000.eval.tar.gz",
         checker=HashCheck("73778cd99f6e0632d12d0b5731b20a02", md5),
     )
 
@@ -303,57 +385,52 @@ class EvalWithrun(Dataset):
 # ---
 
 
-@dataset(url="https://github.com/microsoft/MSMARCO-Passage-Ranking")
-class DevSmallQueries(Dataset):
-    DATA = reference(varname="data", reference=CollectionEtc)
-
-    def config(self) -> Topics:
-        return Topics.C(path=self.DATA.prepare().path / "queries.dev.small.tsv")
-
-
-@dataset(url="https://github.com/microsoft/MSMARCO-Passage-Ranking")
-class DevSmallQrels(Dataset):
-    DATA = reference(varname="data", reference=CollectionEtc)
-
-    def config(self) -> TrecAdhocAssessments:
-        return TrecAdhocAssessments.C(
-            path=self.DATA.prepare().path / "qrels.dev.small.tsv"
-        )
-
-
+@lua
 @dataset(url="https://github.com/microsoft/MSMARCO-Passage-Ranking")
 class DevSmall(Dataset):
-    TOPICS = reference(varname="topics", reference=DevSmallQueries)
-    QRELS = reference(varname="qrels", reference=DevSmallQrels)
+    """Dev small dataset with queries, qrels, and eval queries from collectionandqueries archive"""
+
+    DATA = TarDownloader(
+        "data",
+        url="https://msmarco.z22.web.core.windows.net/msmarcoranking/collectionandqueries.tar.gz",
+        files=["queries.dev.small.tsv", "qrels.dev.small.tsv", "queries.eval.small.tsv"],
+        checker=HashCheck("31644046b18952c1386cd4564ba2ae69", md5),
+    )
     COLLECTION = reference(varname="collection", reference=Collection)
 
     def config(self) -> Adhoc:
         return Adhoc.C(
             documents=self.COLLECTION.prepare(),
-            topics=self.TOPICS.prepare(),
-            assessments=self.QRELS.prepare(),
+            topics=Topics.C(path=self.DATA.path / "queries.dev.small.tsv"),
+            assessments=TrecAdhocAssessments.C(
+                path=self.DATA.path / "qrels.dev.small.tsv"
+            ),
         )
 
 
 @dataset(url="https://github.com/microsoft/MSMARCO-Passage-Ranking")
 class EvalQueriesSmall(Dataset):
-    DATA = reference(varname="data", reference=CollectionEtc)
+    DATA = TarDownloader(
+        "data",
+        url="https://msmarco.z22.web.core.windows.net/msmarcoranking/collectionandqueries.tar.gz",
+        files=["queries.eval.small.tsv"],
+        checker=HashCheck("31644046b18952c1386cd4564ba2ae69", md5),
+    )
 
     def config(self) -> Topics:
-        return Topics.C(path=self.DATA.prepare().path / "queries.eval.small.tsv")
+        return Topics.C(path=self.DATA.path / "queries.eval.small.tsv")
 
 
 # ---
 # --- TREC 2019
 # ---
 
-
 @lua
 @dataset()
 class Trec2019TestQueries(Dataset):
     QUERIES = FileDownloader(
         "queries.tsv",
-        url="https://msmarco.blob.core.windows.net/msmarcoranking/msmarco-test2019-queries.tsv.gz",
+        url="https://msmarco.z22.web.core.windows.net/msmarcoranking/msmarco-test2019-queries.tsv.gz",
         checker=HashCheck("756e60d714cee28d3b552289d6272f1d", md5),
     )
 
@@ -366,7 +443,7 @@ class Trec2019TestQueries(Dataset):
 class Trec2019TestRun(Dataset):
     RUN = FileDownloader(
         "run.tsv",
-        url="https://msmarco.blob.core.windows.net/msmarcoranking/msmarco-passagetest2019-top1000.tsv.gz",
+        url="https://msmarco.z22.web.core.windows.net/msmarcoranking/msmarco-passagetest2019-top1000.tsv.gz",
         checker=HashCheck("ec9e012746aa9763c7ff10b3336a3ce1", md5),
     )
 
@@ -419,6 +496,30 @@ class Trec2019TestWithrun(Dataset):
         return RerankAdhoc.C(**trec2019.__arguments__(), run=self.RUN.prepare())
 
 
+@lua
+@datatasks("information retrieval", "passage retrieval")
+@dataset(url="https://microsoft.github.io/msmarco/TREC-Deep-Learning-2019.html")
+class Trec2019TestJudged(Dataset):
+    """TREC Deep Learning (2019), restricted to judged queries"""
+
+    COLLECTION = reference(varname="collection", reference=Collection)
+    TOPICS = reference(varname="topics", reference=Trec2019TestQueries)
+    QRELS = reference(varname="qrels", reference=Trec2019TestQrels)
+    JUDGED_QIDS = judged_qids(QRELS)
+
+    def config(self) -> Adhoc:
+        from datamaestro_text.data.ir import FilteredTopics
+
+        return Adhoc.C(
+            documents=self.COLLECTION.prepare(),
+            topics=FilteredTopics.C(
+                topics=[self.TOPICS.prepare()],
+                qids_path=self.JUDGED_QIDS.path,
+            ),
+            assessments=self.QRELS.prepare(),
+        )
+
+
 # ---
 # --- TREC 2020
 # ---
@@ -433,8 +534,8 @@ class Trec2020TestQueries(Dataset):
 
     QUERIES = FileDownloader(
         "queries.tsv",
-        url="https://msmarco.blob.core.windows.net/msmarcoranking/msmarco-test2020-queries.tsv.gz",
-        checker=HashCheck("00a406fb0d14ed3752d70d1e4eb98600", md5),
+        url="https://msmarco.z22.web.core.windows.net/msmarcoranking/msmarco-test2020-queries.tsv.gz",
+        checker=HashCheck("52cf21f50b4842233d35933cbc26b179", md5),
     )
 
     def config(self) -> Topics:
@@ -454,9 +555,142 @@ class Trec2020TestRun(Dataset):
 
     RUN = FileDownloader(
         "run.tsv",
-        url="https://msmarco.blob.core.windows.net/msmarcoranking/msmarco-passagetest2020-top1000.tsv.gz",
+        url="https://msmarco.z22.web.core.windows.net/msmarcoranking/msmarco-passagetest2020-top1000.tsv.gz",
         checker=HashCheck("aa6fbc51d66bd1dc745964c0e140a727", md5),
     )
 
     def config(self) -> AdhocRunWithText:
         return AdhocRunWithText.C(path=self.RUN.path / "top1000.eval.tsv")
+
+
+@lua
+@dataset()
+class Trec2020TestQrels(Dataset):
+    QRELS = FileDownloader(
+        "qrels.tsv",
+        url="https://trec.nist.gov/data/deep/2020qrels-pass.txt",
+        checker=HashCheck("0355ccee7509ac0463e8278186cdd8d1", md5),
+    )
+
+    def config(self) -> TrecAdhocAssessments:
+        return TrecAdhocAssessments.C(path=self.QRELS.path)
+
+
+@lua
+@datatasks("information retrieval", "passage retrieval")
+@dataset(url="https://microsoft.github.io/msmarco/TREC-Deep-Learning-2020.html")
+class Trec2020Test(Dataset):
+    "TREC Deep Learning (2020)"
+
+    COLLECTION = reference(varname="collection", reference=Collection)
+    TOPICS = reference(varname="topics", reference=Trec2020TestQueries)
+    QRELS = reference(varname="qrels", reference=Trec2020TestQrels)
+
+    def config(self) -> Adhoc:
+        return Adhoc.C(
+            documents=self.COLLECTION.prepare(),
+            topics=self.TOPICS.prepare(),
+            assessments=self.QRELS.prepare(),
+        )
+
+
+@lua
+@datatasks("information retrieval", "passage retrieval")
+@dataset(url="https://microsoft.github.io/msmarco/TREC-Deep-Learning-2020.html")
+class Trec2020TestWithrun(Dataset):
+    """TREC Deep Learning (2020), including the top-1000 to documents to re-rank"""
+
+    TREC2020 = reference(varname="trec2020", reference=Trec2020Test)
+    RUN = reference(varname="run", reference=Trec2020TestRun)
+
+    def config(self) -> RerankAdhoc:
+        trec2020 = self.TREC2020.prepare()
+        return RerankAdhoc.C(**trec2020.__arguments__(), run=self.RUN.prepare())
+
+
+@lua
+@datatasks("information retrieval", "passage retrieval")
+@dataset(url="https://microsoft.github.io/msmarco/TREC-Deep-Learning-2020.html")
+class Trec2020TestJudged(Dataset):
+    """TREC Deep Learning (2020), restricted to judged queries"""
+
+    COLLECTION = reference(varname="collection", reference=Collection)
+    TOPICS = reference(varname="topics", reference=Trec2020TestQueries)
+    QRELS = reference(varname="qrels", reference=Trec2020TestQrels)
+    JUDGED_QIDS = judged_qids(QRELS)
+
+    def config(self) -> Adhoc:
+        from datamaestro_text.data.ir import FilteredTopics
+
+        return Adhoc.C(
+            documents=self.COLLECTION.prepare(),
+            topics=FilteredTopics.C(
+                topics=[self.TOPICS.prepare()],
+                qids_path=self.JUDGED_QIDS.path,
+            ),
+            assessments=self.QRELS.prepare(),
+        )
+
+
+# ---
+# --- TREC DL Hard
+# --- https://github.com/grill-lab/DL-Hard
+# ---
+
+
+@lua
+@dataset(url="https://github.com/grill-lab/DL-Hard")
+class TrecDlHardQrels(Dataset):
+    """TREC DL-Hard qrels (passage)"""
+
+    QRELS = FileDownloader(
+        "qrels.tsv",
+        url="https://raw.githubusercontent.com/grill-lab/DL-Hard/main/dataset/dl_hard-passage.qrels",
+        checker=HashCheck("8583c2cbad56eeacb449586fe1d2a471", md5),
+    )
+
+    def config(self) -> TrecAdhocAssessments:
+        return TrecAdhocAssessments.C(path=self.QRELS.path)
+
+
+@lua
+@datatasks("information retrieval", "passage retrieval")
+@dataset(url="https://github.com/grill-lab/DL-Hard")
+class TrecDlHard(Dataset):
+    """A more challenging subset of TREC DL 2019 and 2020 passage queries
+
+    See: Mackie et al., "How Deep is your Learning: the DL-HARD Annotated Deep
+    Learning Dataset", SIGIR 2021.
+    """
+
+    COLLECTION = reference(varname="collection", reference=Collection)
+    TOPICS_2019 = reference(varname="topics_2019", reference=Trec2019TestQueries)
+    TOPICS_2020 = reference(varname="topics_2020", reference=Trec2020TestQueries)
+    QRELS = reference(varname="qrels", reference=TrecDlHardQrels)
+
+    # From https://github.com/grill-lab/DL-Hard/blob/main/dataset/folds.json
+    HARD_QIDS = qids_file("hard_qids", [
+        "915593", "451602", "966413", "1056204", "182539", "655914", "67316",
+        "883915", "1049519", "174463", "794429", "588587", "1114646", "537817",
+        "1065636", "144862", "443396", "332593", "1103812", "19335", "177604",
+        "1108939", "264403", "86606", "1133485", "1117817", "705609", "315637",
+        "673670", "1105792", "801118", "507445", "87452", "88495", "554515",
+        "166046", "730539", "1108100", "1109707", "1056416", "190044", "527433",
+        "489204", "877809", "1106007", "47923", "1136769", "1112341", "1103153",
+        "273695",
+    ])
+
+    def config(self) -> Adhoc:
+        from datamaestro_text.data.ir import FilteredTopics
+
+        return Adhoc.C(
+            documents=self.COLLECTION.prepare(),
+            topics=FilteredTopics.C(
+                topics=[
+                    self.TOPICS_2019.prepare(),
+                    self.TOPICS_2020.prepare(),
+                ],
+                qids_path=self.HARD_QIDS.path,
+            ),
+            assessments=self.QRELS.prepare(),
+        )

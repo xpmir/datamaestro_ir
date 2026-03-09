@@ -1,6 +1,6 @@
 import bz2
-from hashlib import md5, sha256
 import json
+from hashlib import md5, sha256
 import logging
 from pathlib import Path
 from typing import List, NamedTuple
@@ -10,9 +10,35 @@ from datamaestro_text.data.ir.base import (
     IDTextRecord,
     SimpleTextItem,
 )
+from datamaestro_text.data.ir import CompressedDocumentStore
 from datamaestro_text.datasets.irds.data import LZ4DocumentStore
 from datamaestro_text.data.ir.formats import OrConvQADocument
 from tqdm import tqdm
+
+
+class MsMarcoPassagesStore(CompressedDocumentStore):
+    """Document store for MS MARCO passages where internal ID = external ID"""
+
+    def converter(
+        self, internal_id: int, keys: dict[str, str], content: bytes
+    ) -> IDTextRecord:
+        return {
+            "id": str(internal_id),
+            "text_item": SimpleTextItem(text=content.decode("utf-8")),
+        }
+
+    def docid_internal2external(self, docid: int):
+        return str(docid)
+
+    def document_ext(self, docid: str) -> IDTextRecord:
+        return self.document_int(int(docid))
+
+    def documents_ext(self, docids: List[str]) -> List[IDTextRecord]:
+        nums = [int(d) for d in docids]
+        docs = self._store.get_by_number(nums)
+        return [
+            self.converter(n, d.keys, d.content) for n, d in zip(nums, docs)
+        ]
 
 
 class OrConvQADocumentStore(LZ4DocumentStore):

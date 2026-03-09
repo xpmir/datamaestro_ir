@@ -135,6 +135,83 @@ class DocumentStore(Documents):
             yield self.document_int(randint(length))
 
 
+class CompressedDocumentStore(DocumentStore, ABC):
+    """A document store backed by impact-index's compressed document store"""
+
+    path: Meta[Path]
+    """Path to the impact-index store directory"""
+
+    _CONTENT_ACCESS = {
+        FileAccess.MEMORY: "memory",
+        FileAccess.MMAP: "mmap",
+        FileAccess.FILE: "disk",
+    }
+
+    @cached_property
+    def _store(self):
+        import impact_index
+
+        content_access = self._CONTENT_ACCESS[self.file_access]
+        return impact_index.DocumentStore.load(str(self.path), content_access)
+
+    @abstractmethod
+    def converter(
+        self, internal_id: int, keys: dict[str, str], content: bytes
+    ) -> IDTextRecord:
+        """Convert stored keys/content into an IDTextRecord
+
+        :param internal_id: The 0-based document number in the store
+        :param keys: Key-value metadata stored with the document
+        :param content: Binary content of the document
+        """
+        ...
+
+    @property
+    def documentcount(self):
+        if self.count is not None:
+            return self.count
+        return self._store.num_documents()
+
+    def docid_internal2external(self, docid: int):
+        docs = self._store.get_by_number([docid])
+        return docs[0].keys[self.lookup_key]
+
+    def document_int(self, internal_docid: int) -> IDTextRecord:
+        docs = self._store.get_by_number([internal_docid])
+        d = docs[0]
+        return self.converter(internal_docid, d.keys, d.content)
+
+    def document_ext(self, docid: str) -> IDTextRecord:
+        docs = self._store.get_by_key(self.lookup_key, [docid])
+        if docs[0] is None:
+            raise KeyError(f"Document {docid} not found")
+        d = docs[0]
+        return self.converter(d.internal_id, d.keys, d.content)
+
+    def documents_ext(self, docids: List[str]) -> List[IDTextRecord]:
+        docs = self._store.get_by_key(self.lookup_key, docids)
+        return [
+            self.converter(d.internal_id, d.keys, d.content)
+            if d is not None
+            else None
+            for d in docs
+        ]
+
+    def iter(self) -> Iterator[IDTextRecord]:
+        return self.iter_documents_from(0)
+
+    def iter_documents_from(self, start=0) -> Iterator[IDTextRecord]:
+        total = self._store.num_documents()
+        chunk_size = 4096
+        pos = start
+        while pos < total:
+            end = min(pos + chunk_size, total)
+            docs = self._store.get_by_number(list(range(pos, end)))
+            for i, d in enumerate(docs, start=pos):
+                yield self.converter(i, d.keys, d.content)
+            pos = end
+
+
 class AdhocIndex(DocumentStore):
     """An index can be used to retrieve documents based on terms"""
 
@@ -165,6 +242,25 @@ class Topics(Base, ABC):
 
 
 AdhocTopics = Topics
+
+
+class FilteredTopics(Topics):
+    """Merges multiple Topics sources, keeping only query IDs listed in a file"""
+
+    topics: Param[List[Topics]]
+    qids_path: Meta[Path]
+    """Path to a file with one query ID per line"""
+
+    @cached_property
+    def _qids(self) -> set:
+        with open(self.qids_path, "rt") as fp:
+            return {line.strip() for line in fp if line.strip()}
+
+    def iter(self) -> Iterator[IDTextRecord]:
+        for source in self.topics:
+            for record in source.iter():
+                if record["id"] in self._qids:
+                    yield record
 
 
 class TopicsStore(Topics):
