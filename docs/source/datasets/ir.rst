@@ -66,6 +66,30 @@ Example usage:
        print(doc["id"], doc["text_item"].text)
 
 
+LoTTE Benchmark
+---------------
+
+The `LoTTE <https://github.com/stanford-futuredata/ColBERT>`_ (Long-Tail
+Topic-stratified Evaluation) benchmark from ColBERTv2. Contains 6 domains
+(lifestyle, recreation, science, technology, writing, pooled) with dev/test
+splits and two query types (search, forum) per split.
+
+.. dm:datasets:: edu.stanford.lotte text
+
+Example usage:
+
+.. code-block:: python
+
+   from datamaestro import prepare_dataset
+
+   # Load a specific task
+   adhoc = prepare_dataset("edu.stanford.lotte.science_test_search")
+
+   # Access components
+   for doc in adhoc.documents.iter():
+       print(doc["id"], doc["text_item"].text)
+
+
 TIPSTER Collections
 -------------------
 
