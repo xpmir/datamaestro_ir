@@ -5,9 +5,9 @@ name: Python package
 
 on:
   push:
-    branches: [master]
+    branches: [main]
   pull_request:
-    branches: [master]
+    branches: [main]
 
 jobs:
   build:
@@ -37,7 +37,7 @@ jobs:
 
       - name: Lint with ruff
         run: |
-          uv run ruff check src/datamaestro_text
+          uv run ruff check src/datamaestro_ir
 
       - name: Test with pytest
         run: |
