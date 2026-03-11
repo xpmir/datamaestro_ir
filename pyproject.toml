@@ -34,10 +34,10 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/experimaestro/datamaestro_ir"
+Homepage = "https://github.com/xpmir/datamaestro_ir"
 Documentation = "https://datamaestro-ir.readthedocs.io/en/latest/"
-Repository = "https://github.com/experimaestro/datamaestro_ir"
-"Bug Tracker" = "https://github.com/experimaestro/datamaestro_ir/issues"
+Repository = "https://github.com/xpmir/datamaestro_ir"
+"Bug Tracker" = "https://github.com/xpmir/datamaestro_ir/issues"
 
 [project.entry-points."datamaestro.repositories"]
 ir = "datamaestro_ir:Repository"
