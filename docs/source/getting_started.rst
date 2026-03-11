@@ -1,7 +1,7 @@
 Getting Started
 ===============
 
-This guide shows how to use datamaestro-text to access datasets for your research.
+This guide shows how to use datamaestro-ir to access datasets for your research.
 
 
 Loading Datasets
@@ -99,26 +99,6 @@ For training neural ranking models, use training triplets:
        negative_doc = triplet.negative[TextItem].text
 
 
-Word Embeddings
----------------
-
-Load pre-trained word embeddings:
-
-.. code-block:: python
-
-   from datamaestro import prepare_dataset
-
-   # Load GloVe embeddings
-   glove = prepare_dataset("edu.stanford.glove.6b.50")
-
-   # Load word vectors
-   words, vectors = glove.load()
-
-   # vectors is a numpy matrix where vectors[i] is the embedding for words[i]
-   print(f"Vocabulary size: {len(words)}")
-   print(f"Embedding dimension: {vectors.shape[1]}")
-
-
 Dataset Discovery
 -----------------
 
@@ -126,8 +106,8 @@ Find available datasets from the command line:
 
 .. code-block:: bash
 
-   # List all text datasets
-   datamaestro search text
+   # List all IR datasets
+   datamaestro search ir
 
    # Search by keyword
    datamaestro search "trec"
@@ -142,8 +122,8 @@ Or programmatically:
 
    from datamaestro import Repository
 
-   # Get the text repository
-   repo = Repository.find("text")
+   # Get the IR repository
+   repo = Repository.find("ir")
 
    # List all dataset IDs
    for dataset_id in repo.datasetids():

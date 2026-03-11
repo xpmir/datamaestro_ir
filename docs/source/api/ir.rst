@@ -19,137 +19,148 @@ For training neural rankers:
 Data objects
 ------------
 
-.. automodule:: datamaestro_text.data.ir.base
+.. automodule:: datamaestro_ir.data.base
    :members:
 
 Collection
 ----------
 
-.. autoxpmconfig:: datamaestro_text.data.ir.Adhoc
-.. autoxpmconfig:: datamaestro_text.datasets.irds.data.Adhoc
+.. autoxpmconfig:: datamaestro_ir.data.Adhoc
+.. autoxpmconfig:: datamaestro_ir.datasets.irds.data.Adhoc
 
 Topics
 ------
 
-.. autoxpmconfig:: datamaestro_text.data.ir.Topics
+.. autoxpmconfig:: datamaestro_ir.data.Topics
     :members: iter, count
 
-.. autoxpmconfig:: datamaestro_text.data.ir.csv.Topics
-.. autoxpmconfig:: datamaestro_text.data.ir.FilteredTopics
-.. autoxpmconfig:: datamaestro_text.data.ir.TopicsStore
+.. autoxpmconfig:: datamaestro_ir.data.csv.Topics
+.. autoxpmconfig:: datamaestro_ir.data.FilteredTopics
+.. autoxpmconfig:: datamaestro_ir.data.TopicsStore
 
-.. autoxpmconfig:: datamaestro_text.transforms.ir.TopicWrapper
+.. autoxpmconfig:: datamaestro_ir.transforms.TopicWrapper
 
 Dataset-specific Topics
 -----------------------
 
-.. autoxpmconfig:: datamaestro_text.data.ir.beir.BeirTopics
-.. autoxpmconfig:: datamaestro_text.data.ir.lotte.LotteTopics
-.. autoxpmconfig:: datamaestro_text.data.ir.trec.TrecTopics
-.. autoxpmconfig:: datamaestro_text.data.ir.cord19.Topics
-.. autoxpmconfig:: datamaestro_text.datasets.irds.data.Topics
+.. autoxpmconfig:: datamaestro_ir.data.beir.BeirTopics
+.. autoxpmconfig:: datamaestro_ir.data.lotte.LotteTopics
+.. autoxpmconfig:: datamaestro_ir.data.trec.TrecTopics
+.. autoxpmconfig:: datamaestro_ir.data.cord19.Topics
+.. autoxpmconfig:: datamaestro_ir.datasets.irds.data.Topics
 
 Documents
 ---------
 
-.. autoxpmconfig:: datamaestro_text.data.ir.Documents
+.. autoxpmconfig:: datamaestro_ir.data.Documents
     :members: iter_documents, iter_ids, documentcount
-.. autoxpmconfig:: datamaestro_text.data.ir.csv.Documents
-.. autoxpmconfig:: datamaestro_text.datasets.irds.data.LZ4DocumentStore
-.. autoxpmconfig:: datamaestro_text.datasets.irds.data.LZ4JSONLDocumentStore
+.. autoxpmconfig:: datamaestro_ir.data.csv.Documents
+.. autoxpmconfig:: datamaestro_ir.datasets.irds.data.LZ4DocumentStore
+.. autoxpmconfig:: datamaestro_ir.datasets.irds.data.LZ4JSONLDocumentStore
 
 
 IR-Datasets Base
 ----------------
 
-.. autoxpmconfig:: datamaestro_text.datasets.irds.data.IRDSId
+.. autoxpmconfig:: datamaestro_ir.datasets.irds.data.IRDSId
 
 
 Dataset-specific documents
 **************************
 
-.. autoxpmconfig:: datamaestro_text.data.ir.cord19.Documents
-.. autoxpmconfig:: datamaestro_text.data.ir.trec.TipsterCollection
-.. autoxpmconfig:: datamaestro_text.data.ir.beir.BeirDocumentStore
-.. autoxpmconfig:: datamaestro_text.data.ir.lotte.LotteDocumentStore
-.. autoxpmconfig:: datamaestro_text.data.ir.stores.MsMarcoPassagesStore
-.. autoxpmconfig:: datamaestro_text.data.ir.stores.OrConvQADocumentStore
-.. autoxpmconfig:: datamaestro_text.data.ir.stores.IKatClueWeb22DocumentStore
-.. autoxpmconfig:: datamaestro_text.datasets.irds.data.Documents
+.. autoxpmconfig:: datamaestro_ir.data.cord19.Documents
+.. autoxpmconfig:: datamaestro_ir.data.trec.TipsterCollection
+.. autoxpmconfig:: datamaestro_ir.data.beir.BeirDocumentStore
+.. autoxpmconfig:: datamaestro_ir.data.lotte.LotteDocumentStore
+.. autoxpmconfig:: datamaestro_ir.data.stores.MsMarcoPassagesStore
+.. autoxpmconfig:: datamaestro_ir.data.stores.OrConvQADocumentStore
+.. autoxpmconfig:: datamaestro_ir.data.stores.IKatClueWeb22DocumentStore
+.. autoxpmconfig:: datamaestro_ir.datasets.irds.data.Documents
 
 Assessments
 -----------
 
-.. autoxpmconfig:: datamaestro_text.data.ir.AdhocAssessments
+.. autoxpmconfig:: datamaestro_ir.data.AdhocAssessments
     :members:
 
-.. autoxpmconfig:: datamaestro_text.data.ir.beir.BeirAssessments
-.. autoxpmconfig:: datamaestro_text.data.ir.lotte.LotteAssessments
-.. autoxpmconfig:: datamaestro_text.data.ir.trec.TrecAdhocAssessments
-.. autoxpmconfig:: datamaestro_text.datasets.irds.data.AdhocAssessments
+.. autoxpmconfig:: datamaestro_ir.data.beir.BeirAssessments
+.. autoxpmconfig:: datamaestro_ir.data.lotte.LotteAssessments
+.. autoxpmconfig:: datamaestro_ir.data.trec.TrecAdhocAssessments
+.. autoxpmconfig:: datamaestro_ir.datasets.irds.data.AdhocAssessments
 
-.. autoclass:: datamaestro_text.data.ir.AdhocAssessedTopic
-.. autoclass:: datamaestro_text.data.ir.AdhocAssessment
+.. autoclass:: datamaestro_ir.data.AdhocAssessedTopic
+.. autoclass:: datamaestro_ir.data.AdhocAssessment
 
 Runs
 ----
 
-.. autoxpmconfig:: datamaestro_text.data.ir.AdhocRun
-.. autoxpmconfig:: datamaestro_text.data.ir.csv.AdhocRunWithText
-.. autoxpmconfig:: datamaestro_text.data.ir.trec.TrecAdhocRun
-.. autoxpmconfig:: datamaestro_text.datasets.irds.data.AdhocRun
+.. autoxpmconfig:: datamaestro_ir.data.AdhocRun
+.. autoxpmconfig:: datamaestro_ir.data.csv.AdhocRunWithText
+.. autoxpmconfig:: datamaestro_ir.data.trec.TrecAdhocRun
+.. autoxpmconfig:: datamaestro_ir.datasets.irds.data.AdhocRun
 
 
 Results
 -------
 
-.. autoxpmconfig:: datamaestro_text.data.ir.AdhocResults
-.. autoxpmconfig:: datamaestro_text.data.ir.trec.TrecAdhocResults
+.. autoxpmconfig:: datamaestro_ir.data.AdhocResults
+.. autoxpmconfig:: datamaestro_ir.data.trec.TrecAdhocResults
     :members: get_results
 
 Evaluation
 ----------
 
-.. autoxpmconfig:: datamaestro_text.data.ir.Measure
+.. autoxpmconfig:: datamaestro_ir.data.Measure
 
 
 Reranking
 ---------
 
-.. autoxpmconfig:: datamaestro_text.data.ir.RerankAdhoc
+.. autoxpmconfig:: datamaestro_ir.data.RerankAdhoc
 
 Document Index
 ---------------
 
-.. autoxpmconfig:: datamaestro_text.data.ir.DocumentStore
+.. autoxpmconfig:: datamaestro_ir.data.DocumentStore
     :members: documentcount, docid_internal2external, document_int, document_ext, iter_sample
 
-.. autoxpmconfig:: datamaestro_text.data.ir.CompressedDocumentStore
+.. autoxpmconfig:: datamaestro_ir.data.CompressedDocumentStore
 
-.. autoxpmconfig:: datamaestro_text.data.ir.AdhocIndex
+.. autoxpmconfig:: datamaestro_ir.data.AdhocIndex
     :members: termcount, term_df
+
+.. autoxpmconfig:: datamaestro_ir.data.anserini.Index
 
 
 Training triplets
 -----------------
 
 
-.. autoxpmconfig:: datamaestro_text.data.ir.TrainingTriplets
+.. autoxpmconfig:: datamaestro_ir.data.TrainingTriplets
     :members: iter
 
-.. autoxpmconfig:: datamaestro_text.data.ir.PairwiseSampleDataset
+.. autoxpmconfig:: datamaestro_ir.data.PairwiseSampleDataset
     :members: iter
 
-.. autoxpmconfig:: datamaestro_text.data.ir.TrainingTripletsLines
+.. autoxpmconfig:: datamaestro_ir.data.TrainingTripletsLines
 
-.. autoxpmconfig:: datamaestro_text.data.ir.huggingface.HuggingFacePairwiseSampleDataset
-.. autoxpmconfig:: datamaestro_text.datasets.irds.data.TrainingTriplets
+.. autoxpmconfig:: datamaestro_ir.data.huggingface.HuggingFacePairwiseSampleDataset
+.. autoxpmconfig:: datamaestro_ir.datasets.irds.data.TrainingTriplets
+
+Distillation
+************
+
+.. autoxpmconfig:: datamaestro_ir.data.distillation.PairwiseDistillationSamples
+.. autoxpmconfig:: datamaestro_ir.data.distillation.PairwiseDistillationSamplesTSV
+.. autoxpmconfig:: datamaestro_ir.data.distillation.ListwiseDistillationSamples
+.. autoxpmconfig:: datamaestro_ir.data.distillation.ListwiseDistillationSamplesTSV
+.. autoxpmconfig:: datamaestro_ir.data.distillation.ListwiseDistillationSamplesTSVWithAnnotations
 
 Transforms
 **********
 
-.. autoxpmconfig:: datamaestro_text.transforms.ir.StoreTrainingTripletTopicAdapter
+.. autoxpmconfig:: datamaestro_ir.transforms.StoreTrainingTripletTopicAdapter
 
-.. autoxpmconfig:: datamaestro_text.transforms.ir.StoreTrainingTripletDocumentAdapter
+.. autoxpmconfig:: datamaestro_ir.transforms.StoreTrainingTripletDocumentAdapter
 
-.. autoxpmconfig:: datamaestro_text.transforms.ir.ShuffledTrainingTripletsLines
+.. autoxpmconfig:: datamaestro_ir.transforms.ShuffledTrainingTripletsLines

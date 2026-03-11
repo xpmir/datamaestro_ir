@@ -4,7 +4,7 @@ Conversation API
 This module provides data types for conversational information retrieval
 and query understanding tasks.
 
-.. currentmodule:: datamaestro_text.data.conversation.base
+.. currentmodule:: datamaestro_ir.data.conversation.base
 
 
 Core Data Classes
@@ -36,7 +36,7 @@ Conversation structures:
 Conversational IR
 -----------------
 
-.. autoxpmconfig:: datamaestro_text.data.conversation.base.ConversationUserTopics
+.. autoxpmconfig:: datamaestro_ir.data.conversation.base.ConversationUserTopics
 
 
 Contextual Query Reformulation
@@ -44,28 +44,28 @@ Contextual Query Reformulation
 
 Base class for conversation datasets:
 
-.. autoxpmconfig:: datamaestro_text.data.conversation.base.ConversationDataset
+.. autoxpmconfig:: datamaestro_ir.data.conversation.base.ConversationDataset
 
 
 CANARD Dataset
 ~~~~~~~~~~~~~~
 
-.. autoxpmconfig:: datamaestro_text.data.conversation.canard.CanardDataset
+.. autoxpmconfig:: datamaestro_ir.data.conversation.canard.CanardDataset
 
 
 OrConvQA Dataset
 ~~~~~~~~~~~~~~~~
 
-.. autoxpmconfig:: datamaestro_text.data.conversation.orconvqa.OrConvQADataset
+.. autoxpmconfig:: datamaestro_ir.data.conversation.orconvqa.OrConvQADataset
 
 
 QReCC Dataset
 ~~~~~~~~~~~~~
 
-.. autoxpmconfig:: datamaestro_text.data.conversation.qrecc.QReCCDataset
+.. autoxpmconfig:: datamaestro_ir.data.conversation.qrecc.QReCCDataset
 
 
 iKAT Dataset
 ~~~~~~~~~~~~
 
-.. autoxpmconfig:: datamaestro_text.data.conversation.ikat.IkatConversations
+.. autoxpmconfig:: datamaestro_ir.data.conversation.ikat.IkatConversations

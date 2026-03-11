@@ -14,7 +14,7 @@ for neural IR research.
 
 Contains ~8.8M passages and ~500K training queries with sparse relevance judgments.
 
-.. dm:datasets:: com.microsoft.msmarco.passage text
+.. dm:datasets:: com.microsoft.msmarco.passage ir
 
 Example usage:
 
@@ -47,7 +47,7 @@ is a heterogeneous collection of diverse IR tasks for evaluating zero-shot
 retrieval models. It includes datasets from question answering, fact
 verification, citation prediction, and more.
 
-.. dm:datasets:: org.beir text
+.. dm:datasets:: org.beir ir
 
 Example usage:
 
@@ -74,7 +74,7 @@ Topic-stratified Evaluation) benchmark from ColBERTv2. Contains 6 domains
 (lifestyle, recreation, science, technology, writing, pooled) with dev/test
 splits and two query types (search, forum) per split.
 
-.. dm:datasets:: edu.stanford.lotte text
+.. dm:datasets:: edu.stanford.lotte ir
 
 Example usage:
 
@@ -95,7 +95,7 @@ TIPSTER Collections
 
 The TIPSTER document collections used in TREC evaluations, organized by source.
 
-.. dm:datasets:: gov.nist.trec.tipster text
+.. dm:datasets:: gov.nist.trec.tipster ir
 
 
 AQUAINT
@@ -104,7 +104,7 @@ AQUAINT
 The AQUAINT Corpus consists of newswire text data in English from three sources:
 Xinhua News Service, New York Times, and Associated Press.
 
-.. dm:datasets:: edu.upenn.ldc.aquaint text
+.. dm:datasets:: edu.upenn.ldc.aquaint ir
 
 
 TREC Ad Hoc
@@ -113,7 +113,7 @@ TREC Ad Hoc
 Classic TREC Ad Hoc test collections from NIST. These collections have been
 fundamental benchmarks in IR research since the 1990s.
 
-.. dm:datasets:: gov.nist.trec.adhoc text
+.. dm:datasets:: gov.nist.trec.adhoc ir
 
 Example usage:
 

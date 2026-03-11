@@ -1,0 +1,708 @@
+import logging
+from abc import ABC, abstractmethod
+from functools import cached_property, partial
+from pathlib import Path
+from typing import Dict, Iterator, List, NamedTuple, Tuple, Type
+
+import ir_datasets
+import ir_datasets.datasets as _irds
+from experimaestro import Config, Meta, Option, Param
+from ir_datasets.formats import (
+    GenericDoc,
+    GenericDocPair,
+    GenericQuery,
+    TrecParsedDoc,
+    TrecQuery,
+)
+from ir_datasets.indices import PickleLz4FullStore
+
+import datamaestro_ir.data as ir
+import datamaestro_ir.data.formats as formats
+from datamaestro_ir.data.conversation.base import (
+    ConversationTreeNode,
+    DecontextualizedDictItem,
+    EntryType,
+)
+from datamaestro_ir.data.base import (
+    AdhocAssessedTopic,
+    IDTextRecord,
+    SimpleAdhocAssessment,
+    SimpleTextItem,
+)
+
+# Interface between ir_datasets and datamaestro:
+# provides adapted data types
+
+
+class IRDSId(Config):
+    irds: Option[str]
+    """The id to load the dataset from ir_datasets"""
+
+    @classmethod
+    def __xpmid__(cls):
+        return f"ir_datasets.{cls.__qualname__}"
+
+    @cached_property
+    def dataset(self):
+        return ir_datasets.load(self.irds)
+
+    def iter(self) -> Iterator[IDTextRecord]:
+        """Returns an iterator over topics"""
+        for query in self.dataset.queries_iter():
+            yield self.factory(query)
+
+    def count(self):
+        return self.dataset.queries_count()
+
+
+class AdhocAssessments(ir.AdhocAssessments, IRDSId):
+    def iter(self):
+        """Returns an iterator over assessments"""
+        ds = self.dataset
+
+        class Qrels(dict):
+            def __missing__(self, key):
+                qqrel = AdhocAssessedTopic(key, [])
+                self[key] = qqrel
+                return qqrel
+
+        qrels = Qrels()
+        for qrel in ds.qrels_iter():
+            qrels[qrel.query_id].assessments.append(
+                SimpleAdhocAssessment(qrel.doc_id, qrel.relevance)
+            )
+
+        return qrels.values()
+
+
+class tuple_constructor:
+    def __init__(self, target_cls: Type, id_field: str, *fields: str):
+        self.id_field = id_field
+        self.target_cls = target_cls
+        self.fields = fields
+
+    def check(self, source_cls: Type):
+        source_fields = tuple(f for f in source_cls._fields if f != self.id_field)
+        assert source_fields == self.fields, (
+            "Internal error: Fields do not match, "
+            f"source({source_cls.__qualname__})={source_fields}/{self.id_field} [vs] target={self.fields}"
+        )
+
+    def __call__(self, entry):
+        values = tuple(getattr(entry, key) for key in self.fields)
+        return {
+            "id": getattr(entry, self.id_field),
+            "text_item": self.target_cls(*values),
+        }
+
+
+class Documents(ir.DocumentStore, IRDSId):
+    CONVERTERS = {
+        GenericDoc: tuple_constructor(SimpleTextItem, "doc_id", "text"),
+        _irds.beir.BeirCordDoc: tuple_constructor(
+            formats.CordDocument, "doc_id", "text", "title", "url", "pubmed_id"
+        ),
+        _irds.miracl.MiraclDoc: tuple_constructor(
+            formats.DocumentWithTitle, "doc_id", "title", "text"
+        ),
+        _irds.beir.BeirTitleDoc: tuple_constructor(
+            formats.TitleDocument, "doc_id", "text", "title"
+        ),
+        _irds.beir.BeirTitleUrlDoc: tuple_constructor(
+            formats.TitleUrlDocument, "doc_id", "text", "title", "url"
+        ),
+        _irds.beir.BeirToucheDoc: tuple_constructor(
+            formats.Touche2020, "doc_id", "text", "title", "stance", "url"
+        ),
+        _irds.beir.BeirSciDoc: tuple_constructor(
+            formats.SciDocs,
+            "doc_id",
+            "text",
+            "title",
+            "authors",
+            "year",
+            "cited_by",
+            "references",
+        ),
+        _irds.msmarco_document.MsMarcoDocument: tuple_constructor(
+            formats.MsMarcoDocument, "doc_id", "url", "title", "body"
+        ),
+        _irds.cord19.Cord19FullTextDoc: tuple_constructor(
+            formats.CordFullTextDocument,
+            "doc_id",
+            "title",
+            "doi",
+            "date",
+            "abstract",
+            "body",
+        ),
+        _irds.nfcorpus.NfCorpusDoc: tuple_constructor(
+            formats.NFCorpusDocument, "doc_id", "url", "title", "abstract"
+        ),
+        TrecParsedDoc: tuple_constructor(
+            formats.TrecParsedDocument, "doc_id", "title", "body", "marked_up_doc"
+        ),
+        _irds.wapo.WapoDoc: tuple_constructor(
+            formats.WapoDocument,
+            "doc_id",
+            "url",
+            "title",
+            "author",
+            "published_date",
+            "kicker",
+            "body",
+            "body_paras_html",
+            "body_media",
+        ),
+        _irds.tweets2013_ia.TweetDoc: tuple_constructor(
+            formats.TweetDoc,
+            "doc_id",
+            "text",
+            "user_id",
+            "created_at",
+            "lang",
+            "reply_doc_id",
+            "retweet_doc_id",
+            "source",
+            "source_content_type",
+        ),
+        _irds.dpr_w100.DprW100Doc: tuple_constructor(
+            formats.DprW100Doc,
+            "doc_id",
+            "text",
+            "title",
+        ),
+        _irds.msmarco_passage_v2.MsMarcoV2Passage: tuple_constructor(
+            formats.MsMarcoV2Passage,
+            "doc_id",
+            "text",
+            "spans",
+            "msmarco_document_id",
+        ),
+    }
+
+    """Wraps an ir datasets collection -- and provide a default text
+    value depending on the collection itself"""
+
+    # List of fields
+    # self.dataset.docs_cls()._fields
+
+    def __getstate__(self):
+        return (self.id, self.irds)
+
+    def __setstate__(self, state):
+        self.id, self.irds = state
+
+    def iter(self) -> Iterator[ir.IDTextRecord]:
+        """Returns an iterator over adhoc documents"""
+        for doc in self._docs:
+            yield self.converter(doc)
+
+    def iter_documents_from(self, start=0):
+        for doc in self._docs[start:]:
+            yield self.converter(doc)
+
+    @property
+    def documentcount(self):
+        return self.dataset.docs_count()
+
+    @cached_property
+    def store(self):
+        kwargs = {}
+        try:
+            # Translate to ir datasets docstore options
+            import ir_datasets.indices as ir_indices
+
+            file_access = {
+                ir.FileAccess.MMAP: ir_indices.FileAccess.MMAP,
+                ir.FileAccess.FILE: ir_indices.FileAccess.FILE,
+                ir.FileAccess.MEMORY: ir_indices.FileAccess.MEMORY,
+            }[self.file_access]
+            kwargs = {"options": ir_indices.DocstoreOptions(file_access=file_access)}
+        except ImportError:
+            logging.warning(
+                "This version of ir-datasets cannot handle docstore options"
+            )
+        return self.dataset.docs_store(**kwargs)
+
+    @property
+    def _docs(self):
+        return iter(self.store)
+
+    def docid_internal2external(self, ix: int):
+        return self._docs[ix].doc_id
+
+    def document_ext(self, docid: str) -> IDTextRecord:
+        return self.converter(self.store.get(docid))
+
+    def documents_ext(self, docids: List[str]) -> IDTextRecord:
+        """Returns documents given their external IDs (optimized for batch)"""
+        retrieved = self.store.get_many(docids)
+        return [self.converter(retrieved[docid]) for docid in docids]
+
+    def document_int(self, ix):
+        return self.converter(self._docs[ix])
+
+    @cached_property
+    def converter(self):
+        converter = Documents.CONVERTERS[self.dataset.docs_cls()]
+        converter.check(self.dataset.docs_cls())
+        return converter
+
+
+class LZ4DocumentStore(ir.DocumentStore, ABC):
+    """A LZ4-based document store"""
+
+    path: Param[Path]
+
+    #: Lookup field
+    lookup_field: Param[str]
+
+    # Extra indexed fields (e.g. URLs)
+    index_fields: List[str] = []
+
+    @cached_property
+    def store(self):
+        return PickleLz4FullStore(
+            self.path, None, self.data_cls, self.lookup_field, self.index_fields
+        )
+
+    @cached_property
+    def _docs(self):
+        return self.store.__iter__()
+
+    def docid_internal2external(self, ix: int):
+        return getattr(self._docs[ix], self.store._id_field)
+
+    def document_ext(self, docid: str) -> IDTextRecord:
+        return self.converter(self.store.get(docid))
+
+    def documents_ext(self, docids: List[str]) -> IDTextRecord:
+        """Returns documents given their external IDs (optimized for batch)"""
+        retrieved = self.store.get_many(docids)
+        return [self.converter(retrieved[docid]) for docid in docids]
+
+    @abstractmethod
+    def converter(self, data):
+        """Converts a document from LZ4 tuples to a document record"""
+        ...
+
+    def iter(self) -> Iterator[IDTextRecord]:
+        """Returns an iterator over documents"""
+        return map(self.converter, self.store.__iter__())
+
+    def iter_documents_from(self, start=0):
+        return map(self.converter, self.store.__iter__()[start:])
+
+    @cached_property
+    def documentcount(self):
+        if self.count:
+            return self.count
+        return self.store.count()
+
+
+class SimpleJsonDocument(NamedTuple):
+    id: str
+    text: str
+
+
+class LZ4JSONLDocumentStore(LZ4DocumentStore):
+    jsonl_path: Meta[Path]
+    """json-l based document store
+
+    Each line is of the form
+    ```json
+    { "id": "...", "text": "..." }
+    ```
+    """
+
+    def converter(self, data):
+        return {"id": data["id"], "text_item": SimpleTextItem(data["text"])}
+
+
+class TopicsHandler(ABC):
+    @abstractmethod
+    def topic_int(self, internal_topic_id: int) -> IDTextRecord:
+        """Returns a document given its internal ID"""
+        ...
+
+    @abstractmethod
+    def topic_ext(self, external_topic_id: str) -> IDTextRecord:
+        """Returns a document given its external ID"""
+        ...
+
+    @abstractmethod
+    def iter(self) -> Iterator[IDTextRecord]:
+        """Returns an iterator over topics"""
+        ...
+
+
+class SimpleTopicsHandler(TopicsHandler):
+    def __init__(self, converter, topics: "Topics"):
+        self.converter = converter
+        self._topics = topics
+        self.target_cls = converter.target_cls
+        converter.check(topics.dataset.queries_cls())
+
+    def topic_int(self, internal_topic_id: int) -> IDTextRecord:
+        """Returns a document given its internal ID"""
+        return self.topics_list[internal_topic_id]
+
+    def topic_ext(self, external_topic_id: int) -> IDTextRecord:
+        """Returns a document given its external ID"""
+        return self.topics_map[external_topic_id]
+
+    def iter(self) -> Iterator[IDTextRecord]:
+        """Returns an iterator over topics"""
+        yield from self.topics_list
+
+    @cached_property
+    def topics_map(self):
+        return self.topics[0]
+
+    @cached_property
+    def topics_list(self):
+        return self.topics[1]
+
+    @cached_property
+    def topics(self):
+        topic_map = {}
+        topic_list = []
+        for query in self._topics.dataset.queries_iter():
+            record = self.converter(query)
+            topic_map[query.query_id] = record
+            topic_list.append(record)
+
+        return topic_map, topic_list
+
+
+class Topics(ir.TopicsStore, IRDSId):
+    CONVERTERS = {
+        GenericQuery: tuple_constructor(SimpleTextItem, "query_id", "text"),
+        _irds.beir.BeirCovidQuery: tuple_constructor(
+            formats.TrecTopic, "query_id", "text", "query", "narrative"
+        ),
+        _irds.beir.BeirUrlQuery: tuple_constructor(
+            formats.UrlTopic, "query_id", "text", "url"
+        ),
+        _irds.nfcorpus.NfCorpusQuery: tuple_constructor(
+            formats.NFCorpusTopic, "query_id", "title", "all"
+        ),
+        TrecQuery: tuple_constructor(
+            formats.TrecTopic, "query_id", "title", "description", "narrative"
+        ),
+        _irds.beir.BeirToucheQuery: tuple_constructor(
+            formats.TrecTopic, "query_id", "text", "description", "narrative"
+        ),
+        _irds.beir.BeirSciQuery: tuple_constructor(
+            formats.SciDocsTopic,
+            "query_id",
+            "text",
+            "authors",
+            "year",
+            "cited_by",
+            "references",
+        ),
+        _irds.tweets2013_ia.TrecMb13Query: tuple_constructor(
+            formats.TrecMb13Query, "query_id", "query", "time", "tweet_time"
+        ),
+        _irds.tweets2013_ia.TrecMb14Query: tuple_constructor(
+            formats.TrecMb14Query,
+            "query_id",
+            "query",
+            "time",
+            "tweet_time",
+            "description",
+        ),
+        _irds.dpr_w100.DprW100Query: tuple_constructor(
+            formats.DprW100Query, "query_id", "text", "answers"
+        ),
+    }
+
+    HANDLERS = {
+        cls: partial(SimpleTopicsHandler, converter)
+        for cls, converter in CONVERTERS.items()
+    }
+
+    def count(self):
+        return self.dataset.queries_count()
+
+    @cached_property
+    def handler(self):
+        handler = Topics.HANDLERS[self.dataset.queries_cls()](self)
+        return handler
+
+    def topic_int(self, internal_topic_id: int) -> IDTextRecord:
+        """Returns a document given its internal ID"""
+        return self.handler.topic_int(internal_topic_id)
+
+    def topic_ext(self, external_topic_id: str) -> IDTextRecord:
+        """Returns a document given its external ID"""
+        return self.handler.topic_ext(external_topic_id)
+
+    def iter(self) -> Iterator[IDTextRecord]:
+        """Returns an iterator over topics"""
+        return self.handler.iter()
+
+
+class TrecBackgroundLinkingTopicsHandler(TopicsHandler):
+    def __init__(self, dataset):
+        self.dataset = dataset
+
+    @cached_property
+    def ext2records(self):
+        return {record["id"]: record for record in self.records}
+
+    def topic_int(self, internal_topic_id: int) -> IDTextRecord:
+        """Returns a document given its internal ID"""
+        return self.records[internal_topic_id]
+
+    def topic_ext(self, external_topic_id: str) -> IDTextRecord:
+        """Returns a document given its external ID"""
+        return self.ext2records[external_topic_id]
+
+    def iter(self) -> Iterator[ir.IDTextRecord]:
+        """Returns an iterator over topics"""
+        return iter(self.records)
+
+    @cached_property
+    def records(self):
+        try:
+            records = []
+
+            for query in self.dataset.dataset.queries_iter():
+                topic = {
+                    "id": query.query_id,
+                    # Following BEIR documentation, we use title of documents as queries: https://github.com/beir-cellar/beir/blob/main/examples/dataset/README.md#queries-and-qrels
+                    "text_item": SimpleTextItem(
+                        self.dataset.dataset.docs_store().get(query.doc_id).title
+                    ),
+                    "url": query.url,
+                }
+                records.append(topic)
+        except Exception:
+            logging.exception("Error while computing topic records")
+            raise
+
+        return records
+
+
+Topics.HANDLERS.update(
+    {_irds.wapo.TrecBackgroundLinkingQuery: TrecBackgroundLinkingTopicsHandler}
+)
+
+
+class CastTopicsHandler(TopicsHandler):
+    def __init__(self, dataset):
+        self.dataset = dataset
+
+    @cached_property
+    def ext2records(self):
+        return {record["id"]: record for record in self.records}
+
+    def topic_int(self, internal_topic_id: int) -> IDTextRecord:
+        """Returns a document given its internal ID"""
+        return self.records[internal_topic_id]
+
+    def topic_ext(self, external_topic_id: str) -> IDTextRecord:
+        """Returns a document given its external ID"""
+        return self.ext2records[external_topic_id]
+
+    def iter(self) -> Iterator[ir.IDTextRecord]:
+        """Returns an iterator over topics"""
+        return iter(self.records)
+
+    @cached_property
+    def records(self):
+        try:
+            topic_number = None
+            node = None
+            conversation = []
+            records = []
+
+            for query in self.dataset.dataset.queries_iter():
+                decontextualized = DecontextualizedDictItem(
+                    "manual",
+                    {
+                        "manual": query.manual_rewritten_utterance,
+                        "auto": query.automatic_rewritten_utterance,
+                    },
+                )
+
+                is_new_conversation = topic_number != query.topic_number
+
+                topic = {
+                    "id": query.query_id,
+                    "text_item": SimpleTextItem(query.raw_utterance),
+                    "decontextualized": decontextualized,
+                    "history": [] if is_new_conversation else node.conversation(False),
+                    "entry_type": EntryType.USER_QUERY,
+                }
+
+                if is_new_conversation:
+                    conversation = []
+                    node = ConversationTreeNode(topic)
+                    topic_number = query.topic_number
+                else:
+                    node = node.add(ConversationTreeNode(topic))
+
+                records.append(topic)
+
+                conversation.append(node)
+                node = node.add(
+                    ConversationTreeNode(
+                        {
+                            "answer_document_id": self.get_canonical_result_id(query),
+                            "entry_type": EntryType.SYSTEM_ANSWER,
+                        }
+                    )
+                )
+                conversation.append(node)
+        except Exception:
+            logging.exception("Error while computing topic records")
+            raise
+
+        return records
+
+    @staticmethod
+    def get_canonical_result_id():
+        return None
+
+
+class Cast2020TopicsHandler(CastTopicsHandler):
+    @staticmethod
+    def get_canonical_result_id(query: _irds.trec_cast.Cast2020Query):
+        return query.manual_canonical_result_id
+
+
+class Cast2021TopicsHandler(CastTopicsHandler):
+    @staticmethod
+    def get_canonical_result_id(query: _irds.trec_cast.Cast2021Query):
+        return query.canonical_result_id
+
+
+class Cast2022TopicsHandler(CastTopicsHandler):
+    def __init__(self, dataset):
+        self.dataset = dataset
+
+    @cached_property
+    def records(self):
+        try:
+            records = []
+            nodes: Dict[str, ConversationTreeNode] = {}
+
+            for query in self.dataset.dataset.queries_iter():  # type: _irds.trec_cast.Cast2022Query
+                parent = nodes[query.parent_id] if query.parent_id else None
+
+                if query.participant == "User":
+                    topic = {
+                        "id": query.query_id,
+                        "text_item": SimpleTextItem(query.raw_utterance),
+                        "decontextualized": DecontextualizedDictItem(
+                            "manual",
+                            {
+                                "manual": query.manual_rewritten_utterance,
+                            },
+                        ),
+                        "history": parent.conversation(False) if parent else [],
+                        "entry_type": EntryType.USER_QUERY,
+                    }
+                    node = ConversationTreeNode(topic)
+                    records.append(topic)
+                else:
+                    node = ConversationTreeNode(
+                        {
+                            "answer": query.response,
+                            "entry_type": EntryType.SYSTEM_ANSWER,
+                        }
+                    )
+
+                nodes[query.query_id] = node
+                if parent:
+                    parent.add(node)
+        except Exception:
+            logging.exception("Error while computing topic records")
+            raise
+
+        return records
+
+
+Topics.HANDLERS.update(
+    {
+        # _irds.trec_cast.Cast2019Query: Cast2019TopicsHandler,
+        _irds.trec_cast.Cast2020Query: Cast2020TopicsHandler,
+        _irds.trec_cast.Cast2021Query: Cast2021TopicsHandler,
+        _irds.trec_cast.Cast2022Query: Cast2022TopicsHandler,
+    }
+)
+
+
+class CastDocHandler:
+    def check(self, cls):
+        assert issubclass(cls, _irds.trec_cast.CastDoc)
+
+    @cached_property
+    def target_cls(self):
+        return formats.TitleUrlDocument
+
+    def __call__(self, doc: _irds.trec_cast.CastDoc):
+        return {
+            "id": doc.doc_id,
+            "text_item": formats.SimpleTextItem(" ".join(doc.passages)),
+        }
+
+
+class CastPassageDocHandler:
+    def check(self, cls):
+        assert issubclass(cls, _irds.trec_cast.CastPassageDoc)
+
+    @cached_property
+    def target_cls(self):
+        return formats.TitleUrlDocument
+
+    def __call__(self, doc: _irds.trec_cast.CastPassageDoc):
+        return {
+            "id": doc.doc_id,
+            "text_item": formats.TitleUrlDocument(doc.text, doc.title, doc.url),
+        }
+
+
+Documents.CONVERTERS[_irds.trec_cast.CastDoc] = CastDocHandler()
+Documents.CONVERTERS[_irds.trec_cast.CastPassageDoc] = CastPassageDocHandler()
+
+
+class Adhoc(ir.Adhoc, IRDSId):
+    pass
+
+
+class AdhocRun(ir.AdhocRun, IRDSId):
+    pass
+
+
+class TrainingTriplets(ir.TrainingTriplets, IRDSId):
+    """Training triplets from IR Dataset"""
+
+    CONVERTERS = {
+        GenericDocPair: lambda qid, doc1_id, doc2_id: (
+            {"id": qid},
+            {"id": doc1_id},
+            {"id": doc2_id},
+        )
+    }
+
+    @cached_property
+    def converter(self):
+        return TrainingTriplets.CONVERTERS[self.dataset.docpairs_cls()]
+
+    def iter(
+        self,
+    ) -> Iterator[Tuple[ir.IDRecord, ir.IDRecord, ir.IDRecord]]:
+        ds = self.dataset
+
+        logging.info("Starting to generate triplets")
+        yield from (self.converter(*entry) for entry in ds.docpairs_iter())
+        logging.info("Ending triplet generation")
+
+    def count(self):
+        """Returns the length or None"""
+        return self.dataset.docpairs_count()

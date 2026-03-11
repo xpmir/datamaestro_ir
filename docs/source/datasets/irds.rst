@@ -1,7 +1,7 @@
 IR-Datasets Integration
 =======================
 
-Datamaestro-text provides an interface to the `ir-datasets <https://ir-datasets.com/>`_
+Datamaestro-ir provides an interface to the `ir-datasets <https://ir-datasets.com/>`_
 library, giving access to hundreds of IR benchmarks through a unified API.
 
 Install ir-datasets:
@@ -32,11 +32,11 @@ Data Types
 
 These wrapper types provide the datamaestro interface for ir-datasets data:
 
-.. autoxpmconfig:: datamaestro_text.datasets.irds.data.Topics
-.. autoxpmconfig:: datamaestro_text.datasets.irds.data.Documents
-.. autoxpmconfig:: datamaestro_text.datasets.irds.data.AdhocAssessments
+.. autoxpmconfig:: datamaestro_ir.datasets.irds.data.Topics
+.. autoxpmconfig:: datamaestro_ir.datasets.irds.data.Documents
+.. autoxpmconfig:: datamaestro_ir.datasets.irds.data.AdhocAssessments
 
-See also :class:`~datamaestro_text.datasets.irds.data.LZ4DocumentStore` in the :doc:`/api/ir` section.
+See also :class:`~datamaestro_ir.datasets.irds.data.LZ4DocumentStore` in the :doc:`/api/ir` section.
 
 
 Available Datasets

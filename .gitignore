@@ -10,4 +10,4 @@ test-reports/
 .eggs/
 docs/build
 docs/_build
-src/datamaestro_text/version.py
+src/datamaestro_ir/version.py

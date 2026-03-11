@@ -19,7 +19,7 @@ CANARD
 Context-dependent Query Rewriting dataset for conversational question answering.
 Contains queries from QuAC that have been manually rewritten to be self-contained.
 
-.. dm:datasets:: com.github.aagohary.canard text
+.. dm:datasets:: com.github.aagohary.canard ir
 
 Example:
 
@@ -39,7 +39,7 @@ OrConvQA
 Open-Retrieval Conversational Question Answering dataset.
 Contains multi-turn QA conversations with passage retrieval.
 
-.. dm:datasets:: com.github.prdwb.orconvqa text
+.. dm:datasets:: com.github.prdwb.orconvqa ir
 
 
 QReCC
@@ -48,4 +48,4 @@ QReCC
 Question Rewriting in Conversational Context dataset.
 Contains conversations with human rewrites of questions.
 
-.. dm:datasets:: com.github.apple.ml-qrecc text
+.. dm:datasets:: com.github.apple.ml-qrecc ir

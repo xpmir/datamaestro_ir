@@ -3,11 +3,11 @@ requires = ["hatchling", "hatch-vcs"]
 build-backend = "hatchling.build"
 
 [project]
-name = "datamaestro-text"
+name = "datamaestro-ir"
 authors = [
     {name = "Benjamin Piwowarski", email = "benjamin@piwowarski.fr"}
 ]
-description = "Datamaestro module for text-related datasets"
+description = "Datamaestro module for Information Retrieval datasets"
 readme = "README.md"
 license = {text = "GPL-3.0-or-later"}
 keywords = ["dataset manager", "information retrieval", "experiments"]
@@ -34,14 +34,14 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/experimaestro/datamaestro_text"
-Documentation = "https://datamaestro-text.readthedocs.io/en/latest/"
-Repository = "https://github.com/experimaestro/datamaestro_text"
-"Bug Tracker" = "https://github.com/experimaestro/datamaestro_text/issues"
+Homepage = "https://github.com/experimaestro/datamaestro_ir"
+Documentation = "https://datamaestro-ir.readthedocs.io/en/latest/"
+Repository = "https://github.com/experimaestro/datamaestro_ir"
+"Bug Tracker" = "https://github.com/experimaestro/datamaestro_ir/issues"
 
 [project.entry-points."datamaestro.repositories"]
-text = "datamaestro_text:Repository"
-irds = "datamaestro_text.datasets.irds:Repository"
+ir = "datamaestro_ir:Repository"
+irds = "datamaestro_ir.datasets.irds:Repository"
 
 [tool.hatch.version]
 source = "vcs"
@@ -50,7 +50,7 @@ source = "vcs"
 local_scheme = "no-local-version"
 
 [tool.hatch.build.hooks.vcs]
-version-file = "src/datamaestro_text/version.py"
+version-file = "src/datamaestro_ir/version.py"
 
 [tool.hatch.build.targets.sdist]
 include = [
@@ -61,11 +61,11 @@ include = [
 ]
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/datamaestro_text"]
+packages = ["src/datamaestro_ir"]
 
 [tool.pytest.ini_options]
 junit_family = "xunit2"
-testpaths = ["src/datamaestro_text"]
+testpaths = ["src/datamaestro_ir"]
 norecursedirs = ["node_modules"]
 
 [dependency-groups]

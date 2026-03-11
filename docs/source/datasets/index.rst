@@ -1,16 +1,13 @@
-Datamaestro Text Datasets
-=========================
+Datamaestro IR Datasets
+=======================
 
-This section lists the datasets available through the datamaestro-text plugin.
+This section lists the datasets available through the datamaestro-ir plugin.
 
 Datasets are organized by domain:
 
 - :doc:`ir` - Information retrieval benchmark collections (MS MARCO, TREC, etc.)
 - :doc:`irds` - Integration with the `ir-datasets <https://ir-datasets.com/>`_ library
 - :doc:`conversation` - Conversational search and query reformulation
-- :doc:`text` - Raw text corpora
-- :doc:`embeddings` - Pre-trained word embeddings
-- :doc:`recommendation` - Rating and recommendation datasets
 
 To load a dataset:
 
@@ -26,7 +23,7 @@ To discover available datasets:
 .. code-block:: bash
 
    # List all datasets
-   datamaestro search text
+   datamaestro search ir
 
    # Search by keyword
    datamaestro search "trec"
@@ -38,6 +35,3 @@ To discover available datasets:
    ir
    irds
    conversation
-   text
-   embeddings
-   recommendation

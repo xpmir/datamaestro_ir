@@ -363,7 +363,7 @@ wheels = [
 ]
 
 [[package]]
-name = "datamaestro-text"
+name = "datamaestro-ir"
 source = { editable = "." }
 dependencies = [
     { name = "attrs" },
