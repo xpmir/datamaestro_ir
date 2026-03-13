@@ -75,6 +75,14 @@ Dataset-specific documents
 .. autoxpmconfig:: datamaestro_ir.data.stores.MsMarcoPassagesStore
 .. autoxpmconfig:: datamaestro_ir.data.stores.OrConvQADocumentStore
 .. autoxpmconfig:: datamaestro_ir.data.stores.IKatClueWeb22DocumentStore
+.. autoxpmconfig:: datamaestro_ir.data.stores.CarParagraphStore
+.. autoxpmconfig:: datamaestro_ir.data.stores.WapoDocumentStore
+.. autoxpmconfig:: datamaestro_ir.data.stores.WapoPassageStore
+.. autoxpmconfig:: datamaestro_ir.data.stores.KiltDocumentStore
+.. autoxpmconfig:: datamaestro_ir.data.stores.MsMarcoDocumentStore
+.. autoxpmconfig:: datamaestro_ir.data.stores.MsMarcoDocumentV2Store
+.. autoxpmconfig:: datamaestro_ir.data.stores.CastSegmentedPassageStore
+.. autoxpmconfig:: datamaestro_ir.data.PrefixedDocumentStore
 .. autoxpmconfig:: datamaestro_ir.datasets.irds.data.Documents
 
 Assessments

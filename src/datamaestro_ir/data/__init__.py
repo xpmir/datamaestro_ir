@@ -8,7 +8,7 @@ from pathlib import Path
 from attrs import define
 from typing import Callable, Dict, Iterator, List, Optional, Tuple, Union
 import random
-from experimaestro import Config
+from experimaestro import Config, field
 from datamaestro.definitions import datatasks, Param, Meta
 from datamaestro.data import Base
 from datamaestro_ir.utils.files import auto_open
@@ -101,7 +101,7 @@ class DocumentStore(Documents):
     - return the number of documents
     """
 
-    file_access: Meta[FileAccess] = FileAccess.MMAP
+    file_access: Meta[FileAccess] = field(default=FileAccess.MMAP, ignore_default=True)
     """How to access the file collection (might not have any impact, depends on
     the docstore)"""
 

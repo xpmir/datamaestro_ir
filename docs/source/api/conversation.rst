@@ -69,3 +69,9 @@ iKAT Dataset
 ~~~~~~~~~~~~
 
 .. autoxpmconfig:: datamaestro_ir.data.conversation.ikat.IkatConversations
+
+
+CaST Dataset
+~~~~~~~~~~~~
+
+.. autoxpmconfig:: datamaestro_ir.data.conversation.cast.CastConversations

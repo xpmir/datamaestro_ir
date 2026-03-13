@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Iterator, List
 
 from datamaestro.definitions import Param, Meta
+from experimaestro import field
 
 from datamaestro_ir.data import (
     AdhocAssessments,
@@ -27,7 +28,7 @@ class BeirDocumentStore(CompressedDocumentStore):
     The only key is "id" (the external document ID).
     """
 
-    lookup_key: Param[str] = "id"
+    lookup_key: Param[str] = field(default="id", ignore_default=True)
 
     def converter(
         self, internal_id: int, keys: dict[str, str], content: bytes

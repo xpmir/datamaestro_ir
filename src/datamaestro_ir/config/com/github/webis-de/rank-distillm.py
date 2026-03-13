@@ -23,7 +23,6 @@ def msmarco_bm25_annotated(bm25__msmarco_passage_train_judged):
     return {
         "qrels": prepare_dataset("irds.msmarco-passage.train.qrels"),
         "top_k": 500,
-        "sampling_k": 8,
         "with_docid": True,
         "with_queryid": True,
         "path": bm25__msmarco_passage_train_judged,
