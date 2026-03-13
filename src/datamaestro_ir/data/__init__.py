@@ -213,6 +213,59 @@ class CompressedDocumentStore(DocumentStore, ABC):
             pos = end
 
 
+class PrefixedDocumentStore(DocumentStore):
+    """Combines multiple DocumentStores with ID prefixes.
+
+    Each document ID is expected to start with one of the given prefixes,
+    which determines which underlying store to query.
+    """
+
+    sources: Param[List[DocumentStore]]
+    prefixes: Meta[List[str]]
+
+    def document_ext(self, docid: str):
+        for prefix, source in zip(self.prefixes, self.sources):
+            if docid.startswith(prefix):
+                doc = source.document_ext(docid[len(prefix) :])
+                return {**doc, "id": docid}
+        raise KeyError(f"No matching prefix for {docid}")
+
+    def documents_ext(self, docids: List[str]) -> List:
+        # Group by prefix for batch retrieval
+        from collections import defaultdict
+
+        groups: Dict[int, List] = defaultdict(list)
+        index_map: Dict[int, List] = defaultdict(list)
+        for i, docid in enumerate(docids):
+            for j, prefix in enumerate(self.prefixes):
+                if docid.startswith(prefix):
+                    groups[j].append(docid[len(prefix) :])
+                    index_map[j].append(i)
+                    break
+            else:
+                raise KeyError(f"No matching prefix for {docid}")
+
+        results = [None] * len(docids)
+        for j, stripped_ids in groups.items():
+            prefix = self.prefixes[j]
+            docs = self.sources[j].documents_ext(stripped_ids)
+            for idx, doc in zip(index_map[j], docs):
+                if doc is not None:
+                    results[idx] = {**doc, "id": docids[idx]}
+        return results
+
+    def iter(self):
+        for prefix, source in zip(self.prefixes, self.sources):
+            for doc in source.iter():
+                yield {**doc, "id": f"{prefix}{doc['id']}"}
+
+    @property
+    def documentcount(self):
+        if self.count is not None:
+            return self.count
+        return sum(s.documentcount for s in self.sources)
+
+
 class AdhocIndex(DocumentStore):
     """An index can be used to retrieve documents based on terms"""
 
