@@ -3,7 +3,7 @@ from hashlib import md5
 from datamaestro.definitions import dataset
 from datamaestro.download.single import filedownloader
 from datamaestro.utils import HashCheck
-from xpmir.letor.distillation.samplers import ListwiseDistillationSamplesTSV, ListwiseDistillationSamplesTSVWithAnnotations
+from datamaestro_ir.data.distillation import ListwiseDistillationSamplesTSV, ListwiseDistillationSamplesTSVWithAnnotations
 from datamaestro import prepare_dataset
 
 @filedownloader(
