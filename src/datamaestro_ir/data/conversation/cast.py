@@ -43,8 +43,6 @@ class CastConversations(ConversationDataset, File):
             topics = json.load(fp)
 
         for topic in topics:
-            topic_number = topic["number"]
-
             if self.year == 2022:
                 yield from self._parse_tree(topic)
             else:

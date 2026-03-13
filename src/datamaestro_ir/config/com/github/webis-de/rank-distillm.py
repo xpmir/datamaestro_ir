@@ -17,7 +17,7 @@ from datamaestro import prepare_dataset
     url="https://github.com/webis-de/rank-distillm",
 )
 def msmarco_bm25_annotated(bm25__msmarco_passage_train_judged):
-    """Top 500 passages for all queries that have at least one relevance judgement 
+    """Top 500 passages for all queries that have at least one relevance judgement
     in the MS MARCO training query set retrieved by BM25.
     """
     return {
@@ -39,8 +39,11 @@ def msmarco_bm25_annotated(bm25__msmarco_passage_train_judged):
     url="https://github.com/webis-de/rank-distillm",
 )
 def msmarco_colbertv2_annotated(colbert__msmarco_passage_train_judged):
-    """Top 500 passages retrieved by ColBERTv2 for all queries in the MS MARCO training query set.
-    WARNING: not all 500 docs necessarily contains relevant documents. 
+    """Top 500 passages retrieved by ColBERTv2
+
+    for all queries in the MS MARCO training query set.
+
+    WARNING: not all 500 docs necessarily contains relevant documents.
     """
     return {
         "qrels": prepare_dataset("irds.msmarco-passage.train.qrels"),

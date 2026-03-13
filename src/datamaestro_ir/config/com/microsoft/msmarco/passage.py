@@ -147,7 +147,7 @@ class Documents(Dataset):
         doc_count=DOC_COUNT,
     )
 
-    # These files are not used directly by the document store, 
+    # These files are not used directly by the document store,
     # but they are needed by dev small queries and qrels
     files = FilesCopy(DOCUMENTS, {
         "queries.dev.small.tsv": "queries.dev.small.tsv",

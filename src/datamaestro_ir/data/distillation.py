@@ -7,11 +7,9 @@ from typing import (
     Iterable,
     Iterator,
     List,
-    Optional,
     Tuple,
     TypeVar,
 )
-import numpy as np
 
 from experimaestro import Config, Meta, Param
 from datamaestro.data import File
