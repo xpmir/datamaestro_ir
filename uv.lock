@@ -339,7 +339,7 @@ wheels = [
 
 [[package]]
 name = "datamaestro"
-version = "1.8.3"
+version = "1.9.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "bitmath" },
@@ -357,9 +357,9 @@ dependencies = [
     { name = "tqdm" },
     { name = "urllib3" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/2e/b7/3835a7454d65037be243967656828e433b10958f870dbd97213c7fa62dc4/datamaestro-1.8.3.tar.gz", hash = "sha256:0979c9fe3f82f938d28ede67cad4a31244d8471fe08440d4d2d78c6e94ef5d39", size = 204429, upload-time = "2026-03-09T09:34:19.101Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/10/82/702740d8cc683fdfac9b2139677fea12439aa2b5cc3598fa5e1530535bc5/datamaestro-1.9.0.tar.gz", hash = "sha256:726316067a834d80cc834a258c2d69b8099005f52def6e03ec16b8b7b7add775", size = 204504, upload-time = "2026-03-12T17:40:54.884Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/cc/94/42770cfd9e7148c9f5c37f2ed828cbef7aea5caf95feaba03056a73b31ff/datamaestro-1.8.3-py3-none-any.whl", hash = "sha256:f9d301df158f79c1466b3372c72646b0a854c820384eb682ff081fda3fcecef1", size = 85920, upload-time = "2026-03-09T09:34:17.532Z" },
+    { url = "https://files.pythonhosted.org/packages/35/a0/56e6a629bbfb068d5431df32415fec5ec8909595b3a101c5dd1753156b63/datamaestro-1.9.0-py3-none-any.whl", hash = "sha256:d16ff771db756a22a5f1759ba216ce2bdbb72dfc2f920a75109b5eda0dc2912e", size = 85954, upload-time = "2026-03-12T17:40:53.187Z" },
 ]
 
 [[package]]
@@ -402,7 +402,7 @@ ir = [
 [package.metadata]
 requires-dist = [
     { name = "attrs" },
-    { name = "datamaestro", specifier = ">=1.8.3" },
+    { name = "datamaestro", specifier = ">=1.9.0" },
     { name = "experimaestro", specifier = ">=2.0.0" },
     { name = "ir-datasets", specifier = ">=0.5.8" },
     { name = "typing-extensions" },
