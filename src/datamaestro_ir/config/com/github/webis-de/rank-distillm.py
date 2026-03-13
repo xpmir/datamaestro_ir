@@ -1,6 +1,7 @@
 # See documentation on https://datamaestro.readthedocs.io
 from hashlib import md5
-from datamaestro.definitions import Dataset, dataset, reference
+from datamaestro.definitions import Dataset, dataset
+from datamaestro.download import reference
 from datamaestro.download.single import FileDownloader
 from datamaestro.utils import HashCheck
 from datamaestro_ir.data.distillation import (
@@ -14,7 +15,9 @@ ZENODO_BASE = "https://zenodo.org/records/12528410/files/"
 
 @dataset(url="https://github.com/webis-de/rank-distillm")
 class MsmarcoBm25Annotated(Dataset):
-    """Top 500 passages for all queries that have at least one relevance judgement
+    """Top 500 BM25 passages for judged MS MARCO training queries
+
+    For all queries that have at least one relevance judgement
     in the MS MARCO training query set retrieved by BM25.
     """
 
@@ -67,7 +70,7 @@ class MsmarcoColbertv2Annotated(Dataset):
 
 @dataset(url="https://github.com/webis-de/rank-distillm")
 class RankzephyrBm25_10000Sampled100Annotated(Dataset):
-    """Top 100 passages retrieved by BM25 for 10k queries sampled from the MSMARCO training set.
+    """Top 100 BM25 passages reranked by RankZephyr for 10k sampled MSMARCO queries
 
     All passages are then reranked using RankZephyr and can be used for distillation.
     """
@@ -90,7 +93,7 @@ class RankzephyrBm25_10000Sampled100Annotated(Dataset):
 
 @dataset(url="https://github.com/webis-de/rank-distillm")
 class RankzephyrColbert10000Sampled100Annotated(Dataset):
-    """Top 100 passages retrieved by ColBERT for 10k queries sampled from the MSMARCO training set.
+    """Top 100 ColBERT passages reranked by RankZephyr for 10k sampled MSMARCO queries
 
     All passages are then reranked using RankZephyr and can be used for distillation.
     """
@@ -113,7 +116,7 @@ class RankzephyrColbert10000Sampled100Annotated(Dataset):
 
 @dataset(url="https://github.com/webis-de/rank-distillm")
 class RankzephyrColbert10000Sampled50Annotated(Dataset):
-    """Top 50 passages retrieved by ColBERT for 10k queries sampled from the MSMARCO training set.
+    """Top 50 ColBERT passages reranked by RankZephyr for 10k sampled MSMARCO queries
 
     All passages are then reranked using RankZephyr and can be used for distillation.
     """
@@ -136,7 +139,7 @@ class RankzephyrColbert10000Sampled50Annotated(Dataset):
 
 @dataset(url="https://github.com/webis-de/rank-distillm")
 class RankzephyrColbert10000Sampled10Annotated(Dataset):
-    """Top 10 passages retrieved by ColBERT for 10k queries sampled from the MSMARCO training set.
+    """Top 10 ColBERT passages reranked by RankZephyr for 10k sampled MSMARCO queries
 
     All passages are then reranked using RankZephyr and can be used for distillation.
     """
