@@ -1,7 +1,7 @@
 # Configuration
 
 site_name: Text Datasets
-repo_url: https://github.com/bpiwowar/datamaestro_text
+repo_url: https://github.com/bpiwowar/datamaestro_ir
 
 # Main pages
 nav:
@@ -17,8 +17,8 @@ plugins:
       repository: text
   - experimaestro:
       modules:
-        - api/ir.md: [datamaestro_text.data.ir]
-        - api.md: [datamaestro_text]
+        - api/ir.md: [datamaestro_ir.data.ir]
+        - api.md: [datamaestro_ir]
   - search
 
 # Theme
