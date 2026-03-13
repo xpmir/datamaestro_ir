@@ -55,7 +55,7 @@ class Test2025(Dataset):
     rewriting of the question.
     """
 
-    DOCUMENTS = reference(varname="documents", reference=Clueweb22)
+    DOCUMENTS = reference(Clueweb22)
     TOPICS = FileDownloader(
         "topics.json",
         "https://raw.githubusercontent.com/irlabamsterdam/iKAT/refs/heads/main/2025/data/2025_test_topics.json",
@@ -69,7 +69,7 @@ class Test2025(Dataset):
             ),
             # TODO: add when available
             assessments=TrecAdhocAssessments.C(path="/to/do"),
-            documents=self.DOCUMENTS.prepare(),
+            documents=self.DOCUMENTS.config(),
         )
 
 
@@ -82,7 +82,7 @@ class Test2025(Dataset):
 class Test2024(Dataset):
     """iKAT 2024 dataset"""
 
-    DOCUMENTS = reference(varname="documents", reference=Clueweb22)
+    DOCUMENTS = reference(Clueweb22)
     QRELS = FileDownloader(
         "qrels",
         "https://trec.nist.gov/data/ikat/2024-qrels.txt",
@@ -100,7 +100,7 @@ class Test2024(Dataset):
                 conversations=IkatConversations.C(path=self.TOPICS.path)
             ),
             assessments=TrecAdhocAssessments.C(path=self.QRELS.path),
-            documents=self.DOCUMENTS.prepare(),
+            documents=self.DOCUMENTS.config(),
         )
 
 
@@ -113,7 +113,7 @@ class Test2024(Dataset):
 class Test2023(Dataset):
     """iKAT 2023 dataset"""
 
-    DOCUMENTS = reference(varname="documents", reference=Clueweb22)
+    DOCUMENTS = reference(Clueweb22)
     QRELS = FileDownloader(
         "qrels",
         "https://trec.nist.gov/data/ikat/2023-qrels.all-turns.txt",
@@ -131,5 +131,5 @@ class Test2023(Dataset):
                 conversations=IkatConversations.C(path=self.TOPICS.path)
             ),
             assessments=TrecAdhocAssessments.C(path=self.QRELS.path),
-            documents=self.DOCUMENTS.prepare(),
+            documents=self.DOCUMENTS.config(),
         )

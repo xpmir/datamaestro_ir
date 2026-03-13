@@ -94,13 +94,13 @@ class Cord19Round5(Dataset):
     This is the primary test collection for ad hoc retrieval that is the outcome of all five rounds of TREC-COVID. The test set, called TREC-COVID Complete, consists of the Round 5 document set (July 16 release of CORD-19); the final set of 50 topics; and the cumulative judgments from all assessing rounds with CORD-UIDs mapped to July 16 ids if necessary, previously judged documents no longer in the July 16 release removed, and the last judgments for documents judged multiple times due to significant content changes between rounds. Note that no TREC-COVID submissions correspond to this collection since all TREC-COVID submissions were subject to residual collection evaluation.
     """
 
-    COLLECTION = reference(varname="collection", reference=Cord19Round5Metadata)
-    TOPICS = reference(varname="topics", reference=Cord19Round5Topics)
-    QRELS = reference(varname="qrels", reference=Cord19Round5Assessments)
+    COLLECTION = reference(Cord19Round5Metadata)
+    TOPICS = reference(Cord19Round5Topics)
+    QRELS = reference(Cord19Round5Assessments)
 
     def config(self) -> Adhoc:
         return Adhoc.C(
-            documents=self.COLLECTION.prepare(),
-            topics=self.TOPICS.prepare(),
-            assessments=self.QRELS.prepare(),
+            documents=self.COLLECTION.config(),
+            topics=self.TOPICS.config(),
+            assessments=self.QRELS.config(),
         )

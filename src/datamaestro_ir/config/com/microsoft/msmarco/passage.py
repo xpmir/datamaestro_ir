@@ -213,15 +213,15 @@ class TrainQrels(Dataset):
 class Train(Dataset):
     """MS-Marco train dataset"""
 
-    COLLECTION = reference(varname="collection", reference=Documents)
-    TOPICS = reference(varname="topics", reference=TrainQueries)
-    QRELS = reference(varname="qrels", reference=TrainQrels)
+    COLLECTION = reference(Documents)
+    TOPICS = reference(TrainQueries)
+    QRELS = reference(TrainQrels)
 
     def config(self) -> Adhoc:
         return Adhoc.C(
-            documents=self.COLLECTION.prepare(),
-            topics=self.TOPICS.prepare(),
-            assessments=self.QRELS.prepare(),
+            documents=self.COLLECTION.config(),
+            topics=self.TOPICS.config(),
+            assessments=self.QRELS.config(),
         )
 
 
@@ -231,12 +231,12 @@ class Train(Dataset):
 class TrainWithrun(Dataset):
     """MSMarco train dataset, including the top-1000 to documents to re-rank"""
 
-    TRAIN = reference(varname="train", reference=Train)
-    RUN = reference(varname="run", reference=TrainRun)
+    TRAIN = reference(Train)
+    RUN = reference(TrainRun)
 
     def config(self) -> RerankAdhoc:
-        train = self.TRAIN.prepare()
-        return RerankAdhoc.C(**train.__arguments__(), run=self.RUN.prepare())
+        train = self.TRAIN.config()
+        return RerankAdhoc.C(**train.__arguments__(), run=self.RUN.config())
 
 
 # Training triplets
@@ -349,15 +349,15 @@ class DevQrels(Dataset):
 class Dev(Dataset):
     """MS-Marco dev dataset"""
 
-    COLLECTION = reference(varname="collection", reference=Documents)
-    TOPICS = reference(varname="topics", reference=DevQueries)
-    QRELS = reference(varname="qrels", reference=DevQrels)
+    COLLECTION = reference(Documents)
+    TOPICS = reference(DevQueries)
+    QRELS = reference(DevQrels)
 
     def config(self) -> Adhoc:
         return Adhoc.C(
-            documents=self.COLLECTION.prepare(),
-            topics=self.TOPICS.prepare(),
-            assessments=self.QRELS.prepare(),
+            documents=self.COLLECTION.config(),
+            topics=self.TOPICS.config(),
+            assessments=self.QRELS.config(),
         )
 
 
@@ -367,12 +367,12 @@ class Dev(Dataset):
 class DevWithrun(Dataset):
     """MSMarco dev dataset, including the top-1000 to documents to re-rank"""
 
-    DEV = reference(varname="dev", reference=Dev)
-    RUN = reference(varname="run", reference=DevRun)
+    DEV = reference(Dev)
+    RUN = reference(DevRun)
 
     def config(self) -> RerankAdhoc:
-        dev = self.DEV.prepare()
-        return RerankAdhoc.C(**dev.__arguments__(), run=self.RUN.prepare())
+        dev = self.DEV.config()
+        return RerankAdhoc.C(**dev.__arguments__(), run=self.RUN.config())
 
 
 @lua
@@ -381,21 +381,21 @@ class DevWithrun(Dataset):
 class DevJudged(Dataset):
     """MS-Marco dev dataset, restricted to judged queries"""
 
-    COLLECTION = reference(varname="collection", reference=Documents)
-    TOPICS = reference(varname="topics", reference=DevQueries)
-    QRELS = reference(varname="qrels", reference=DevQrels)
+    COLLECTION = reference(Documents)
+    TOPICS = reference(DevQueries)
+    QRELS = reference(DevQrels)
     JUDGED_QIDS = judged_qids(QRELS)
 
     def config(self) -> Adhoc:
         from datamaestro_ir.data import FilteredTopics
 
         return Adhoc.C(
-            documents=self.COLLECTION.prepare(),
+            documents=self.COLLECTION.config(),
             topics=FilteredTopics.C(
-                topics=[self.TOPICS.prepare()],
+                topics=[self.TOPICS.config()],
                 qids_path=self.JUDGED_QIDS.path,
             ),
-            assessments=self.QRELS.prepare(),
+            assessments=self.QRELS.config(),
         )
 
 
@@ -424,15 +424,14 @@ class EvalWithrun(Dataset):
 class DevSmall(Dataset):
     """MS-Marco dev small dataset"""
 
-    COLLECTION = reference(varname="collection", reference=Documents)
+    COLLECTION = reference(Documents)
 
     def config(self) -> Adhoc:
-        col = Documents.__dataset__
         return Adhoc.C(
-            documents=self.COLLECTION.prepare(),
-            topics=Topics.C(path=col.datapath / "files" / "queries.dev.small.tsv"),
+            documents=self.COLLECTION.config(),
+            topics=Topics.C(path=Documents.data_path / "files" / "queries.dev.small.tsv"),
             assessments=TrecAdhocAssessments.C(
-                path=col.datapath / "files" / "qrels.dev.small.tsv"
+                path=Documents.data_path / "files" / "qrels.dev.small.tsv"
             ),
         )
 
@@ -443,11 +442,10 @@ class DevSmall(Dataset):
 class EvalQueriesSmall(Dataset):
     """MS-Marco eval small queries"""
 
-    COLLECTION = reference(varname="collection", reference=Documents)
+    COLLECTION = reference(Documents)
 
     def config(self) -> Topics:
-        col = Documents.__dataset__
-        return Topics.C(path=col.datapath / "files" / "queries.eval.small.tsv")
+        return Topics.C(path=Documents.data_path / "files" / "queries.eval.small.tsv")
 
 
 # ---
@@ -499,15 +497,15 @@ class Trec2019Qrels(Dataset):
 class Trec2019(Dataset):
     "TREC Deep Learning (2019)"
 
-    COLLECTION = reference(varname="collection", reference=Documents)
-    TOPICS = reference(varname="topics", reference=Trec2019Queries)
-    QRELS = reference(varname="qrels", reference=Trec2019Qrels)
+    COLLECTION = reference(Documents)
+    TOPICS = reference(Trec2019Queries)
+    QRELS = reference(Trec2019Qrels)
 
     def config(self) -> Adhoc:
         return Adhoc.C(
-            documents=self.COLLECTION.prepare(),
-            topics=self.TOPICS.prepare(),
-            assessments=self.QRELS.prepare(),
+            documents=self.COLLECTION.config(),
+            topics=self.TOPICS.config(),
+            assessments=self.QRELS.config(),
         )
 
 
@@ -517,12 +515,12 @@ class Trec2019(Dataset):
 class Trec2019Withrun(Dataset):
     """TREC Deep Learning (2019), including the top-1000 to documents to re-rank"""
 
-    TREC2019 = reference(varname="trec2019", reference=Trec2019)
-    RUN = reference(varname="run", reference=Trec2019Run)
+    TREC2019 = reference(Trec2019)
+    RUN = reference(Trec2019Run)
 
     def config(self) -> RerankAdhoc:
-        trec2019 = self.TREC2019.prepare()
-        return RerankAdhoc.C(**trec2019.__arguments__(), run=self.RUN.prepare())
+        trec2019 = self.TREC2019.config()
+        return RerankAdhoc.C(**trec2019.__arguments__(), run=self.RUN.config())
 
 
 @lua
@@ -531,21 +529,21 @@ class Trec2019Withrun(Dataset):
 class Trec2019Judged(Dataset):
     """TREC Deep Learning (2019), restricted to judged queries"""
 
-    COLLECTION = reference(varname="collection", reference=Documents)
-    TOPICS = reference(varname="topics", reference=Trec2019Queries)
-    QRELS = reference(varname="qrels", reference=Trec2019Qrels)
+    COLLECTION = reference(Documents)
+    TOPICS = reference(Trec2019Queries)
+    QRELS = reference(Trec2019Qrels)
     JUDGED_QIDS = judged_qids(QRELS)
 
     def config(self) -> Adhoc:
         from datamaestro_ir.data import FilteredTopics
 
         return Adhoc.C(
-            documents=self.COLLECTION.prepare(),
+            documents=self.COLLECTION.config(),
             topics=FilteredTopics.C(
-                topics=[self.TOPICS.prepare()],
+                topics=[self.TOPICS.config()],
                 qids_path=self.JUDGED_QIDS.path,
             ),
-            assessments=self.QRELS.prepare(),
+            assessments=self.QRELS.config(),
         )
 
 
@@ -611,15 +609,15 @@ class Trec2020Qrels(Dataset):
 class Trec2020(Dataset):
     "TREC Deep Learning (2020)"
 
-    COLLECTION = reference(varname="collection", reference=Documents)
-    TOPICS = reference(varname="topics", reference=Trec2020Queries)
-    QRELS = reference(varname="qrels", reference=Trec2020Qrels)
+    COLLECTION = reference(Documents)
+    TOPICS = reference(Trec2020Queries)
+    QRELS = reference(Trec2020Qrels)
 
     def config(self) -> Adhoc:
         return Adhoc.C(
-            documents=self.COLLECTION.prepare(),
-            topics=self.TOPICS.prepare(),
-            assessments=self.QRELS.prepare(),
+            documents=self.COLLECTION.config(),
+            topics=self.TOPICS.config(),
+            assessments=self.QRELS.config(),
         )
 
 
@@ -629,12 +627,12 @@ class Trec2020(Dataset):
 class Trec2020Withrun(Dataset):
     """TREC Deep Learning (2020), including the top-1000 to documents to re-rank"""
 
-    TREC2020 = reference(varname="trec2020", reference=Trec2020)
-    RUN = reference(varname="run", reference=Trec2020Run)
+    TREC2020 = reference(Trec2020)
+    RUN = reference(Trec2020Run)
 
     def config(self) -> RerankAdhoc:
-        trec2020 = self.TREC2020.prepare()
-        return RerankAdhoc.C(**trec2020.__arguments__(), run=self.RUN.prepare())
+        trec2020 = self.TREC2020.config()
+        return RerankAdhoc.C(**trec2020.__arguments__(), run=self.RUN.config())
 
 
 @lua
@@ -643,21 +641,21 @@ class Trec2020Withrun(Dataset):
 class Trec2020Judged(Dataset):
     """TREC Deep Learning (2020), restricted to judged queries"""
 
-    COLLECTION = reference(varname="collection", reference=Documents)
-    TOPICS = reference(varname="topics", reference=Trec2020Queries)
-    QRELS = reference(varname="qrels", reference=Trec2020Qrels)
+    COLLECTION = reference(Documents)
+    TOPICS = reference(Trec2020Queries)
+    QRELS = reference(Trec2020Qrels)
     JUDGED_QIDS = judged_qids(QRELS)
 
     def config(self) -> Adhoc:
         from datamaestro_ir.data import FilteredTopics
 
         return Adhoc.C(
-            documents=self.COLLECTION.prepare(),
+            documents=self.COLLECTION.config(),
             topics=FilteredTopics.C(
-                topics=[self.TOPICS.prepare()],
+                topics=[self.TOPICS.config()],
                 qids_path=self.JUDGED_QIDS.path,
             ),
-            assessments=self.QRELS.prepare(),
+            assessments=self.QRELS.config(),
         )
 
 
@@ -692,10 +690,10 @@ class TrecDlHard(Dataset):
     Learning Dataset", SIGIR 2021.
     """
 
-    COLLECTION = reference(varname="collection", reference=Documents)
-    TOPICS_2019 = reference(varname="topics_2019", reference=Trec2019Queries)
-    TOPICS_2020 = reference(varname="topics_2020", reference=Trec2020Queries)
-    QRELS = reference(varname="qrels", reference=TrecDlHardQrels)
+    COLLECTION = reference(Documents)
+    TOPICS_2019 = reference(Trec2019Queries)
+    TOPICS_2020 = reference(Trec2020Queries)
+    QRELS = reference(TrecDlHardQrels)
 
     # From https://github.com/grill-lab/DL-Hard/blob/main/dataset/folds.json
     HARD_QIDS = qids_file("hard_qids", [
@@ -713,13 +711,13 @@ class TrecDlHard(Dataset):
         from datamaestro_ir.data import FilteredTopics
 
         return Adhoc.C(
-            documents=self.COLLECTION.prepare(),
+            documents=self.COLLECTION.config(),
             topics=FilteredTopics.C(
                 topics=[
-                    self.TOPICS_2019.prepare(),
-                    self.TOPICS_2020.prepare(),
+                    self.TOPICS_2019.config(),
+                    self.TOPICS_2020.config(),
                 ],
                 qids_path=self.HARD_QIDS.path,
             ),
-            assessments=self.QRELS.prepare(),
+            assessments=self.QRELS.config(),
         )

@@ -56,16 +56,16 @@ class CastV0Documents(Dataset):
     (``MARCO_`` prefix), and CAR v2.0 paragraphs (``CAR_`` prefix).
     """
 
-    WAPO = reference(varname="wapo", reference=WapoV2Passages)
-    MSMARCO = reference(varname="msmarco", reference=MsMarcoPassages)
-    CAR = reference(varname="car", reference=CarDocuments)
+    WAPO = reference(WapoV2Passages)
+    MSMARCO = reference(MsMarcoPassages)
+    CAR = reference(CarDocuments)
 
     def config(self) -> PrefixedDocumentStore:
         return PrefixedDocumentStore.C(
             sources=[
-                self.WAPO.prepare(),
-                self.MSMARCO.prepare(),
-                self.CAR.prepare(),
+                self.WAPO.config(),
+                self.MSMARCO.config(),
+                self.CAR.config(),
             ],
             prefixes=["WAPO_", "MARCO_", "CAR_"],
         )
@@ -79,14 +79,14 @@ class CastV1Documents(Dataset):
     (``CAR_`` prefix).
     """
 
-    MSMARCO = reference(varname="msmarco", reference=MsMarcoPassages)
-    CAR = reference(varname="car", reference=CarDocuments)
+    MSMARCO = reference(MsMarcoPassages)
+    CAR = reference(CarDocuments)
 
     def config(self) -> PrefixedDocumentStore:
         return PrefixedDocumentStore.C(
             sources=[
-                self.MSMARCO.prepare(),
-                self.CAR.prepare(),
+                self.MSMARCO.config(),
+                self.CAR.config(),
             ],
             prefixes=["MARCO_", "CAR_"],
         )
@@ -101,9 +101,9 @@ class CastV2Documents(Dataset):
     into passages using pre-computed character offsets.
     """
 
-    MSMARCO = reference(varname="msmarco", reference=MsMarcoDocumentsV1)
-    WAPO = reference(varname="wapo", reference=WapoV4Documents)
-    KILT = reference(varname="kilt", reference=KiltDocuments)
+    MSMARCO = reference(MsMarcoDocumentsV1)
+    WAPO = reference(WapoV4Documents)
+    KILT = reference(KiltDocuments)
 
     MSMARCO_OFFSETS = FileDownloader(
         "MARCO_v1.chunks.jsonl.gz",
@@ -135,17 +135,17 @@ class CastV2Documents(Dataset):
         return PrefixedDocumentStore.C(
             sources=[
                 CastSegmentedPassageStore.C(
-                    base_store=self.MSMARCO.prepare(),
+                    base_store=self.MSMARCO.config(),
                     offsets_path=self.MSMARCO_OFFSETS.path,
                     dupes_path=self.MSMARCO_DUPES.path,
                 ),
                 CastSegmentedPassageStore.C(
-                    base_store=self.WAPO.prepare(),
+                    base_store=self.WAPO.config(),
                     offsets_path=self.WAPO_OFFSETS.path,
                     dupes_path=self.WAPO_DUPES.path,
                 ),
                 CastSegmentedPassageStore.C(
-                    base_store=self.KILT.prepare(),
+                    base_store=self.KILT.config(),
                     offsets_path=self.KILT_OFFSETS.path,
                 ),
             ],
@@ -162,9 +162,9 @@ class CastV3Documents(Dataset):
     offsets and a shared duplicate list.
     """
 
-    MSMARCO = reference(varname="msmarco", reference=MsMarcoDocumentsV2)
-    WAPO = reference(varname="wapo", reference=WapoV4Documents)
-    KILT = reference(varname="kilt", reference=KiltDocuments)
+    MSMARCO = reference(MsMarcoDocumentsV2)
+    WAPO = reference(WapoV4Documents)
+    KILT = reference(KiltDocuments)
 
     MSMARCO_OFFSETS = FileDownloader(
         "MARCO_v2.chunks.jsonl.gz",
@@ -192,17 +192,17 @@ class CastV3Documents(Dataset):
         return PrefixedDocumentStore.C(
             sources=[
                 CastSegmentedPassageStore.C(
-                    base_store=self.MSMARCO.prepare(),
+                    base_store=self.MSMARCO.config(),
                     offsets_path=self.MSMARCO_OFFSETS.path,
                     dupes_path=dupes_path,
                 ),
                 CastSegmentedPassageStore.C(
-                    base_store=self.WAPO.prepare(),
+                    base_store=self.WAPO.config(),
                     offsets_path=self.WAPO_OFFSETS.path,
                     dupes_path=dupes_path,
                 ),
                 CastSegmentedPassageStore.C(
-                    base_store=self.KILT.prepare(),
+                    base_store=self.KILT.config(),
                     offsets_path=self.KILT_OFFSETS.path,
                     dupes_path=dupes_path,
                 ),
@@ -229,7 +229,7 @@ class Train2019(Dataset):
     v0 document collection (WAPO v2 paragraphs + MS MARCO passages + CAR).
     """
 
-    DOCUMENTS = reference(varname="documents", reference=CastV0Documents)
+    DOCUMENTS = reference(CastV0Documents)
     TOPICS = FileDownloader(
         "train_topics_v1.0.json",
         url="https://raw.githubusercontent.com/daltonj/treccastweb/master/2019/data/training/train_topics_v1.0.json",
@@ -249,7 +249,7 @@ class Train2019(Dataset):
                 )
             ),
             assessments=TrecAdhocAssessments.C(path=self.QRELS.path),
-            documents=self.DOCUMENTS.prepare(),
+            documents=self.DOCUMENTS.config(),
         )
 
 
@@ -266,7 +266,7 @@ class Test2019(Dataset):
     Uses the v1 document collection (MS MARCO passages + CAR).
     """
 
-    DOCUMENTS = reference(varname="documents", reference=CastV1Documents)
+    DOCUMENTS = reference(CastV1Documents)
     TOPICS = FileDownloader(
         "evaluation_topics_v1.0.json",
         url="https://raw.githubusercontent.com/daltonj/treccastweb/master/2019/data/evaluation/evaluation_topics_v1.0.json",
@@ -286,7 +286,7 @@ class Test2019(Dataset):
                 )
             ),
             assessments=TrecAdhocAssessments.C(path=self.QRELS.path),
-            documents=self.DOCUMENTS.prepare(),
+            documents=self.DOCUMENTS.config(),
         )
 
 
@@ -304,7 +304,7 @@ class Test2020(Dataset):
     (MS MARCO passages + CAR).
     """
 
-    DOCUMENTS = reference(varname="documents", reference=CastV1Documents)
+    DOCUMENTS = reference(CastV1Documents)
     TOPICS = FileDownloader(
         "2020_manual_evaluation_topics_v1.0.json",
         url="https://raw.githubusercontent.com/daltonj/treccastweb/master/2020/2020_manual_evaluation_topics_v1.0.json",
@@ -324,7 +324,7 @@ class Test2020(Dataset):
                 )
             ),
             assessments=TrecAdhocAssessments.C(path=self.QRELS.path),
-            documents=self.DOCUMENTS.prepare(),
+            documents=self.DOCUMENTS.config(),
         )
 
 
@@ -342,7 +342,7 @@ class Test2021(Dataset):
     segmented into passages).
     """
 
-    DOCUMENTS = reference(varname="documents", reference=CastV2Documents)
+    DOCUMENTS = reference(CastV2Documents)
     TOPICS = FileDownloader(
         "2021_manual_evaluation_topics_v1.0.json",
         url="https://raw.githubusercontent.com/daltonj/treccastweb/master/2021/2021_manual_evaluation_topics_v1.0.json",
@@ -362,7 +362,7 @@ class Test2021(Dataset):
                 )
             ),
             assessments=TrecAdhocAssessments.C(path=self.QRELS.path),
-            documents=self.DOCUMENTS.prepare(),
+            documents=self.DOCUMENTS.config(),
         )
 
 
@@ -380,7 +380,7 @@ class Test2022(Dataset):
     segmented into passages).
     """
 
-    DOCUMENTS = reference(varname="documents", reference=CastV3Documents)
+    DOCUMENTS = reference(CastV3Documents)
     TOPICS = FileDownloader(
         "2022_evaluation_topics_tree_v1.0.json",
         url="https://raw.githubusercontent.com/daltonj/treccastweb/master/2022/2022_evaluation_topics_tree_v1.0.json",
@@ -400,5 +400,5 @@ class Test2022(Dataset):
                 )
             ),
             assessments=TrecAdhocAssessments.C(path=self.QRELS.path),
-            documents=self.DOCUMENTS.prepare(),
+            documents=self.DOCUMENTS.config(),
         )

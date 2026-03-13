@@ -254,51 +254,48 @@ class NfcorpusCollection(Dataset):
 @datatasks("information retrieval")
 @dataset(url="https://github.com/beir-cellar/beir")
 class NfcorpusTrain(Dataset):
-    COLLECTION = reference(varname="collection", reference=NfcorpusCollection)
+    COLLECTION = reference(NfcorpusCollection)
 
     def config(self) -> Adhoc:
-        col = NfcorpusCollection.__dataset__
         return Adhoc.C(
-            documents=self.COLLECTION.prepare(),
+            documents=self.COLLECTION.config(),
             topics=FilteredTopics.C(
-                topics=[BeirTopics.C(path=col.datapath / "queries.jsonl")],
-                qids_path=col.datapath / "judged_qids_train.txt",
+                topics=[BeirTopics.C(path=NfcorpusCollection.data_path / "queries.jsonl")],
+                qids_path=NfcorpusCollection.data_path / "judged_qids_train.txt",
             ),
-            assessments=BeirAssessments.C(path=col.datapath / "train.tsv"),
+            assessments=BeirAssessments.C(path=NfcorpusCollection.data_path / "train.tsv"),
         )
 
 
 @datatasks("information retrieval")
 @dataset(url="https://github.com/beir-cellar/beir")
 class NfcorpusDev(Dataset):
-    COLLECTION = reference(varname="collection", reference=NfcorpusCollection)
+    COLLECTION = reference(NfcorpusCollection)
 
     def config(self) -> Adhoc:
-        col = NfcorpusCollection.__dataset__
         return Adhoc.C(
-            documents=self.COLLECTION.prepare(),
+            documents=self.COLLECTION.config(),
             topics=FilteredTopics.C(
-                topics=[BeirTopics.C(path=col.datapath / "queries.jsonl")],
-                qids_path=col.datapath / "judged_qids_dev.txt",
+                topics=[BeirTopics.C(path=NfcorpusCollection.data_path / "queries.jsonl")],
+                qids_path=NfcorpusCollection.data_path / "judged_qids_dev.txt",
             ),
-            assessments=BeirAssessments.C(path=col.datapath / "dev.tsv"),
+            assessments=BeirAssessments.C(path=NfcorpusCollection.data_path / "dev.tsv"),
         )
 
 
 @datatasks("information retrieval")
 @dataset(url="https://github.com/beir-cellar/beir")
 class NfcorpusTest(Dataset):
-    COLLECTION = reference(varname="collection", reference=NfcorpusCollection)
+    COLLECTION = reference(NfcorpusCollection)
 
     def config(self) -> Adhoc:
-        col = NfcorpusCollection.__dataset__
         return Adhoc.C(
-            documents=self.COLLECTION.prepare(),
+            documents=self.COLLECTION.config(),
             topics=FilteredTopics.C(
-                topics=[BeirTopics.C(path=col.datapath / "queries.jsonl")],
-                qids_path=col.datapath / "judged_qids_test.txt",
+                topics=[BeirTopics.C(path=NfcorpusCollection.data_path / "queries.jsonl")],
+                qids_path=NfcorpusCollection.data_path / "judged_qids_test.txt",
             ),
-            assessments=BeirAssessments.C(path=col.datapath / "test.tsv"),
+            assessments=BeirAssessments.C(path=NfcorpusCollection.data_path / "test.tsv"),
         )
 
 
@@ -324,51 +321,48 @@ class HotpotqaCollection(Dataset):
 @datatasks("information retrieval")
 @dataset(url="https://github.com/beir-cellar/beir")
 class HotpotqaTrain(Dataset):
-    COLLECTION = reference(varname="collection", reference=HotpotqaCollection)
+    COLLECTION = reference(HotpotqaCollection)
 
     def config(self) -> Adhoc:
-        col = HotpotqaCollection.__dataset__
         return Adhoc.C(
-            documents=self.COLLECTION.prepare(),
+            documents=self.COLLECTION.config(),
             topics=FilteredTopics.C(
-                topics=[BeirTopics.C(path=col.datapath / "queries.jsonl")],
-                qids_path=col.datapath / "judged_qids_train.txt",
+                topics=[BeirTopics.C(path=HotpotqaCollection.data_path / "queries.jsonl")],
+                qids_path=HotpotqaCollection.data_path / "judged_qids_train.txt",
             ),
-            assessments=BeirAssessments.C(path=col.datapath / "train.tsv"),
+            assessments=BeirAssessments.C(path=HotpotqaCollection.data_path / "train.tsv"),
         )
 
 
 @datatasks("information retrieval")
 @dataset(url="https://github.com/beir-cellar/beir")
 class HotpotqaDev(Dataset):
-    COLLECTION = reference(varname="collection", reference=HotpotqaCollection)
+    COLLECTION = reference(HotpotqaCollection)
 
     def config(self) -> Adhoc:
-        col = HotpotqaCollection.__dataset__
         return Adhoc.C(
-            documents=self.COLLECTION.prepare(),
+            documents=self.COLLECTION.config(),
             topics=FilteredTopics.C(
-                topics=[BeirTopics.C(path=col.datapath / "queries.jsonl")],
-                qids_path=col.datapath / "judged_qids_dev.txt",
+                topics=[BeirTopics.C(path=HotpotqaCollection.data_path / "queries.jsonl")],
+                qids_path=HotpotqaCollection.data_path / "judged_qids_dev.txt",
             ),
-            assessments=BeirAssessments.C(path=col.datapath / "dev.tsv"),
+            assessments=BeirAssessments.C(path=HotpotqaCollection.data_path / "dev.tsv"),
         )
 
 
 @datatasks("information retrieval")
 @dataset(url="https://github.com/beir-cellar/beir")
 class HotpotqaTest(Dataset):
-    COLLECTION = reference(varname="collection", reference=HotpotqaCollection)
+    COLLECTION = reference(HotpotqaCollection)
 
     def config(self) -> Adhoc:
-        col = HotpotqaCollection.__dataset__
         return Adhoc.C(
-            documents=self.COLLECTION.prepare(),
+            documents=self.COLLECTION.config(),
             topics=FilteredTopics.C(
-                topics=[BeirTopics.C(path=col.datapath / "queries.jsonl")],
-                qids_path=col.datapath / "judged_qids_test.txt",
+                topics=[BeirTopics.C(path=HotpotqaCollection.data_path / "queries.jsonl")],
+                qids_path=HotpotqaCollection.data_path / "judged_qids_test.txt",
             ),
-            assessments=BeirAssessments.C(path=col.datapath / "test.tsv"),
+            assessments=BeirAssessments.C(path=HotpotqaCollection.data_path / "test.tsv"),
         )
 
 
@@ -394,51 +388,48 @@ class FiqaCollection(Dataset):
 @datatasks("information retrieval")
 @dataset(url="https://github.com/beir-cellar/beir")
 class FiqaTrain(Dataset):
-    COLLECTION = reference(varname="collection", reference=FiqaCollection)
+    COLLECTION = reference(FiqaCollection)
 
     def config(self) -> Adhoc:
-        col = FiqaCollection.__dataset__
         return Adhoc.C(
-            documents=self.COLLECTION.prepare(),
+            documents=self.COLLECTION.config(),
             topics=FilteredTopics.C(
-                topics=[BeirTopics.C(path=col.datapath / "queries.jsonl")],
-                qids_path=col.datapath / "judged_qids_train.txt",
+                topics=[BeirTopics.C(path=FiqaCollection.data_path / "queries.jsonl")],
+                qids_path=FiqaCollection.data_path / "judged_qids_train.txt",
             ),
-            assessments=BeirAssessments.C(path=col.datapath / "train.tsv"),
+            assessments=BeirAssessments.C(path=FiqaCollection.data_path / "train.tsv"),
         )
 
 
 @datatasks("information retrieval")
 @dataset(url="https://github.com/beir-cellar/beir")
 class FiqaDev(Dataset):
-    COLLECTION = reference(varname="collection", reference=FiqaCollection)
+    COLLECTION = reference(FiqaCollection)
 
     def config(self) -> Adhoc:
-        col = FiqaCollection.__dataset__
         return Adhoc.C(
-            documents=self.COLLECTION.prepare(),
+            documents=self.COLLECTION.config(),
             topics=FilteredTopics.C(
-                topics=[BeirTopics.C(path=col.datapath / "queries.jsonl")],
-                qids_path=col.datapath / "judged_qids_dev.txt",
+                topics=[BeirTopics.C(path=FiqaCollection.data_path / "queries.jsonl")],
+                qids_path=FiqaCollection.data_path / "judged_qids_dev.txt",
             ),
-            assessments=BeirAssessments.C(path=col.datapath / "dev.tsv"),
+            assessments=BeirAssessments.C(path=FiqaCollection.data_path / "dev.tsv"),
         )
 
 
 @datatasks("information retrieval")
 @dataset(url="https://github.com/beir-cellar/beir")
 class FiqaTest(Dataset):
-    COLLECTION = reference(varname="collection", reference=FiqaCollection)
+    COLLECTION = reference(FiqaCollection)
 
     def config(self) -> Adhoc:
-        col = FiqaCollection.__dataset__
         return Adhoc.C(
-            documents=self.COLLECTION.prepare(),
+            documents=self.COLLECTION.config(),
             topics=FilteredTopics.C(
-                topics=[BeirTopics.C(path=col.datapath / "queries.jsonl")],
-                qids_path=col.datapath / "judged_qids_test.txt",
+                topics=[BeirTopics.C(path=FiqaCollection.data_path / "queries.jsonl")],
+                qids_path=FiqaCollection.data_path / "judged_qids_test.txt",
             ),
-            assessments=BeirAssessments.C(path=col.datapath / "test.tsv"),
+            assessments=BeirAssessments.C(path=FiqaCollection.data_path / "test.tsv"),
         )
 
 
@@ -463,34 +454,32 @@ class QuoraCollection(Dataset):
 @datatasks("information retrieval")
 @dataset(url="https://github.com/beir-cellar/beir")
 class QuoraDev(Dataset):
-    COLLECTION = reference(varname="collection", reference=QuoraCollection)
+    COLLECTION = reference(QuoraCollection)
 
     def config(self) -> Adhoc:
-        col = QuoraCollection.__dataset__
         return Adhoc.C(
-            documents=self.COLLECTION.prepare(),
+            documents=self.COLLECTION.config(),
             topics=FilteredTopics.C(
-                topics=[BeirTopics.C(path=col.datapath / "queries.jsonl")],
-                qids_path=col.datapath / "judged_qids_dev.txt",
+                topics=[BeirTopics.C(path=QuoraCollection.data_path / "queries.jsonl")],
+                qids_path=QuoraCollection.data_path / "judged_qids_dev.txt",
             ),
-            assessments=BeirAssessments.C(path=col.datapath / "dev.tsv"),
+            assessments=BeirAssessments.C(path=QuoraCollection.data_path / "dev.tsv"),
         )
 
 
 @datatasks("information retrieval")
 @dataset(url="https://github.com/beir-cellar/beir")
 class QuoraTest(Dataset):
-    COLLECTION = reference(varname="collection", reference=QuoraCollection)
+    COLLECTION = reference(QuoraCollection)
 
     def config(self) -> Adhoc:
-        col = QuoraCollection.__dataset__
         return Adhoc.C(
-            documents=self.COLLECTION.prepare(),
+            documents=self.COLLECTION.config(),
             topics=FilteredTopics.C(
-                topics=[BeirTopics.C(path=col.datapath / "queries.jsonl")],
-                qids_path=col.datapath / "judged_qids_test.txt",
+                topics=[BeirTopics.C(path=QuoraCollection.data_path / "queries.jsonl")],
+                qids_path=QuoraCollection.data_path / "judged_qids_test.txt",
             ),
-            assessments=BeirAssessments.C(path=col.datapath / "test.tsv"),
+            assessments=BeirAssessments.C(path=QuoraCollection.data_path / "test.tsv"),
         )
 
 
@@ -515,38 +504,32 @@ class DbpediaEntityCollection(Dataset):
 @datatasks("information retrieval")
 @dataset(url="https://github.com/beir-cellar/beir")
 class DbpediaEntityDev(Dataset):
-    COLLECTION = reference(
-        varname="collection", reference=DbpediaEntityCollection
-    )
+    COLLECTION = reference(DbpediaEntityCollection)
 
     def config(self) -> Adhoc:
-        col = DbpediaEntityCollection.__dataset__
         return Adhoc.C(
-            documents=self.COLLECTION.prepare(),
+            documents=self.COLLECTION.config(),
             topics=FilteredTopics.C(
-                topics=[BeirTopics.C(path=col.datapath / "queries.jsonl")],
-                qids_path=col.datapath / "judged_qids_dev.txt",
+                topics=[BeirTopics.C(path=DbpediaEntityCollection.data_path / "queries.jsonl")],
+                qids_path=DbpediaEntityCollection.data_path / "judged_qids_dev.txt",
             ),
-            assessments=BeirAssessments.C(path=col.datapath / "dev.tsv"),
+            assessments=BeirAssessments.C(path=DbpediaEntityCollection.data_path / "dev.tsv"),
         )
 
 
 @datatasks("information retrieval")
 @dataset(url="https://github.com/beir-cellar/beir")
 class DbpediaEntityTest(Dataset):
-    COLLECTION = reference(
-        varname="collection", reference=DbpediaEntityCollection
-    )
+    COLLECTION = reference(DbpediaEntityCollection)
 
     def config(self) -> Adhoc:
-        col = DbpediaEntityCollection.__dataset__
         return Adhoc.C(
-            documents=self.COLLECTION.prepare(),
+            documents=self.COLLECTION.config(),
             topics=FilteredTopics.C(
-                topics=[BeirTopics.C(path=col.datapath / "queries.jsonl")],
-                qids_path=col.datapath / "judged_qids_test.txt",
+                topics=[BeirTopics.C(path=DbpediaEntityCollection.data_path / "queries.jsonl")],
+                qids_path=DbpediaEntityCollection.data_path / "judged_qids_test.txt",
             ),
-            assessments=BeirAssessments.C(path=col.datapath / "test.tsv"),
+            assessments=BeirAssessments.C(path=DbpediaEntityCollection.data_path / "test.tsv"),
         )
 
 
@@ -572,51 +555,48 @@ class FeverCollection(Dataset):
 @datatasks("information retrieval")
 @dataset(url="https://github.com/beir-cellar/beir")
 class FeverTrain(Dataset):
-    COLLECTION = reference(varname="collection", reference=FeverCollection)
+    COLLECTION = reference(FeverCollection)
 
     def config(self) -> Adhoc:
-        col = FeverCollection.__dataset__
         return Adhoc.C(
-            documents=self.COLLECTION.prepare(),
+            documents=self.COLLECTION.config(),
             topics=FilteredTopics.C(
-                topics=[BeirTopics.C(path=col.datapath / "queries.jsonl")],
-                qids_path=col.datapath / "judged_qids_train.txt",
+                topics=[BeirTopics.C(path=FeverCollection.data_path / "queries.jsonl")],
+                qids_path=FeverCollection.data_path / "judged_qids_train.txt",
             ),
-            assessments=BeirAssessments.C(path=col.datapath / "train.tsv"),
+            assessments=BeirAssessments.C(path=FeverCollection.data_path / "train.tsv"),
         )
 
 
 @datatasks("information retrieval")
 @dataset(url="https://github.com/beir-cellar/beir")
 class FeverDev(Dataset):
-    COLLECTION = reference(varname="collection", reference=FeverCollection)
+    COLLECTION = reference(FeverCollection)
 
     def config(self) -> Adhoc:
-        col = FeverCollection.__dataset__
         return Adhoc.C(
-            documents=self.COLLECTION.prepare(),
+            documents=self.COLLECTION.config(),
             topics=FilteredTopics.C(
-                topics=[BeirTopics.C(path=col.datapath / "queries.jsonl")],
-                qids_path=col.datapath / "judged_qids_dev.txt",
+                topics=[BeirTopics.C(path=FeverCollection.data_path / "queries.jsonl")],
+                qids_path=FeverCollection.data_path / "judged_qids_dev.txt",
             ),
-            assessments=BeirAssessments.C(path=col.datapath / "dev.tsv"),
+            assessments=BeirAssessments.C(path=FeverCollection.data_path / "dev.tsv"),
         )
 
 
 @datatasks("information retrieval")
 @dataset(url="https://github.com/beir-cellar/beir")
 class FeverTest(Dataset):
-    COLLECTION = reference(varname="collection", reference=FeverCollection)
+    COLLECTION = reference(FeverCollection)
 
     def config(self) -> Adhoc:
-        col = FeverCollection.__dataset__
         return Adhoc.C(
-            documents=self.COLLECTION.prepare(),
+            documents=self.COLLECTION.config(),
             topics=FilteredTopics.C(
-                topics=[BeirTopics.C(path=col.datapath / "queries.jsonl")],
-                qids_path=col.datapath / "judged_qids_test.txt",
+                topics=[BeirTopics.C(path=FeverCollection.data_path / "queries.jsonl")],
+                qids_path=FeverCollection.data_path / "judged_qids_test.txt",
             ),
-            assessments=BeirAssessments.C(path=col.datapath / "test.tsv"),
+            assessments=BeirAssessments.C(path=FeverCollection.data_path / "test.tsv"),
         )
 
 
@@ -641,34 +621,32 @@ class ScifactCollection(Dataset):
 @datatasks("information retrieval")
 @dataset(url="https://github.com/beir-cellar/beir")
 class ScifactTrain(Dataset):
-    COLLECTION = reference(varname="collection", reference=ScifactCollection)
+    COLLECTION = reference(ScifactCollection)
 
     def config(self) -> Adhoc:
-        col = ScifactCollection.__dataset__
         return Adhoc.C(
-            documents=self.COLLECTION.prepare(),
+            documents=self.COLLECTION.config(),
             topics=FilteredTopics.C(
-                topics=[BeirTopics.C(path=col.datapath / "queries.jsonl")],
-                qids_path=col.datapath / "judged_qids_train.txt",
+                topics=[BeirTopics.C(path=ScifactCollection.data_path / "queries.jsonl")],
+                qids_path=ScifactCollection.data_path / "judged_qids_train.txt",
             ),
-            assessments=BeirAssessments.C(path=col.datapath / "train.tsv"),
+            assessments=BeirAssessments.C(path=ScifactCollection.data_path / "train.tsv"),
         )
 
 
 @datatasks("information retrieval")
 @dataset(url="https://github.com/beir-cellar/beir")
 class ScifactTest(Dataset):
-    COLLECTION = reference(varname="collection", reference=ScifactCollection)
+    COLLECTION = reference(ScifactCollection)
 
     def config(self) -> Adhoc:
-        col = ScifactCollection.__dataset__
         return Adhoc.C(
-            documents=self.COLLECTION.prepare(),
+            documents=self.COLLECTION.config(),
             topics=FilteredTopics.C(
-                topics=[BeirTopics.C(path=col.datapath / "queries.jsonl")],
-                qids_path=col.datapath / "judged_qids_test.txt",
+                topics=[BeirTopics.C(path=ScifactCollection.data_path / "queries.jsonl")],
+                qids_path=ScifactCollection.data_path / "judged_qids_test.txt",
             ),
-            assessments=BeirAssessments.C(path=col.datapath / "test.tsv"),
+            assessments=BeirAssessments.C(path=ScifactCollection.data_path / "test.tsv"),
         )
 
 
