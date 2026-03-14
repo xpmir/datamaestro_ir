@@ -192,9 +192,7 @@ class CompressedDocumentStore(DocumentStore, ABC):
     def documents_ext(self, docids: List[str]) -> List[IDTextRecord]:
         docs = self._store.get_by_key(self.lookup_key, docids)
         return [
-            self.converter(d.internal_id, d.keys, d.content)
-            if d is not None
-            else None
+            self.converter(d.internal_id, d.keys, d.content) if d is not None else None
             for d in docs
         ]
 
@@ -294,8 +292,27 @@ class Topics(Base, ABC):
         """Returns the number of topics if known"""
         return None
 
+    @cached_property
+    def _topics_cache(self):
+        topic_map = {}
+        topic_list = []
+        for record in self.iter():
+            topic_map[record["id"]] = record
+            topic_list.append(record)
+        return topic_map, topic_list
+
+    def topic_int(self, internal_topic_id: int) -> IDTextRecord:
+        """Returns a topic given its internal ID"""
+        return self._topics_cache[1][internal_topic_id]
+
+    def topic_ext(self, external_topic_id) -> IDTextRecord:
+        """Returns a topic given its external ID"""
+        return self._topics_cache[0][external_topic_id]
+
 
 AdhocTopics = Topics
+
+TopicsStore = Topics
 
 
 class FilteredTopics(Topics):
@@ -315,18 +332,6 @@ class FilteredTopics(Topics):
             for record in source.iter():
                 if record["id"] in self._qids:
                     yield record
-
-
-class TopicsStore(Topics):
-    """Adhoc topics store"""
-
-    @abstractmethod
-    def topic_int(self, internal_topic_id: int) -> IDTextRecord:
-        """Returns a document given its internal ID"""
-
-    @abstractmethod
-    def topic_ext(self, external_topic_id: int) -> IDTextRecord:
-        """Returns a document given its external ID"""
 
 
 class AdhocAssessments(Base, ABC):

@@ -322,16 +322,6 @@ class LZ4JSONLDocumentStore(LZ4DocumentStore):
 
 class TopicsHandler(ABC):
     @abstractmethod
-    def topic_int(self, internal_topic_id: int) -> IDTextRecord:
-        """Returns a document given its internal ID"""
-        ...
-
-    @abstractmethod
-    def topic_ext(self, external_topic_id: str) -> IDTextRecord:
-        """Returns a document given its external ID"""
-        ...
-
-    @abstractmethod
     def iter(self) -> Iterator[IDTextRecord]:
         """Returns an iterator over topics"""
         ...
@@ -344,39 +334,13 @@ class SimpleTopicsHandler(TopicsHandler):
         self.target_cls = converter.target_cls
         converter.check(topics.dataset.queries_cls())
 
-    def topic_int(self, internal_topic_id: int) -> IDTextRecord:
-        """Returns a document given its internal ID"""
-        return self.topics_list[internal_topic_id]
-
-    def topic_ext(self, external_topic_id: int) -> IDTextRecord:
-        """Returns a document given its external ID"""
-        return self.topics_map[external_topic_id]
-
     def iter(self) -> Iterator[IDTextRecord]:
         """Returns an iterator over topics"""
-        yield from self.topics_list
-
-    @cached_property
-    def topics_map(self):
-        return self.topics[0]
-
-    @cached_property
-    def topics_list(self):
-        return self.topics[1]
-
-    @cached_property
-    def topics(self):
-        topic_map = {}
-        topic_list = []
         for query in self._topics.dataset.queries_iter():
-            record = self.converter(query)
-            topic_map[query.query_id] = record
-            topic_list.append(record)
-
-        return topic_map, topic_list
+            yield self.converter(query)
 
 
-class Topics(ir.TopicsStore, IRDSId):
+class Topics(ir.Topics, IRDSId):
     CONVERTERS = {
         GenericQuery: tuple_constructor(SimpleTextItem, "query_id", "text"),
         _irds.beir.BeirCovidQuery: tuple_constructor(
@@ -432,14 +396,6 @@ class Topics(ir.TopicsStore, IRDSId):
         handler = Topics.HANDLERS[self.dataset.queries_cls()](self)
         return handler
 
-    def topic_int(self, internal_topic_id: int) -> IDTextRecord:
-        """Returns a document given its internal ID"""
-        return self.handler.topic_int(internal_topic_id)
-
-    def topic_ext(self, external_topic_id: str) -> IDTextRecord:
-        """Returns a document given its external ID"""
-        return self.handler.topic_ext(external_topic_id)
-
     def iter(self) -> Iterator[IDTextRecord]:
         """Returns an iterator over topics"""
         return self.handler.iter()
@@ -448,18 +404,6 @@ class Topics(ir.TopicsStore, IRDSId):
 class TrecBackgroundLinkingTopicsHandler(TopicsHandler):
     def __init__(self, dataset):
         self.dataset = dataset
-
-    @cached_property
-    def ext2records(self):
-        return {record["id"]: record for record in self.records}
-
-    def topic_int(self, internal_topic_id: int) -> IDTextRecord:
-        """Returns a document given its internal ID"""
-        return self.records[internal_topic_id]
-
-    def topic_ext(self, external_topic_id: str) -> IDTextRecord:
-        """Returns a document given its external ID"""
-        return self.ext2records[external_topic_id]
 
     def iter(self) -> Iterator[ir.IDTextRecord]:
         """Returns an iterator over topics"""
@@ -495,18 +439,6 @@ Topics.HANDLERS.update(
 class CastTopicsHandler(TopicsHandler):
     def __init__(self, dataset):
         self.dataset = dataset
-
-    @cached_property
-    def ext2records(self):
-        return {record["id"]: record for record in self.records}
-
-    def topic_int(self, internal_topic_id: int) -> IDTextRecord:
-        """Returns a document given its internal ID"""
-        return self.records[internal_topic_id]
-
-    def topic_ext(self, external_topic_id: str) -> IDTextRecord:
-        """Returns a document given its external ID"""
-        return self.ext2records[external_topic_id]
 
     def iter(self) -> Iterator[ir.IDTextRecord]:
         """Returns an iterator over topics"""

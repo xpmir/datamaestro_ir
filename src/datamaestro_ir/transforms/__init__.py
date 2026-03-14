@@ -21,7 +21,7 @@ class StoreTrainingTripletTopicAdapter(ir.TrainingTriplets):
 
     id: Param[str] = ""
 
-    store: Param[ir.TopicsStore]
+    store: Param[ir.Topics]
     """The topic store to use"""
 
     data: Param[ir.TrainingTriplets]
