@@ -36,7 +36,6 @@ Topics
 
 .. autoxpmconfig:: datamaestro_ir.data.csv.Topics
 .. autoxpmconfig:: datamaestro_ir.data.FilteredTopics
-.. autoxpmconfig:: datamaestro_ir.data.TopicsStore
 
 .. autoxpmconfig:: datamaestro_ir.transforms.TopicWrapper
 

@@ -2,7 +2,16 @@ import logging
 import gzip
 from abc import ABC, abstractmethod
 from pathlib import Path
-from experimaestro import Config, Task, Param, Annotated, pathgenerator, Option, tqdm
+from experimaestro import (
+    field,
+    Config,
+    Task,
+    Param,
+    Annotated,
+    pathgenerator,
+    Option,
+    tqdm,
+)
 import numpy as np
 import datamaestro_ir.data as ir
 from datamaestro_ir.utils.shuffle import shuffle
@@ -19,7 +28,7 @@ def getpathname(context, config):
 class StoreTrainingTripletTopicAdapter(ir.TrainingTriplets):
     """Retrieve an adhoc topic text from a topic store (given the topic ID)"""
 
-    id: Param[str] = ""
+    id: Param[str] = field(default="", ignore_default=True)
 
     store: Param[ir.Topics]
     """The topic store to use"""
@@ -38,7 +47,7 @@ class StoreTrainingTripletTopicAdapter(ir.TrainingTriplets):
 class StoreTrainingTripletDocumentAdapter(ir.TrainingTriplets):
     """Transforms training triplets to add the document text from a document store"""
 
-    id: Param[str] = ""
+    id: Param[str] = field(default="", ignore_default=True)
 
     store: Param[ir.DocumentStore]
     """The topic store to use"""
@@ -84,13 +93,13 @@ class ShuffledTrainingTripletsLines(Task):
     seed: Param[int]
     """The random seed"""
 
-    compressed: Option[bool] = True
+    compressed: Option[bool] = field(default=True, ignore_default=True)
     """Compress the output"""
 
-    sample_rate: Param[float] = 1.0
+    sample_rate: Param[float] = field(default=1.0, ignore_default=True)
     """Sampling rate - set to 1 to keep all the samples"""
 
-    sample_max: Param[int] = 0
+    sample_max: Param[int] = field(default=0, ignore_default=True)
     """Maximum number of samples"""
 
     tmp_path: Annotated[Path, pathgenerator("tmp")]

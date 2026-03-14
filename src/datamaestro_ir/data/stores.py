@@ -7,7 +7,7 @@ import logging
 from pathlib import Path
 from typing import Dict, Iterator, List, NamedTuple, Optional, Set
 from datamaestro_ir.utils.files import TQDMFileReader
-from experimaestro import Constant, Param, Meta
+from experimaestro import field, Constant, Param, Meta
 from datamaestro_ir.data.base import (
     IDTextRecord,
     SimpleTextItem,
@@ -43,9 +43,7 @@ class MsMarcoPassagesStore(CompressedDocumentStore):
     def documents_ext(self, docids: List[str]) -> List[IDTextRecord]:
         nums = [int(d) for d in docids]
         docs = self._store.get_by_number(nums)
-        return [
-            self.converter(n, d.keys, d.content) for n, d in zip(nums, docs)
-        ]
+        return [self.converter(n, d.keys, d.content) for n, d in zip(nums, docs)]
 
 
 class OrConvQADocumentStore(LZ4DocumentStore):
@@ -321,7 +319,7 @@ class CastSegmentedPassageStore(DocumentStore):
     offsets_path: Meta[Path]
     """Path to the gzipped JSONL offset file"""
 
-    dupes_path: Meta[Optional[Path]] = None
+    dupes_path: Meta[Optional[Path]] = field(default=None, ignore_default=True)
     """Path to the duplicates file (one doc ID per line to exclude)"""
 
     @cached_property
