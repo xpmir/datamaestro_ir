@@ -419,7 +419,7 @@ class TrainingTriplets(Base, ABC):
 class TrainingTripletsLines(TrainingTriplets):
     """Training triplets with one line per triple (query texts)"""
 
-    sep: Meta[str]
+    sep: Meta[str] = "\t"
     path: Param[Path]
 
     doc_ids: Meta[bool]
