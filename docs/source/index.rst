@@ -56,15 +56,6 @@ Load a dataset in Python:
    # Load MS MARCO passage dataset
    dataset = prepare_dataset("ir.com.microsoft.msmarco.passage")
 
-The plugin also provides access to the `ir-datasets <https://ir-datasets.com/>`_ library
-through the ``irds`` namespace:
-
-.. code-block:: python
-
-   # Load via ir-datasets integration
-   dataset = prepare_dataset("irds.msmarco-passage")
-
-
 Key Concepts
 ------------
 

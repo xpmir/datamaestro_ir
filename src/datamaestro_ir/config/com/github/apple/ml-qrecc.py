@@ -1,20 +1,10 @@
 # See documentation on https://datamaestro.readthedocs.io
 
-import re
-import json
-from pathlib import Path
 from datamaestro.definitions import Dataset, datatasks, datatags, dataset
 from datamaestro.data.ml import Supervised
-from datamaestro.download import reference
 from datamaestro.download.archive import ZipDownloader
-from datamaestro.download.wayback import wayback_documents
 from datamaestro.utils import HashCheck
 from datamaestro_ir.data.conversation.qrecc import QReCCDataset
-from datamaestro_ir.datasets.irds.data import (
-    LZ4JSONLDocumentStore,
-    SimpleJsonDocument,
-)
-from datamaestro_ir.datasets.irds.helpers import lz4docstore_builder
 
 
 @datatags("conversation", "context", "query")
@@ -46,46 +36,3 @@ class Main(Dataset):
             train=QReCCDataset.C(path=self.DATA.path / "qrecc_train.json"),
             test=QReCCDataset.C(path=self.DATA.path / "qrecc_test.json"),
         )
-
-
-@dataset(
-    url="https://github.com/apple/ml-qrecc",
-    doi="https://doi.org/10.48550/arXiv.2010.04898",
-)
-class Content(Dataset):
-    """QReCC mentionned URLs content"""
-
-    MAIN = reference(reference=Main)
-
-    WAYBACK_DOCS = wayback_documents(
-        "20191127",
-        lambda: Content._urls(Content.MAIN.prepare()),
-        name="wayback.jsonl",
-    )
-
-    STORE = lz4docstore_builder(
-        "store",
-        lambda: Content._documents(Content.WAYBACK_DOCS.path),
-        SimpleJsonDocument,
-        "id",
-    )
-
-    def config(self) -> LZ4JSONLDocumentStore:
-        return LZ4JSONLDocumentStore.C(jsonl_path=self.STORE.path)
-
-    @staticmethod
-    def _documents(path: Path):
-        """Iterates over documents from wayback"""
-        with path.open("rt") as fp:
-            for line in fp:
-                yield SimpleJsonDocument(**json.loads(line))
-
-    @staticmethod
-    def _urls(supervised: Supervised[QReCCDataset, None, QReCCDataset]):
-        urls = set()
-        for ds in [supervised.train, supervised.test]:
-            for entry in ds.entries():
-                if entry.answer_url:
-                    url = re.sub("#.*$", "", entry.answer_url)
-                    urls.add(url)
-        return urls

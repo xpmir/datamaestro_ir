@@ -33,7 +33,7 @@ AdhocRunDict = dict[str, dict[str, float]]
 class Documents(Base):
     """A set of documents with identifiers
 
-    See `IR Datasets <https://ir-datasets.com/index.html>`_ for the list of query classes
+    A set of documents with identifiers
     """
 
     count: Meta[Optional[int]]

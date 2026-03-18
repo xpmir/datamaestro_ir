@@ -26,7 +26,6 @@ Collection
 ----------
 
 .. autoxpmconfig:: datamaestro_ir.data.Adhoc
-.. autoxpmconfig:: datamaestro_ir.datasets.irds.data.Adhoc
 
 Topics
 ------
@@ -47,22 +46,12 @@ Dataset-specific Topics
 .. autoxpmconfig:: datamaestro_ir.data.lotte.LotteTopics
 .. autoxpmconfig:: datamaestro_ir.data.trec.TrecTopics
 .. autoxpmconfig:: datamaestro_ir.data.cord19.Topics
-.. autoxpmconfig:: datamaestro_ir.datasets.irds.data.Topics
-
 Documents
 ---------
 
 .. autoxpmconfig:: datamaestro_ir.data.Documents
     :members: iter_documents, iter_ids, documentcount
 .. autoxpmconfig:: datamaestro_ir.data.csv.Documents
-.. autoxpmconfig:: datamaestro_ir.datasets.irds.data.LZ4DocumentStore
-.. autoxpmconfig:: datamaestro_ir.datasets.irds.data.LZ4JSONLDocumentStore
-
-
-IR-Datasets Base
-----------------
-
-.. autoxpmconfig:: datamaestro_ir.datasets.irds.data.IRDSId
 
 
 Dataset-specific documents
@@ -73,9 +62,6 @@ Dataset-specific documents
 .. autoxpmconfig:: datamaestro_ir.data.beir.BeirDocumentStore
 .. autoxpmconfig:: datamaestro_ir.data.lotte.LotteDocumentStore
 .. autoxpmconfig:: datamaestro_ir.data.stores.MsMarcoPassagesStore
-.. autoxpmconfig:: datamaestro_ir.data.stores.OrConvQADocumentStore
-.. autoxpmconfig:: datamaestro_ir.data.stores.IKatClueWeb22DocumentStore
-.. autoxpmconfig:: datamaestro_ir.datasets.irds.data.Documents
 
 Assessments
 -----------
@@ -86,7 +72,6 @@ Assessments
 .. autoxpmconfig:: datamaestro_ir.data.beir.BeirAssessments
 .. autoxpmconfig:: datamaestro_ir.data.lotte.LotteAssessments
 .. autoxpmconfig:: datamaestro_ir.data.trec.TrecAdhocAssessments
-.. autoxpmconfig:: datamaestro_ir.datasets.irds.data.AdhocAssessments
 
 .. autoclass:: datamaestro_ir.data.AdhocAssessedTopic
 .. autoclass:: datamaestro_ir.data.AdhocAssessment
@@ -97,7 +82,6 @@ Runs
 .. autoxpmconfig:: datamaestro_ir.data.AdhocRun
 .. autoxpmconfig:: datamaestro_ir.data.csv.AdhocRunWithText
 .. autoxpmconfig:: datamaestro_ir.data.trec.TrecAdhocRun
-.. autoxpmconfig:: datamaestro_ir.datasets.irds.data.AdhocRun
 
 
 Results
@@ -145,7 +129,6 @@ Training triplets
 .. autoxpmconfig:: datamaestro_ir.data.TrainingTripletsLines
 
 .. autoxpmconfig:: datamaestro_ir.data.huggingface.HuggingFacePairwiseSampleDataset
-.. autoxpmconfig:: datamaestro_ir.datasets.irds.data.TrainingTriplets
 
 Distillation
 ************

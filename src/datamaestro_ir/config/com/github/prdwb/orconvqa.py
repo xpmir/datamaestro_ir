@@ -1,9 +1,5 @@
 # See documentation on https://datamaestro.readthedocs.io
 
-import gzip
-import json
-from pathlib import Path
-from typing import Iterator
 from datamaestro.definitions import Dataset, datatasks, datatags, dataset
 from datamaestro.download.single import FileDownloader
 from datamaestro.utils import HashCheck
@@ -11,9 +7,6 @@ from datamaestro.utils import HashCheck
 
 from datamaestro_ir.data.conversation.orconvqa import OrConvQADataset
 from datamaestro.data.ml import Supervised
-
-from datamaestro_ir.data.stores import OrConvQADocumentStore
-from datamaestro_ir.datasets.irds.helpers import lz4docstore_downloader
 
 
 @datatags("conversation", "context", "query")
@@ -55,39 +48,3 @@ class Preprocessed(Dataset):
             validation=OrConvQADataset.C(path=self.DEV.path),
             test=OrConvQADataset.C(path=self.TEST.path),
         )
-
-
-def orConvQADocumentReader(source: Path) -> Iterator[OrConvQADocumentStore.NAMED_TUPLE]:
-    with gzip.open(source, "rt") as fp:
-        for line in fp:
-            data = json.loads(line)
-            data["body"] = data.pop("text")
-            yield OrConvQADocumentStore.NAMED_TUPLE(**data)
-
-
-@dataset(
-    url="https://github.com/prdwb/orconvqa-release",
-)
-class Passages(Dataset):
-    """orConvQA wikipedia files
-
-    OrConvQA is an aggregation of three existing datasets:
-
-    1. the QuAC dataset that offers information-seeking conversations,
-    1. the CANARD dataset that consists of context-independent rewrites of QuAC questions, and
-    3. the Wikipedia corpus that serves as the knowledge source of answering questions.
-    """
-
-    ALL_BLOCKS = lz4docstore_downloader(
-        "all_blocks",
-        "https://ciir.cs.umass.edu/downloads/ORConvQA/all_blocks.txt.gz",
-        orConvQADocumentReader,
-        OrConvQADocumentStore.NAMED_TUPLE,
-        "id",
-        checker=HashCheck("1095a3408690e7bbe4d8a87a2bae6356"),
-        size=5_086_902_800,
-        count_hint=11_377_951,
-    )
-
-    def config(self) -> OrConvQADocumentStore:
-        return OrConvQADocumentStore.C(path=self.ALL_BLOCKS.path, count=11_377_951)

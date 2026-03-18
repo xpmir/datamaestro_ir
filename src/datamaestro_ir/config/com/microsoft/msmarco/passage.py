@@ -98,7 +98,7 @@ class Collection(Dataset):
 
         Fixes the encoding issues in the MS MARCO passage collection where
         some characters are latin-1 encoded within otherwise UTF-8 text.
-        Approach from ir_datasets (FixEncoding).
+        Approach from ir-datasets (FixEncoding).
         """
         # Regexes to find suspicious byte sequences (latin-1 within UTF-8)
         sus = "[\x80-\xff]"

@@ -6,7 +6,6 @@ This section lists the datasets available through the datamaestro-ir plugin.
 Datasets are organized by domain:
 
 - :doc:`ir` - Information retrieval benchmark collections (MS MARCO, TREC, etc.)
-- :doc:`irds` - Integration with the `ir-datasets <https://ir-datasets.com/>`_ library
 - :doc:`conversation` - Conversational search and query reformulation
 
 To load a dataset:
@@ -33,5 +32,4 @@ To discover available datasets:
    :caption: Contents:
 
    ir
-   irds
    conversation

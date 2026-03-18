@@ -59,26 +59,6 @@ Example with MS MARCO:
            relevance = assessment.rel
 
 
-Using IR-Datasets Integration
------------------------------
-
-The plugin provides access to the `ir-datasets <https://ir-datasets.com/>`_ library
-through the ``irds`` namespace. This gives access to hundreds of IR datasets:
-
-.. code-block:: python
-
-   from datamaestro import prepare_dataset
-
-   # Load via ir-datasets
-   dataset = prepare_dataset("irds.msmarco-passage")
-
-   # Same interface as native datasets
-   for doc in dataset.documents.iter_documents():
-       print(doc[IDItem].id)
-
-See :doc:`datasets/irds` for the full list of available ir-datasets.
-
-
 Training Data for Neural IR
 ---------------------------
 
