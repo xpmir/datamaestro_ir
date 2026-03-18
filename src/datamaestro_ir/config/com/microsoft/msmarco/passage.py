@@ -280,23 +280,6 @@ class TrainTriplesSmallText(Dataset):
         return TrainingTripletsLines.C(path=self.TRIPLES.path)
 
 
-@dataset(
-    url="https://github.com/microsoft/MSMARCO-Passage-Ranking",
-    size="272.2GB",
-)
-class TrainTripleFullText(Dataset):
-    """Full training triples (query, positive passage, negative passage) with text"""
-
-    TRIPLES = FileDownloader(
-        "triples.tsv",
-        size=77_877_731_328,
-        url="https://msmarco.z22.web.core.windows.net/msmarcoranking/triples.train.full.tar.gz",
-        checker=HashCheck("8d509d484ea1971e792b812ae4800c6f", md5),
-    )
-
-    def config(self) -> TrainingTripletsLines:
-        return TrainingTripletsLines.C(path=self.TRIPLES.path)
-
 
 # ---
 # --- Development set

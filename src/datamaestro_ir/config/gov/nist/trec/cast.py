@@ -107,27 +107,27 @@ class CastV2Documents(Dataset):
 
     MSMARCO_OFFSETS = FileDownloader(
         "MARCO_v1.chunks.jsonl.gz",
-        url="https://huggingface.co/datasets/daltonj/treccastweb/resolve/main/2021/MARCO_v1.chunks.jsonl.gz",
+        url="https://huggingface.co/datasets/irds/trec_cast_offsets/resolve/main/MARCO_v1.chunks.jsonl.gz",
         checker=HashCheck("b76c8d1e3b260764d573ce618a15525f", md5),
     )
     WAPO_OFFSETS = FileDownloader(
         "WaPo-v2.chunks.jsonl.gz",
-        url="https://huggingface.co/datasets/daltonj/treccastweb/resolve/main/2021/WaPo-v2.chunks.jsonl.gz",
+        url="https://huggingface.co/datasets/irds/trec_cast_offsets/resolve/main/WaPo-v2.chunks.jsonl.gz",
         checker=HashCheck("900c56039b4a3edd642983c4a1e13796", md5),
     )
     KILT_OFFSETS = FileDownloader(
         "KILT-nodupes.chunks.jsonl.gz",
-        url="https://huggingface.co/datasets/daltonj/treccastweb/resolve/main/2021/KILT-nodupes.chunks.jsonl.gz",
+        url="https://huggingface.co/datasets/irds/trec_cast_offsets/resolve/main/KILT-nodupes.chunks.jsonl.gz",
         checker=HashCheck("7bd9c844ea7d8ecc7a1236ef5c7d7722", md5),
     )
     MSMARCO_DUPES = FileDownloader(
         "marco_duplicates.txt",
-        url="https://raw.githubusercontent.com/daltonj/treccastweb/master/2021/duplicate_lists/marco_duplicates.txt",
+        url="https://raw.githubusercontent.com/daltonj/treccastweb/master/2021/duplicate_files/marco_duplicates.txt",
         checker=HashCheck("549f721aec777b18f6538ddeabf6a8f3", md5),
     )
     WAPO_DUPES = FileDownloader(
         "wapo-near-duplicates",
-        url="https://raw.githubusercontent.com/daltonj/treccastweb/master/2021/duplicate_lists/wapo-near-duplicates",
+        url="https://raw.githubusercontent.com/daltonj/treccastweb/master/2021/duplicate_files/wapo-near-duplicates",
         checker=HashCheck("23bacc7e03af656dc590fd6a5476bc83", md5),
     )
 
@@ -168,17 +168,17 @@ class CastV3Documents(Dataset):
 
     MSMARCO_OFFSETS = FileDownloader(
         "MARCO_v2.chunks.jsonl.gz",
-        url="https://huggingface.co/datasets/daltonj/treccastweb/resolve/main/2022/MARCO_v2.chunks.jsonl.gz",
+        url="https://huggingface.co/datasets/irds/trec_cast_offsets/resolve/main/MARCO_v2.chunks.jsonl.gz",
         checker=HashCheck("2f0bbe152b4645bff744892c5b53471f", md5),
     )
     WAPO_OFFSETS = FileDownloader(
         "WaPo.chunks.jsonl.gz",
-        url="https://huggingface.co/datasets/daltonj/treccastweb/resolve/main/2022/WaPo.chunks.jsonl.gz",
+        url="https://huggingface.co/datasets/irds/trec_cast_offsets/resolve/main/WaPo.chunks.jsonl.gz",
         checker=HashCheck("1dbed58d09aeaa6046c234d056ea703e", md5),
     )
     KILT_OFFSETS = FileDownloader(
         "KILT.chunks.jsonl.gz",
-        url="https://huggingface.co/datasets/daltonj/treccastweb/resolve/main/2022/KILT.chunks.jsonl.gz",
+        url="https://huggingface.co/datasets/irds/trec_cast_offsets/resolve/main/KILT.chunks.jsonl.gz",
         checker=HashCheck("290cc1a172b7fc29b5ce211a87ced098", md5),
     )
     ALL_DUPES = FileDownloader(
