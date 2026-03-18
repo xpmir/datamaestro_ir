@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Iterator, List
 
 from datamaestro.definitions import Meta, Param
+from experimaestro import field
 
 from datamaestro_ir.data import (
     AdhocAssessments,
@@ -25,7 +26,7 @@ class LotteDocumentStore(CompressedDocumentStore):
     Content bytes encode text as UTF-8. The only key is "id" (the document ID).
     """
 
-    lookup_key: Param[str] = "id"
+    lookup_key: Param[str] = field(default="id", ignore_default=True)
 
     def converter(
         self, internal_id: int, keys: dict[str, str], content: bytes

@@ -14,7 +14,7 @@ from pathlib import Path
 
 from datamaestro.annotations.agreement import useragreement
 from datamaestro.download.single import FileDownloader
-from datamaestro.download import FileResource, reference
+from datamaestro.download import FileResource, FilesCopy, reference
 from datamaestro.definitions import Dataset, datatasks, datatags, dataset
 from datamaestro.download.archive import TarDownloader
 from datamaestro_ir.data import RerankAdhoc, Adhoc, TrainingTripletsLines
@@ -76,10 +76,11 @@ http://www.msmarco.org/dataset.aspx""",
 
 @lua
 @dataset(size="2.9GB")
-class Collection(Dataset):
-    """MS-Marco documents
+class Documents(Dataset):
+    """MS-Marco passage collection and small query/qrel files.
 
-    This file contains each passage in the larger MSMARCO dataset.
+    Downloads collectionandqueries.tar.gz once, builds the document store,
+    and extracts query/qrel files for dev-small and eval-small splits.
 
     Format is TSV (pid \\t content)"""
 
@@ -87,8 +88,8 @@ class Collection(Dataset):
 
     DOCUMENTS = TarDownloader(
         "documents",
-        url="https://msmarco.z22.web.core.windows.net/msmarcoranking/collection.tar.gz",
-        checker=HashCheck("87dd01826da3e2ad45447ba5af577628", md5),
+        url="https://msmarco.z22.web.core.windows.net/msmarcoranking/collectionandqueries.tar.gz",
+        checker=HashCheck("31644046b18952c1386cd4564ba2ae69", md5),
         transient=True,
     )
 
@@ -143,8 +144,16 @@ class Collection(Dataset):
         DOCUMENTS,
         iter_factory=_reader,
         keys=[],
-        doc_count=DOC_COUNT
+        doc_count=DOC_COUNT,
     )
+
+    # These files are not used directly by the document store,
+    # but they are needed by dev small queries and qrels
+    files = FilesCopy(DOCUMENTS, {
+        "queries.dev.small.tsv": "queries.dev.small.tsv",
+        "qrels.dev.small.tsv": "qrels.dev.small.tsv",
+        "queries.eval.small.tsv": "queries.eval.small.tsv",
+    })
 
     def config(self) -> MsMarcoPassagesStore:
         return MsMarcoPassagesStore.C(path=self.store.path, count=self.DOC_COUNT)
@@ -204,15 +213,15 @@ class TrainQrels(Dataset):
 class Train(Dataset):
     """MS-Marco train dataset"""
 
-    COLLECTION = reference(varname="collection", reference=Collection)
-    TOPICS = reference(varname="topics", reference=TrainQueries)
-    QRELS = reference(varname="qrels", reference=TrainQrels)
+    COLLECTION = reference(Documents)
+    TOPICS = reference(TrainQueries)
+    QRELS = reference(TrainQrels)
 
     def config(self) -> Adhoc:
         return Adhoc.C(
-            documents=self.COLLECTION.prepare(),
-            topics=self.TOPICS.prepare(),
-            assessments=self.QRELS.prepare(),
+            documents=self.COLLECTION.config(),
+            topics=self.TOPICS.config(),
+            assessments=self.QRELS.config(),
         )
 
 
@@ -222,12 +231,12 @@ class Train(Dataset):
 class TrainWithrun(Dataset):
     """MSMarco train dataset, including the top-1000 to documents to re-rank"""
 
-    TRAIN = reference(varname="train", reference=Train)
-    RUN = reference(varname="run", reference=TrainRun)
+    TRAIN = reference(Train)
+    RUN = reference(TrainRun)
 
     def config(self) -> RerankAdhoc:
-        train = self.TRAIN.prepare()
-        return RerankAdhoc.C(**train.__arguments__(), run=self.RUN.prepare())
+        train = self.TRAIN.config()
+        return RerankAdhoc.C(**train.__arguments__(), run=self.RUN.config())
 
 
 # Training triplets
@@ -237,7 +246,7 @@ class TrainWithrun(Dataset):
     url="https://github.com/microsoft/MSMARCO-Passage-Ranking",
     size="5.7GB",
 )
-class TrainIdtriples(Dataset):
+class TrainTriplesID(Dataset):
     """Full training triples (query, positive passage, negative passage) with IDs"""
 
     TRIPLES = FileDownloader(
@@ -257,7 +266,7 @@ class TrainIdtriples(Dataset):
     url="https://github.com/microsoft/MSMARCO-Passage-Ranking",
     size="27.1GB",
 )
-class TrainTexttriplesSmall(Dataset):
+class TrainTriplesSmallText(Dataset):
     """Small training triples (query, positive passage, negative passage) with text"""
 
     TRIPLES = FileDownloader(
@@ -275,7 +284,7 @@ class TrainTexttriplesSmall(Dataset):
     url="https://github.com/microsoft/MSMARCO-Passage-Ranking",
     size="272.2GB",
 )
-class TrainTexttripleFull(Dataset):
+class TrainTripleFullText(Dataset):
     """Full training triples (query, positive passage, negative passage) with text"""
 
     TRIPLES = FileDownloader(
@@ -340,15 +349,15 @@ class DevQrels(Dataset):
 class Dev(Dataset):
     """MS-Marco dev dataset"""
 
-    COLLECTION = reference(varname="collection", reference=Collection)
-    TOPICS = reference(varname="topics", reference=DevQueries)
-    QRELS = reference(varname="qrels", reference=DevQrels)
+    COLLECTION = reference(Documents)
+    TOPICS = reference(DevQueries)
+    QRELS = reference(DevQrels)
 
     def config(self) -> Adhoc:
         return Adhoc.C(
-            documents=self.COLLECTION.prepare(),
-            topics=self.TOPICS.prepare(),
-            assessments=self.QRELS.prepare(),
+            documents=self.COLLECTION.config(),
+            topics=self.TOPICS.config(),
+            assessments=self.QRELS.config(),
         )
 
 
@@ -358,12 +367,36 @@ class Dev(Dataset):
 class DevWithrun(Dataset):
     """MSMarco dev dataset, including the top-1000 to documents to re-rank"""
 
-    DEV = reference(varname="dev", reference=Dev)
-    RUN = reference(varname="run", reference=DevRun)
+    DEV = reference(Dev)
+    RUN = reference(DevRun)
 
     def config(self) -> RerankAdhoc:
-        dev = self.DEV.prepare()
-        return RerankAdhoc.C(**dev.__arguments__(), run=self.RUN.prepare())
+        dev = self.DEV.config()
+        return RerankAdhoc.C(**dev.__arguments__(), run=self.RUN.config())
+
+
+@lua
+@datatasks("information retrieval", "passage retrieval")
+@dataset(url="https://github.com/microsoft/MSMARCO-Passage-Ranking")
+class DevJudged(Dataset):
+    """MS-Marco dev dataset, restricted to judged queries"""
+
+    COLLECTION = reference(Documents)
+    TOPICS = reference(DevQueries)
+    QRELS = reference(DevQrels)
+    JUDGED_QIDS = judged_qids(QRELS)
+
+    def config(self) -> Adhoc:
+        from datamaestro_ir.data import FilteredTopics
+
+        return Adhoc.C(
+            documents=self.COLLECTION.config(),
+            topics=FilteredTopics.C(
+                topics=[self.TOPICS.config()],
+                qids_path=self.JUDGED_QIDS.path,
+            ),
+            assessments=self.QRELS.config(),
+        )
 
 
 @lua
@@ -386,39 +419,33 @@ class EvalWithrun(Dataset):
 
 
 @lua
+@datatasks("information retrieval", "passage retrieval")
 @dataset(url="https://github.com/microsoft/MSMARCO-Passage-Ranking")
 class DevSmall(Dataset):
-    """Dev small dataset with queries, qrels, and eval queries from collectionandqueries archive"""
+    """MS-Marco dev small dataset"""
 
-    DATA = TarDownloader(
-        "data",
-        url="https://msmarco.z22.web.core.windows.net/msmarcoranking/collectionandqueries.tar.gz",
-        files=["queries.dev.small.tsv", "qrels.dev.small.tsv", "queries.eval.small.tsv"],
-        checker=HashCheck("31644046b18952c1386cd4564ba2ae69", md5),
-    )
-    COLLECTION = reference(varname="collection", reference=Collection)
+    COLLECTION = reference(Documents)
 
     def config(self) -> Adhoc:
         return Adhoc.C(
-            documents=self.COLLECTION.prepare(),
-            topics=Topics.C(path=self.DATA.path / "queries.dev.small.tsv"),
+            documents=self.COLLECTION.config(),
+            topics=Topics.C(path=Documents.data_path / "files" / "queries.dev.small.tsv"),
             assessments=TrecAdhocAssessments.C(
-                path=self.DATA.path / "qrels.dev.small.tsv"
+                path=Documents.data_path / "files" / "qrels.dev.small.tsv"
             ),
         )
 
 
+
+@lua
 @dataset(url="https://github.com/microsoft/MSMARCO-Passage-Ranking")
 class EvalQueriesSmall(Dataset):
-    DATA = TarDownloader(
-        "data",
-        url="https://msmarco.z22.web.core.windows.net/msmarcoranking/collectionandqueries.tar.gz",
-        files=["queries.eval.small.tsv"],
-        checker=HashCheck("31644046b18952c1386cd4564ba2ae69", md5),
-    )
+    """MS-Marco eval small queries"""
+
+    COLLECTION = reference(Documents)
 
     def config(self) -> Topics:
-        return Topics.C(path=self.DATA.path / "queries.eval.small.tsv")
+        return Topics.C(path=Documents.data_path / "files" / "queries.eval.small.tsv")
 
 
 # ---
@@ -427,7 +454,7 @@ class EvalQueriesSmall(Dataset):
 
 @lua
 @dataset()
-class Trec2019TestQueries(Dataset):
+class Trec2019Queries(Dataset):
     QUERIES = FileDownloader(
         "queries.tsv",
         url="https://msmarco.z22.web.core.windows.net/msmarcoranking/msmarco-test2019-queries.tsv.gz",
@@ -440,7 +467,7 @@ class Trec2019TestQueries(Dataset):
 
 @lua
 @dataset()
-class Trec2019TestRun(Dataset):
+class Trec2019Run(Dataset):
     RUN = FileDownloader(
         "run.tsv",
         url="https://msmarco.z22.web.core.windows.net/msmarcoranking/msmarco-passagetest2019-top1000.tsv.gz",
@@ -453,7 +480,7 @@ class Trec2019TestRun(Dataset):
 
 @lua
 @dataset()
-class Trec2019TestQrels(Dataset):
+class Trec2019Qrels(Dataset):
     QRELS = FileDownloader(
         "qrels.tsv",
         url="https://trec.nist.gov/data/deep/2019qrels-pass.txt",
@@ -467,56 +494,56 @@ class Trec2019TestQrels(Dataset):
 @lua
 @datatasks("information retrieval", "passage retrieval")
 @dataset(url="https://microsoft.github.io/msmarco/TREC-Deep-Learning-2019.html")
-class Trec2019Test(Dataset):
+class Trec2019(Dataset):
     "TREC Deep Learning (2019)"
 
-    COLLECTION = reference(varname="collection", reference=Collection)
-    TOPICS = reference(varname="topics", reference=Trec2019TestQueries)
-    QRELS = reference(varname="qrels", reference=Trec2019TestQrels)
+    COLLECTION = reference(Documents)
+    TOPICS = reference(Trec2019Queries)
+    QRELS = reference(Trec2019Qrels)
 
     def config(self) -> Adhoc:
         return Adhoc.C(
-            documents=self.COLLECTION.prepare(),
-            topics=self.TOPICS.prepare(),
-            assessments=self.QRELS.prepare(),
+            documents=self.COLLECTION.config(),
+            topics=self.TOPICS.config(),
+            assessments=self.QRELS.config(),
         )
 
 
 @lua
 @datatasks("information retrieval", "passage retrieval")
 @dataset(url="https://microsoft.github.io/msmarco/TREC-Deep-Learning-2019.html")
-class Trec2019TestWithrun(Dataset):
+class Trec2019Withrun(Dataset):
     """TREC Deep Learning (2019), including the top-1000 to documents to re-rank"""
 
-    TREC2019 = reference(varname="trec2019", reference=Trec2019Test)
-    RUN = reference(varname="run", reference=Trec2019TestRun)
+    TREC2019 = reference(Trec2019)
+    RUN = reference(Trec2019Run)
 
     def config(self) -> RerankAdhoc:
-        trec2019 = self.TREC2019.prepare()
-        return RerankAdhoc.C(**trec2019.__arguments__(), run=self.RUN.prepare())
+        trec2019 = self.TREC2019.config()
+        return RerankAdhoc.C(**trec2019.__arguments__(), run=self.RUN.config())
 
 
 @lua
 @datatasks("information retrieval", "passage retrieval")
 @dataset(url="https://microsoft.github.io/msmarco/TREC-Deep-Learning-2019.html")
-class Trec2019TestJudged(Dataset):
+class Trec2019Judged(Dataset):
     """TREC Deep Learning (2019), restricted to judged queries"""
 
-    COLLECTION = reference(varname="collection", reference=Collection)
-    TOPICS = reference(varname="topics", reference=Trec2019TestQueries)
-    QRELS = reference(varname="qrels", reference=Trec2019TestQrels)
+    COLLECTION = reference(Documents)
+    TOPICS = reference(Trec2019Queries)
+    QRELS = reference(Trec2019Qrels)
     JUDGED_QIDS = judged_qids(QRELS)
 
     def config(self) -> Adhoc:
         from datamaestro_ir.data import FilteredTopics
 
         return Adhoc.C(
-            documents=self.COLLECTION.prepare(),
+            documents=self.COLLECTION.config(),
             topics=FilteredTopics.C(
-                topics=[self.TOPICS.prepare()],
+                topics=[self.TOPICS.config()],
                 qids_path=self.JUDGED_QIDS.path,
             ),
-            assessments=self.QRELS.prepare(),
+            assessments=self.QRELS.config(),
         )
 
 
@@ -527,7 +554,7 @@ class Trec2019TestJudged(Dataset):
 
 @lua
 @dataset(size="12K")
-class Trec2020TestQueries(Dataset):
+class Trec2020Queries(Dataset):
     """TREC Deep Learning 2019 (topics)
 
     Topics of the TREC 2019 MS-Marco Deep Learning track"""
@@ -548,7 +575,7 @@ class Trec2020TestQueries(Dataset):
 @dataset(
     url="https://microsoft.github.io/msmarco/TREC-Deep-Learning-2020.html",
 )
-class Trec2020TestRun(Dataset):
+class Trec2020Run(Dataset):
     """TREC Deep Learning (2020)
 
     Set of query/passages for the passage re-ranking task re-rank (TREC 2020)"""
@@ -565,7 +592,7 @@ class Trec2020TestRun(Dataset):
 
 @lua
 @dataset()
-class Trec2020TestQrels(Dataset):
+class Trec2020Qrels(Dataset):
     QRELS = FileDownloader(
         "qrels.tsv",
         url="https://trec.nist.gov/data/deep/2020qrels-pass.txt",
@@ -579,56 +606,56 @@ class Trec2020TestQrels(Dataset):
 @lua
 @datatasks("information retrieval", "passage retrieval")
 @dataset(url="https://microsoft.github.io/msmarco/TREC-Deep-Learning-2020.html")
-class Trec2020Test(Dataset):
+class Trec2020(Dataset):
     "TREC Deep Learning (2020)"
 
-    COLLECTION = reference(varname="collection", reference=Collection)
-    TOPICS = reference(varname="topics", reference=Trec2020TestQueries)
-    QRELS = reference(varname="qrels", reference=Trec2020TestQrels)
+    COLLECTION = reference(Documents)
+    TOPICS = reference(Trec2020Queries)
+    QRELS = reference(Trec2020Qrels)
 
     def config(self) -> Adhoc:
         return Adhoc.C(
-            documents=self.COLLECTION.prepare(),
-            topics=self.TOPICS.prepare(),
-            assessments=self.QRELS.prepare(),
+            documents=self.COLLECTION.config(),
+            topics=self.TOPICS.config(),
+            assessments=self.QRELS.config(),
         )
 
 
 @lua
 @datatasks("information retrieval", "passage retrieval")
 @dataset(url="https://microsoft.github.io/msmarco/TREC-Deep-Learning-2020.html")
-class Trec2020TestWithrun(Dataset):
+class Trec2020Withrun(Dataset):
     """TREC Deep Learning (2020), including the top-1000 to documents to re-rank"""
 
-    TREC2020 = reference(varname="trec2020", reference=Trec2020Test)
-    RUN = reference(varname="run", reference=Trec2020TestRun)
+    TREC2020 = reference(Trec2020)
+    RUN = reference(Trec2020Run)
 
     def config(self) -> RerankAdhoc:
-        trec2020 = self.TREC2020.prepare()
-        return RerankAdhoc.C(**trec2020.__arguments__(), run=self.RUN.prepare())
+        trec2020 = self.TREC2020.config()
+        return RerankAdhoc.C(**trec2020.__arguments__(), run=self.RUN.config())
 
 
 @lua
 @datatasks("information retrieval", "passage retrieval")
 @dataset(url="https://microsoft.github.io/msmarco/TREC-Deep-Learning-2020.html")
-class Trec2020TestJudged(Dataset):
+class Trec2020Judged(Dataset):
     """TREC Deep Learning (2020), restricted to judged queries"""
 
-    COLLECTION = reference(varname="collection", reference=Collection)
-    TOPICS = reference(varname="topics", reference=Trec2020TestQueries)
-    QRELS = reference(varname="qrels", reference=Trec2020TestQrels)
+    COLLECTION = reference(Documents)
+    TOPICS = reference(Trec2020Queries)
+    QRELS = reference(Trec2020Qrels)
     JUDGED_QIDS = judged_qids(QRELS)
 
     def config(self) -> Adhoc:
         from datamaestro_ir.data import FilteredTopics
 
         return Adhoc.C(
-            documents=self.COLLECTION.prepare(),
+            documents=self.COLLECTION.config(),
             topics=FilteredTopics.C(
-                topics=[self.TOPICS.prepare()],
+                topics=[self.TOPICS.config()],
                 qids_path=self.JUDGED_QIDS.path,
             ),
-            assessments=self.QRELS.prepare(),
+            assessments=self.QRELS.config(),
         )
 
 
@@ -663,10 +690,10 @@ class TrecDlHard(Dataset):
     Learning Dataset", SIGIR 2021.
     """
 
-    COLLECTION = reference(varname="collection", reference=Collection)
-    TOPICS_2019 = reference(varname="topics_2019", reference=Trec2019TestQueries)
-    TOPICS_2020 = reference(varname="topics_2020", reference=Trec2020TestQueries)
-    QRELS = reference(varname="qrels", reference=TrecDlHardQrels)
+    COLLECTION = reference(Documents)
+    TOPICS_2019 = reference(Trec2019Queries)
+    TOPICS_2020 = reference(Trec2020Queries)
+    QRELS = reference(TrecDlHardQrels)
 
     # From https://github.com/grill-lab/DL-Hard/blob/main/dataset/folds.json
     HARD_QIDS = qids_file("hard_qids", [
@@ -684,13 +711,13 @@ class TrecDlHard(Dataset):
         from datamaestro_ir.data import FilteredTopics
 
         return Adhoc.C(
-            documents=self.COLLECTION.prepare(),
+            documents=self.COLLECTION.config(),
             topics=FilteredTopics.C(
                 topics=[
-                    self.TOPICS_2019.prepare(),
-                    self.TOPICS_2020.prepare(),
+                    self.TOPICS_2019.config(),
+                    self.TOPICS_2020.config(),
                 ],
                 qids_path=self.HARD_QIDS.path,
             ),
-            assessments=self.QRELS.prepare(),
+            assessments=self.QRELS.config(),
         )

@@ -13,11 +13,11 @@
 # import os
 # import sys
 # sys.path.insert(0, os.path.abspath('.'))
-from datamaestro_text import version
+from datamaestro_ir import version
 
 # -- Project information -----------------------------------------------------
 
-project = "Datamaestro Text"
+project = "Datamaestro IR"
 copyright = "2023, Benjamin Piwowarski"
 author = "Benjamin Piwowarski"
 

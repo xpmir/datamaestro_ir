@@ -6,6 +6,7 @@ This section lists the datasets available through the datamaestro-ir plugin.
 Datasets are organized by domain:
 
 - :doc:`ir` - Information retrieval benchmark collections (MS MARCO, TREC, etc.)
+- :doc:`distillation` - Knowledge distillation datasets for training neural rankers
 - :doc:`conversation` - Conversational search and query reformulation
 
 To load a dataset:
@@ -32,4 +33,5 @@ To discover available datasets:
    :caption: Contents:
 
    ir
+   distillation
    conversation

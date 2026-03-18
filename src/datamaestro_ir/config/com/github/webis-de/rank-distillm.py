@@ -1,0 +1,160 @@
+# See documentation on https://datamaestro.readthedocs.io
+from hashlib import md5
+from datamaestro.definitions import Dataset, dataset
+from datamaestro.download import reference
+from datamaestro.download.single import FileDownloader
+from datamaestro.utils import HashCheck
+from datamaestro_ir.data.distillation import (
+    ListwiseDistillationSamplesTSV,
+    ListwiseDistillationSamplesTSVWithAnnotations,
+)
+from datamaestro_ir.config.com.microsoft.msmarco.passage import TrainQrels
+
+ZENODO_BASE = "https://zenodo.org/records/12528410/files/"
+
+
+@dataset(url="https://github.com/webis-de/rank-distillm")
+class MsmarcoBm25Annotated(Dataset):
+    """Top 500 BM25 passages for judged MS MARCO training queries
+
+    For all queries that have at least one relevance judgement
+    in the MS MARCO training query set retrieved by BM25.
+    """
+
+    QRELS = reference(TrainQrels)
+
+    RUN = FileDownloader(
+        "bm25__msmarco_passage_train_judged.run",
+        url=f"{ZENODO_BASE}"
+        "__bm25__msmarco-passage-train-judged.run?download=1",
+        checker=HashCheck("835372b2ab4d20acf10addeae526c559", md5),
+    )
+
+    def config(self) -> ListwiseDistillationSamplesTSVWithAnnotations:
+        return ListwiseDistillationSamplesTSVWithAnnotations.C(
+            qrels=self.QRELS.config(),
+            top_k=500,
+            with_docid=True,
+            with_queryid=True,
+            path=self.RUN.path,
+        )
+
+
+@dataset(url="https://github.com/webis-de/rank-distillm")
+class MsmarcoColbertv2Annotated(Dataset):
+    """Top 500 passages retrieved by ColBERTv2
+
+    for all queries in the MS MARCO training query set.
+
+    WARNING: not all 500 docs necessarily contains relevant documents.
+    """
+
+    QRELS = reference(TrainQrels)
+
+    RUN = FileDownloader(
+        "colbert__msmarco_passage_train_judged.run",
+        url=f"{ZENODO_BASE}"
+        "__colbert__msmarco-passage-train-judged.run?download=1",
+        checker=HashCheck("6ed152027f7270f32fcbfaaa6def951e", md5),
+    )
+
+    def config(self) -> ListwiseDistillationSamplesTSVWithAnnotations:
+        return ListwiseDistillationSamplesTSVWithAnnotations.C(
+            qrels=self.QRELS.config(),
+            top_k=500,
+            with_docid=True,
+            with_queryid=True,
+            path=self.RUN.path,
+        )
+
+
+@dataset(url="https://github.com/webis-de/rank-distillm")
+class RankzephyrBm25_10000Sampled100Annotated(Dataset):
+    """Top 100 BM25 passages reranked by RankZephyr for 10k sampled MSMARCO queries
+
+    All passages are then reranked using RankZephyr and can be used for distillation.
+    """
+
+    RUN = FileDownloader(
+        "rankzephyr_bm25_10000_sampled_100__msmarco_passage_train_judged.run",
+        url=f"{ZENODO_BASE}"
+        "__rankzephyr-bm25-10000-sampled-100__msmarco-passage-train-judged.run?download=1",
+        checker=HashCheck("05e3137ea3526671e1565cc90f9a2c8a", md5),
+    )
+
+    def config(self) -> ListwiseDistillationSamplesTSV:
+        return ListwiseDistillationSamplesTSV.C(
+            top_k=100,
+            with_docid=True,
+            with_queryid=True,
+            path=self.RUN.path,
+        )
+
+
+@dataset(url="https://github.com/webis-de/rank-distillm")
+class RankzephyrColbert10000Sampled100Annotated(Dataset):
+    """Top 100 ColBERT passages reranked by RankZephyr for 10k sampled MSMARCO queries
+
+    All passages are then reranked using RankZephyr and can be used for distillation.
+    """
+
+    RUN = FileDownloader(
+        "rankzephyr_colbert_10000_sampled_100__msmarco_passage_train_judged.run",
+        url=f"{ZENODO_BASE}"
+        "__rankzephyr-colbert-10000-sampled-100__msmarco-passage-train-judged.run?download=1",
+        checker=HashCheck("49f8dbf2c1ee7a2ca1fe517eda528af6", md5),
+    )
+
+    def config(self) -> ListwiseDistillationSamplesTSV:
+        return ListwiseDistillationSamplesTSV.C(
+            top_k=100,
+            with_docid=True,
+            with_queryid=True,
+            path=self.RUN.path,
+        )
+
+
+@dataset(url="https://github.com/webis-de/rank-distillm")
+class RankzephyrColbert10000Sampled50Annotated(Dataset):
+    """Top 50 ColBERT passages reranked by RankZephyr for 10k sampled MSMARCO queries
+
+    All passages are then reranked using RankZephyr and can be used for distillation.
+    """
+
+    RUN = FileDownloader(
+        "rankzephyr_colbert_10000_sampled_50__msmarco_passage_train_judged.run",
+        url=f"{ZENODO_BASE}"
+        "__rankzephyr-colbert-10000-sampled-50__msmarco-passage-train-judged.run?download=1",
+        checker=HashCheck("c37b78874d4893a00566ab40aa453c56", md5),
+    )
+
+    def config(self) -> ListwiseDistillationSamplesTSV:
+        return ListwiseDistillationSamplesTSV.C(
+            top_k=50,
+            with_docid=True,
+            with_queryid=True,
+            path=self.RUN.path,
+        )
+
+
+@dataset(url="https://github.com/webis-de/rank-distillm")
+class RankzephyrColbert10000Sampled10Annotated(Dataset):
+    """Top 10 ColBERT passages reranked by RankZephyr for 10k sampled MSMARCO queries
+
+    All passages are then reranked using RankZephyr and can be used for distillation.
+    """
+
+    RUN = FileDownloader(
+        "rankzephyr_colbert_10000_sampled_10__msmarco_passage_train_judged.run",
+        url=f"{ZENODO_BASE}"
+        "__rankzephyr-colbert-10000-sampled-10__msmarco-passage-train-judged.run?download=1",
+        checker=HashCheck("619bc815bd133bdca44d6331b241d39a", md5),
+    )
+
+    def config(self) -> ListwiseDistillationSamplesTSV:
+        return ListwiseDistillationSamplesTSV.C(
+            top_k=10,
+            with_docid=True,
+            with_queryid=True,
+            path=self.RUN.path,
+        )

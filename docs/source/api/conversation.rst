@@ -12,13 +12,7 @@ Core Data Classes
 
 Entry types for conversation turns:
 
-.. autoclass:: AnswerEntry
-   :members:
-
 .. autoclass:: RetrievedEntry
-   :members:
-
-.. autoclass:: ClarifyingQuestionEntry
    :members:
 
 .. autoclass:: DecontextualizedItem
@@ -26,10 +20,13 @@ Entry types for conversation turns:
 
 Conversation structures:
 
-.. autoclass:: ConversationHistory
+.. autoclass:: ConversationEntry
    :members:
 
-.. autoclass:: ConversationHistoryItem
+.. autoclass:: ConversationNode
+   :members:
+
+.. autoclass:: ConversationTree
    :members:
 
 
@@ -69,3 +66,9 @@ iKAT Dataset
 ~~~~~~~~~~~~
 
 .. autoxpmconfig:: datamaestro_ir.data.conversation.ikat.IkatConversations
+
+
+CaST Dataset
+~~~~~~~~~~~~
+
+.. autoxpmconfig:: datamaestro_ir.data.conversation.cast.CastConversations

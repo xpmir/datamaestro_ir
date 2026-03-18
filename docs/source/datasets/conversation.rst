@@ -5,6 +5,33 @@ This section lists datasets for conversational information retrieval
 and contextual query understanding tasks.
 
 
+Conversational Search
+---------------------
+
+These datasets evaluate multi-turn conversational search systems where
+users engage in conversations to satisfy complex information needs.
+
+
+TREC CaST
+~~~~~~~~~~
+
+The `TREC Conversational Assistance Track <https://www.treccast.ai/>`_ (CaST)
+evaluates conversational information seeking over multi-turn dialogues.
+Runs from 2019 to 2022 with evolving document collections across versions.
+
+.. dm:datasets:: gov.nist.trec.cast ir
+
+
+iKAT
+~~~~
+
+The `iKAT <https://github.com/irlabamsterdam/iKAT>`_ (Interactive Knowledge
+Assistance Track) datasets for conversational search and query rewriting,
+using the ClueWeb22 document collection. Runs from 2023 to 2025.
+
+.. dm:datasets:: com.github.ikat ir
+
+
 Contextual Query Rewriting
 --------------------------
 

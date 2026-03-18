@@ -8,7 +8,7 @@ from pathlib import Path
 from attrs import define
 from typing import Callable, Dict, Iterator, List, Optional, Tuple, Union
 import random
-from experimaestro import Config
+from experimaestro import Config, field
 from datamaestro.definitions import datatasks, Param, Meta
 from datamaestro.data import Base
 from datamaestro_ir.utils.files import auto_open
@@ -101,7 +101,7 @@ class DocumentStore(Documents):
     - return the number of documents
     """
 
-    file_access: Meta[FileAccess] = FileAccess.MMAP
+    file_access: Meta[FileAccess] = field(default=FileAccess.MMAP, ignore_default=True)
     """How to access the file collection (might not have any impact, depends on
     the docstore)"""
 
@@ -192,9 +192,7 @@ class CompressedDocumentStore(DocumentStore, ABC):
     def documents_ext(self, docids: List[str]) -> List[IDTextRecord]:
         docs = self._store.get_by_key(self.lookup_key, docids)
         return [
-            self.converter(d.internal_id, d.keys, d.content)
-            if d is not None
-            else None
+            self.converter(d.internal_id, d.keys, d.content) if d is not None else None
             for d in docs
         ]
 
@@ -211,6 +209,59 @@ class CompressedDocumentStore(DocumentStore, ABC):
             for i, d in enumerate(docs, start=pos):
                 yield self.converter(i, d.keys, d.content)
             pos = end
+
+
+class PrefixedDocumentStore(DocumentStore):
+    """Combines multiple DocumentStores with ID prefixes.
+
+    Each document ID is expected to start with one of the given prefixes,
+    which determines which underlying store to query.
+    """
+
+    sources: Param[List[DocumentStore]]
+    prefixes: Meta[List[str]]
+
+    def document_ext(self, docid: str):
+        for prefix, source in zip(self.prefixes, self.sources):
+            if docid.startswith(prefix):
+                doc = source.document_ext(docid[len(prefix) :])
+                return {**doc, "id": docid}
+        raise KeyError(f"No matching prefix for {docid}")
+
+    def documents_ext(self, docids: List[str]) -> List:
+        # Group by prefix for batch retrieval
+        from collections import defaultdict
+
+        groups: Dict[int, List] = defaultdict(list)
+        index_map: Dict[int, List] = defaultdict(list)
+        for i, docid in enumerate(docids):
+            for j, prefix in enumerate(self.prefixes):
+                if docid.startswith(prefix):
+                    groups[j].append(docid[len(prefix) :])
+                    index_map[j].append(i)
+                    break
+            else:
+                raise KeyError(f"No matching prefix for {docid}")
+
+        results = [None] * len(docids)
+        for j, stripped_ids in groups.items():
+            prefix = self.prefixes[j]
+            docs = self.sources[j].documents_ext(stripped_ids)
+            for idx, doc in zip(index_map[j], docs):
+                if doc is not None:
+                    results[idx] = {**doc, "id": docids[idx]}
+        return results
+
+    def iter(self):
+        for prefix, source in zip(self.prefixes, self.sources):
+            for doc in source.iter():
+                yield {**doc, "id": f"{prefix}{doc['id']}"}
+
+    @property
+    def documentcount(self):
+        if self.count is not None:
+            return self.count
+        return sum(s.documentcount for s in self.sources)
 
 
 class AdhocIndex(DocumentStore):
@@ -241,8 +292,27 @@ class Topics(Base, ABC):
         """Returns the number of topics if known"""
         return None
 
+    @cached_property
+    def _topics_cache(self):
+        topic_map = {}
+        topic_list = []
+        for record in self.iter():
+            topic_map[record["id"]] = record
+            topic_list.append(record)
+        return topic_map, topic_list
+
+    def topic_int(self, internal_topic_id: int) -> IDTextRecord:
+        """Returns a topic given its internal ID"""
+        return self._topics_cache[1][internal_topic_id]
+
+    def topic_ext(self, external_topic_id) -> IDTextRecord:
+        """Returns a topic given its external ID"""
+        return self._topics_cache[0][external_topic_id]
+
 
 AdhocTopics = Topics
+
+TopicsStore = Topics
 
 
 class FilteredTopics(Topics):
@@ -262,18 +332,6 @@ class FilteredTopics(Topics):
             for record in source.iter():
                 if record["id"] in self._qids:
                     yield record
-
-
-class TopicsStore(Topics):
-    """Adhoc topics store"""
-
-    @abstractmethod
-    def topic_int(self, internal_topic_id: int) -> IDTextRecord:
-        """Returns a document given its internal ID"""
-
-    @abstractmethod
-    def topic_ext(self, external_topic_id: int) -> IDTextRecord:
-        """Returns a document given its external ID"""
 
 
 class AdhocAssessments(Base, ABC):
@@ -361,7 +419,7 @@ class TrainingTriplets(Base, ABC):
 class TrainingTripletsLines(TrainingTriplets):
     """Training triplets with one line per triple (query texts)"""
 
-    sep: Meta[str]
+    sep: Meta[str] = field(default="\t", ignore_default=True)
     path: Param[Path]
 
     doc_ids: Meta[bool]

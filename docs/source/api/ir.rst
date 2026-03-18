@@ -35,7 +35,6 @@ Topics
 
 .. autoxpmconfig:: datamaestro_ir.data.csv.Topics
 .. autoxpmconfig:: datamaestro_ir.data.FilteredTopics
-.. autoxpmconfig:: datamaestro_ir.data.TopicsStore
 
 .. autoxpmconfig:: datamaestro_ir.transforms.TopicWrapper
 
@@ -46,6 +45,7 @@ Dataset-specific Topics
 .. autoxpmconfig:: datamaestro_ir.data.lotte.LotteTopics
 .. autoxpmconfig:: datamaestro_ir.data.trec.TrecTopics
 .. autoxpmconfig:: datamaestro_ir.data.cord19.Topics
+
 Documents
 ---------
 
@@ -62,6 +62,14 @@ Dataset-specific documents
 .. autoxpmconfig:: datamaestro_ir.data.beir.BeirDocumentStore
 .. autoxpmconfig:: datamaestro_ir.data.lotte.LotteDocumentStore
 .. autoxpmconfig:: datamaestro_ir.data.stores.MsMarcoPassagesStore
+.. autoxpmconfig:: datamaestro_ir.data.stores.CarParagraphStore
+.. autoxpmconfig:: datamaestro_ir.data.stores.WapoDocumentStore
+.. autoxpmconfig:: datamaestro_ir.data.stores.WapoPassageStore
+.. autoxpmconfig:: datamaestro_ir.data.stores.KiltDocumentStore
+.. autoxpmconfig:: datamaestro_ir.data.stores.MsMarcoDocumentStore
+.. autoxpmconfig:: datamaestro_ir.data.stores.MsMarcoDocumentV2Store
+.. autoxpmconfig:: datamaestro_ir.data.stores.CastSegmentedPassageStore
+.. autoxpmconfig:: datamaestro_ir.data.PrefixedDocumentStore
 
 Assessments
 -----------

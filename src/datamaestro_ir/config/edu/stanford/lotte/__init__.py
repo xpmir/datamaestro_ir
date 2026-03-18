@@ -126,22 +126,21 @@ class LotteDataset(Dataset):
     SPLIT: str
     QTYPE: str
 
-    LOTTE = reference(varname="lotte", reference=LotteData)
+    LOTTE = reference(LotteData)
 
     def config(self) -> Adhoc:
-        col = LotteData.__dataset__
         domain = self.DOMAIN
         split = self.SPLIT
         qtype = self.QTYPE
         return Adhoc.C(
             documents=LotteDocumentStore.C(
-                path=col.datapath / f"store_{domain}_{split}",
+                path=LotteData.data_path / f"store_{domain}_{split}",
             ),
             topics=LotteTopics.C(
-                path=col.datapath / f"{domain}.{split}.{qtype}.queries.tsv",
+                path=LotteData.data_path / f"{domain}.{split}.{qtype}.queries.tsv",
             ),
             assessments=LotteAssessments.C(
-                path=col.datapath / f"{domain}.{split}.{qtype}.qrels.jsonl",
+                path=LotteData.data_path / f"{domain}.{split}.{qtype}.qrels.jsonl",
             ),
         )
 

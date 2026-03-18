@@ -1,5 +1,5 @@
 from typing import Iterator
-from experimaestro import Meta
+from experimaestro import Meta, field
 from datamaestro.data.huggingface import HuggingFaceDataset
 from . import PairwiseSample, PairwiseSampleDataset
 
@@ -14,13 +14,13 @@ class HuggingFacePairwiseSampleDataset(HuggingFaceDataset, PairwiseSampleDataset
 
     ids: Meta[bool]
 
-    query_id: Meta[str] = "qid"
+    query_id: Meta[str] = field(default="qid", ignore_default=True)
     """The name of the field containing the query ID"""
 
-    pos_id: Meta[str] = "pos"
+    pos_id: Meta[str] = field(default="pos", ignore_default=True)
     """The name of the field containing the positive samples"""
 
-    neg_id: Meta[str] = "neg"
+    neg_id: Meta[str] = field(default="neg", ignore_default=True)
     """The name of the field containing the negative samples"""
 
     def iter(self) -> Iterator[PairwiseSample]:

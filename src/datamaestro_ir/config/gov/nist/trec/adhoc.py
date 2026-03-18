@@ -77,15 +77,15 @@ class Trec1Assessments(Dataset):
 class Trec1(Dataset):
     "Ad-hoc task of TREC 1 (1992)"
 
-    DOCUMENTS = reference(varname="documents", reference=Trec1Documents)
-    TOPICS = reference(varname="topics", reference=Trec1Topics)
-    ASSESSMENTS = reference(varname="assessments", reference=Trec1Assessments)
+    DOCUMENTS = reference(Trec1Documents)
+    TOPICS = reference(Trec1Topics)
+    ASSESSMENTS = reference(Trec1Assessments)
 
     def config(self) -> Adhoc:
         return Adhoc.C(
-            documents=self.DOCUMENTS.prepare(),
-            topics=self.TOPICS.prepare(),
-            assessments=self.ASSESSMENTS.prepare(),
+            documents=self.DOCUMENTS.config(),
+            topics=self.TOPICS.config(),
+            assessments=self.ASSESSMENTS.config(),
         )
 
 
@@ -120,15 +120,15 @@ class Trec2Assessments(Dataset):
 class Trec2(Dataset):
     "Ad-hoc task of TREC 2 (1993)"
 
-    DOCUMENTS = reference(varname="documents", reference=Trec1Documents)
-    TOPICS = reference(varname="topics", reference=Trec2Topics)
-    ASSESSMENTS = reference(varname="assessments", reference=Trec2Assessments)
+    DOCUMENTS = reference(Trec1Documents)
+    TOPICS = reference(Trec2Topics)
+    ASSESSMENTS = reference(Trec2Assessments)
 
     def config(self) -> Adhoc:
         return Adhoc.C(
-            documents=self.DOCUMENTS.prepare(),
-            topics=self.TOPICS.prepare(),
-            assessments=self.ASSESSMENTS.prepare(),
+            documents=self.DOCUMENTS.config(),
+            topics=self.TOPICS.config(),
+            assessments=self.ASSESSMENTS.config(),
         )
 
 
@@ -161,15 +161,15 @@ class Trec3Assessments(Dataset):
 class Trec3(Dataset):
     "Ad-hoc task of TREC 3 (1994)"
 
-    DOCUMENTS = reference(varname="documents", reference=Trec1Documents)
-    TOPICS = reference(varname="topics", reference=Trec3Topics)
-    ASSESSMENTS = reference(varname="assessments", reference=Trec3Assessments)
+    DOCUMENTS = reference(Trec1Documents)
+    TOPICS = reference(Trec3Topics)
+    ASSESSMENTS = reference(Trec3Assessments)
 
     def config(self) -> Adhoc:
         return Adhoc.C(
-            documents=self.DOCUMENTS.prepare(),
-            topics=self.TOPICS.prepare(),
-            assessments=self.ASSESSMENTS.prepare(),
+            documents=self.DOCUMENTS.config(),
+            topics=self.TOPICS.config(),
+            assessments=self.ASSESSMENTS.config(),
         )
 
 
@@ -223,15 +223,15 @@ class Trec4Assessments(Dataset):
 class Trec4(Dataset):
     "Ad-hoc task of TREC 4 (1995)"
 
-    DOCUMENTS = reference(varname="documents", reference=Trec4Documents)
-    TOPICS = reference(varname="topics", reference=Trec4Topics)
-    ASSESSMENTS = reference(varname="assessments", reference=Trec4Assessments)
+    DOCUMENTS = reference(Trec4Documents)
+    TOPICS = reference(Trec4Topics)
+    ASSESSMENTS = reference(Trec4Assessments)
 
     def config(self) -> Adhoc:
         return Adhoc.C(
-            documents=self.DOCUMENTS.prepare(),
-            topics=self.TOPICS.prepare(),
-            assessments=self.ASSESSMENTS.prepare(),
+            documents=self.DOCUMENTS.config(),
+            topics=self.TOPICS.config(),
+            assessments=self.ASSESSMENTS.config(),
         )
 
 
@@ -284,15 +284,15 @@ class Trec5Assessments(Dataset):
 class Trec5(Dataset):
     "Ad-hoc task of TREC 5 (1996)"
 
-    DOCUMENTS = reference(varname="documents", reference=Trec5Documents)
-    TOPICS = reference(varname="topics", reference=Trec5Topics)
-    ASSESSMENTS = reference(varname="assessments", reference=Trec5Assessments)
+    DOCUMENTS = reference(Trec5Documents)
+    TOPICS = reference(Trec5Topics)
+    ASSESSMENTS = reference(Trec5Assessments)
 
     def config(self) -> Adhoc:
         return Adhoc.C(
-            documents=self.DOCUMENTS.prepare(),
-            topics=self.TOPICS.prepare(),
-            assessments=self.ASSESSMENTS.prepare(),
+            documents=self.DOCUMENTS.config(),
+            topics=self.TOPICS.config(),
+            assessments=self.ASSESSMENTS.config(),
         )
 
 
@@ -341,15 +341,15 @@ class Trec6Assessments(Dataset):
 class Trec6(Dataset):
     "Ad-hoc task of TREC 6 (1997)"
 
-    DOCUMENTS = reference(varname="documents", reference=Trec6Documents)
-    TOPICS = reference(varname="topics", reference=Trec6Topics)
-    ASSESSMENTS = reference(varname="assessments", reference=Trec6Assessments)
+    DOCUMENTS = reference(Trec6Documents)
+    TOPICS = reference(Trec6Topics)
+    ASSESSMENTS = reference(Trec6Assessments)
 
     def config(self) -> Adhoc:
         return Adhoc.C(
-            documents=self.DOCUMENTS.prepare(),
-            topics=self.TOPICS.prepare(),
-            assessments=self.ASSESSMENTS.prepare(),
+            documents=self.DOCUMENTS.config(),
+            topics=self.TOPICS.config(),
+            assessments=self.ASSESSMENTS.config(),
         )
 
 
@@ -397,15 +397,15 @@ class Trec7Assessments(Dataset):
 class Trec7(Dataset):
     "Ad-hoc task of TREC 3 (1994)"
 
-    DOCUMENTS = reference(varname="documents", reference=Trec7Documents)
-    TOPICS = reference(varname="topics", reference=Trec7Topics)
-    ASSESSMENTS = reference(varname="assessments", reference=Trec7Assessments)
+    DOCUMENTS = reference(Trec7Documents)
+    TOPICS = reference(Trec7Topics)
+    ASSESSMENTS = reference(Trec7Assessments)
 
     def config(self) -> Adhoc:
         return Adhoc.C(
-            documents=self.DOCUMENTS.prepare(),
-            topics=self.TOPICS.prepare(),
-            assessments=self.ASSESSMENTS.prepare(),
+            documents=self.DOCUMENTS.config(),
+            topics=self.TOPICS.config(),
+            assessments=self.ASSESSMENTS.config(),
         )
 
 
@@ -437,15 +437,15 @@ class Trec8Assessments(Dataset):
 class Trec8(Dataset):
     "Ad-hoc task of TREC 8 (1999)"
 
-    DOCUMENTS = reference(varname="documents", reference=Trec7Documents)
-    TOPICS = reference(varname="topics", reference=Trec8Topics)
-    ASSESSMENTS = reference(varname="assessments", reference=Trec8Assessments)
+    DOCUMENTS = reference(Trec7Documents)
+    TOPICS = reference(Trec8Topics)
+    ASSESSMENTS = reference(Trec8Assessments)
 
     def config(self) -> Adhoc:
         return Adhoc.C(
-            documents=self.DOCUMENTS.prepare(),
-            topics=self.TOPICS.prepare(),
-            assessments=self.ASSESSMENTS.prepare(),
+            documents=self.DOCUMENTS.config(),
+            topics=self.TOPICS.config(),
+            assessments=self.ASSESSMENTS.config(),
         )
 
 
@@ -474,15 +474,15 @@ class Robust2004Assessments(Dataset):
 class Robust2004(Dataset):
     "Ad-hoc task of TREC Robust (2004)"
 
-    DOCUMENTS = reference(varname="documents", reference=Trec7Documents)
-    TOPICS = reference(varname="topics", reference=Robust2004Topics)
-    ASSESSMENTS = reference(varname="assessments", reference=Robust2004Assessments)
+    DOCUMENTS = reference(Trec7Documents)
+    TOPICS = reference(Robust2004Topics)
+    ASSESSMENTS = reference(Robust2004Assessments)
 
     def config(self) -> Adhoc:
         return Adhoc.C(
-            documents=self.DOCUMENTS.prepare(),
-            topics=self.TOPICS.prepare(),
-            assessments=self.ASSESSMENTS.prepare(),
+            documents=self.DOCUMENTS.config(),
+            topics=self.TOPICS.config(),
+            assessments=self.ASSESSMENTS.config(),
         )
 
 
@@ -514,13 +514,13 @@ class Robust2005Assessments(Dataset):
 class Robust2005(Dataset):
     "Ad-hoc task of TREC Robust (2005)"
 
-    DOCUMENTS = reference(varname="documents", reference=Aquaint)
-    TOPICS = reference(varname="topics", reference=Robust2005Topics)
-    ASSESSMENTS = reference(varname="assessments", reference=Robust2005Assessments)
+    DOCUMENTS = reference(Aquaint)
+    TOPICS = reference(Robust2005Topics)
+    ASSESSMENTS = reference(Robust2005Assessments)
 
     def config(self) -> Adhoc:
         return Adhoc.C(
-            documents=self.DOCUMENTS.prepare(),
-            topics=self.TOPICS.prepare(),
-            assessments=self.ASSESSMENTS.prepare(),
+            documents=self.DOCUMENTS.config(),
+            topics=self.TOPICS.config(),
+            assessments=self.ASSESSMENTS.config(),
         )

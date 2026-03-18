@@ -58,7 +58,7 @@ class IDTextRecord(IDRecord, TextRecord):
 
 @define
 class ScoredDocument:
-    """A data structure that associates a score with a document"""
+    """A data structure that associates a score with a document, allowing to sort documents by score (e.g., for nDCG)"""
 
     document: dict
     """The document (IDRecord, TextRecord, or IDTextRecord)"""
@@ -68,3 +68,7 @@ class ScoredDocument:
 
     def __repr__(self):
         return f"ScoredDocument(document=({self.document}), score={self.score})"
+
+    # enables to sort documents by score (e.g., for nDCG)
+    def __lt__(self, other):
+        return self.score < other.score
