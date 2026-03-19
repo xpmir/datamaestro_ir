@@ -7,3 +7,6 @@ class Repository(datamaestro.Repository):
     AUTHOR = """Benjamin Piwowarski <benjamin@piwowarski.fr>"""
     DESCRIPTION = """Information Retrieval datasets repository"""
     NAMESPACE = "ir"
+
+
+from . import config

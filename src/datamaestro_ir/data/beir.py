@@ -56,9 +56,7 @@ class BeirDocumentStore(CompressedDocumentStore):
     def documents_ext(self, docids: List[str]) -> List[IDTextRecord]:
         docs = self._store.get_by_key("id", docids)
         return [
-            self.converter(d.internal_id, d.keys, d.content)
-            if d is not None
-            else None
+            self.converter(d.internal_id, d.keys, d.content) if d is not None else None
             for d in docs
         ]
 
@@ -77,9 +75,7 @@ class BeirAssessments(AdhocAssessments):
             for line in fp:
                 parts = line.strip().split("\t")
                 qid, doc_id, score = parts[0], parts[1], float(parts[2])
-                assessments[qid].append(
-                    SimpleAdhocAssessment(doc_id=doc_id, rel=score)
-                )
+                assessments[qid].append(SimpleAdhocAssessment(doc_id=doc_id, rel=score))
 
         for qid, docs in assessments.items():
             yield AdhocAssessedTopic(topic_id=qid, assessments=docs)
@@ -98,3 +94,54 @@ class BeirTopics(Topics):
                     "id": data["_id"],
                     "text_item": SimpleTextItem(text=data["text"]),
                 }
+
+
+class BeirParquetTopics(Topics):
+    """BEIR queries from Parquet."""
+
+    path: Meta[Path]
+
+    def iter(self) -> Iterator[IDTextRecord]:
+        import pandas as pd
+
+        df = pd.read_parquet(self.path)
+        for _, row in df.iterrows():
+            yield {
+                "id": str(row["_id"]),
+                "text_item": SimpleTextItem(text=row["text"]),
+            }
+
+
+class BeirParquetAssessments(AdhocAssessments):
+    """BEIR qrels from Parquet."""
+
+    path: Meta[Path]
+
+    def iter(self) -> Iterator[AdhocAssessedTopic]:
+        import pandas as pd
+        from collections import defaultdict
+
+        df = pd.read_parquet(self.path)
+        assessments = defaultdict(list)
+        for _, row in df.iterrows():
+            qid, doc_id, score = (
+                str(row["query-id"]),
+                str(row["corpus-id"]),
+                float(row.get("score", 1.0)),
+            )
+            assessments[qid].append(SimpleAdhocAssessment(doc_id=doc_id, rel=score))
+
+        for qid, docs in assessments.items():
+            yield AdhocAssessedTopic(topic_id=qid, assessments=docs)
+
+
+def beir_parquet_docstore_iter(path: Path) -> Iterator[tuple[dict[str, str], bytes]]:
+    import pandas as pd
+
+    df = pd.read_parquet(path)
+    for _, row in df.iterrows():
+        # Title and text separated by \0
+        title = row.get("title", "")
+        text = row["text"]
+        content = (title + "\0" + text).encode("utf-8")
+        yield {"id": str(row["_id"])}, content

@@ -42,6 +42,7 @@ Dataset-specific Topics
 -----------------------
 
 .. autoxpmconfig:: datamaestro_ir.data.beir.BeirTopics
+.. autoxpmconfig:: datamaestro_ir.data.beir.BeirParquetTopics
 .. autoxpmconfig:: datamaestro_ir.data.lotte.LotteTopics
 .. autoxpmconfig:: datamaestro_ir.data.trec.TrecTopics
 .. autoxpmconfig:: datamaestro_ir.data.cord19.Topics
@@ -78,6 +79,7 @@ Assessments
     :members:
 
 .. autoxpmconfig:: datamaestro_ir.data.beir.BeirAssessments
+.. autoxpmconfig:: datamaestro_ir.data.beir.BeirParquetAssessments
 .. autoxpmconfig:: datamaestro_ir.data.lotte.LotteAssessments
 .. autoxpmconfig:: datamaestro_ir.data.trec.TrecAdhocAssessments
 
