@@ -127,7 +127,7 @@ class BeirParquetAssessments(AdhocAssessments):
             qid, doc_id, score = (
                 str(row["query-id"]),
                 str(row["corpus-id"]),
-                float(row.get("score", 1.0)),
+                int(row.get("score", 1.0)),
             )
             assessments[qid].append(SimpleAdhocAssessment(doc_id=doc_id, rel=score))
 
