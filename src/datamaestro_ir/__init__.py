@@ -9,4 +9,4 @@ class Repository(datamaestro.Repository):
     NAMESPACE = "ir"
 
 
-from . import config
+__all__ = ["Repository", "version", "version_tuple"]
