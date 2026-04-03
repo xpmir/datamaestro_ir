@@ -260,10 +260,10 @@ class NfcorpusTrain(Dataset):
         return Adhoc.C(
             documents=self.COLLECTION.config(),
             topics=FilteredTopics.C(
-                topics=[BeirTopics.C(path=NfcorpusCollection.data_path / "queries.jsonl")],
+                topics=[BeirTopics.C(path=NfcorpusCollection.data_path / "files" / "queries.jsonl")],
                 qids_path=NfcorpusCollection.data_path / "judged_qids_train.txt",
             ),
-            assessments=BeirAssessments.C(path=NfcorpusCollection.data_path / "train.tsv"),
+            assessments=BeirAssessments.C(path=NfcorpusCollection.data_path / "files" / "train.tsv"),
         )
 
 
@@ -276,10 +276,10 @@ class NfcorpusDev(Dataset):
         return Adhoc.C(
             documents=self.COLLECTION.config(),
             topics=FilteredTopics.C(
-                topics=[BeirTopics.C(path=NfcorpusCollection.data_path / "queries.jsonl")],
+                topics=[BeirTopics.C(path=NfcorpusCollection.data_path / "files" / "queries.jsonl")],
                 qids_path=NfcorpusCollection.data_path / "judged_qids_dev.txt",
             ),
-            assessments=BeirAssessments.C(path=NfcorpusCollection.data_path / "dev.tsv"),
+            assessments=BeirAssessments.C(path=NfcorpusCollection.data_path / "files" / "dev.tsv"),
         )
 
 
@@ -292,10 +292,10 @@ class NfcorpusTest(Dataset):
         return Adhoc.C(
             documents=self.COLLECTION.config(),
             topics=FilteredTopics.C(
-                topics=[BeirTopics.C(path=NfcorpusCollection.data_path / "queries.jsonl")],
+                topics=[BeirTopics.C(path=NfcorpusCollection.data_path / "files" / "queries.jsonl")],
                 qids_path=NfcorpusCollection.data_path / "judged_qids_test.txt",
             ),
-            assessments=BeirAssessments.C(path=NfcorpusCollection.data_path / "test.tsv"),
+            assessments=BeirAssessments.C(path=NfcorpusCollection.data_path / "files" / "test.tsv"),
         )
 
 
@@ -327,10 +327,10 @@ class HotpotqaTrain(Dataset):
         return Adhoc.C(
             documents=self.COLLECTION.config(),
             topics=FilteredTopics.C(
-                topics=[BeirTopics.C(path=HotpotqaCollection.data_path / "queries.jsonl")],
+                topics=[BeirTopics.C(path=HotpotqaCollection.data_path / "files" / "queries.jsonl")],
                 qids_path=HotpotqaCollection.data_path / "judged_qids_train.txt",
             ),
-            assessments=BeirAssessments.C(path=HotpotqaCollection.data_path / "train.tsv"),
+            assessments=BeirAssessments.C(path=HotpotqaCollection.data_path / "files" / "train.tsv"),
         )
 
 
@@ -343,10 +343,10 @@ class HotpotqaDev(Dataset):
         return Adhoc.C(
             documents=self.COLLECTION.config(),
             topics=FilteredTopics.C(
-                topics=[BeirTopics.C(path=HotpotqaCollection.data_path / "queries.jsonl")],
+                topics=[BeirTopics.C(path=HotpotqaCollection.data_path / "files" / "queries.jsonl")],
                 qids_path=HotpotqaCollection.data_path / "judged_qids_dev.txt",
             ),
-            assessments=BeirAssessments.C(path=HotpotqaCollection.data_path / "dev.tsv"),
+            assessments=BeirAssessments.C(path=HotpotqaCollection.data_path / "files" / "dev.tsv"),
         )
 
 
@@ -359,10 +359,10 @@ class HotpotqaTest(Dataset):
         return Adhoc.C(
             documents=self.COLLECTION.config(),
             topics=FilteredTopics.C(
-                topics=[BeirTopics.C(path=HotpotqaCollection.data_path / "queries.jsonl")],
+                topics=[BeirTopics.C(path=HotpotqaCollection.data_path / "files" / "queries.jsonl")],
                 qids_path=HotpotqaCollection.data_path / "judged_qids_test.txt",
             ),
-            assessments=BeirAssessments.C(path=HotpotqaCollection.data_path / "test.tsv"),
+            assessments=BeirAssessments.C(path=HotpotqaCollection.data_path / "files" / "test.tsv"),
         )
 
 
@@ -394,10 +394,10 @@ class FiqaTrain(Dataset):
         return Adhoc.C(
             documents=self.COLLECTION.config(),
             topics=FilteredTopics.C(
-                topics=[BeirTopics.C(path=FiqaCollection.data_path / "queries.jsonl")],
+                topics=[BeirTopics.C(path=FiqaCollection.data_path / "files" / "queries.jsonl")],
                 qids_path=FiqaCollection.data_path / "judged_qids_train.txt",
             ),
-            assessments=BeirAssessments.C(path=FiqaCollection.data_path / "train.tsv"),
+            assessments=BeirAssessments.C(path=FiqaCollection.data_path / "files" / "train.tsv"),
         )
 
 
@@ -410,10 +410,10 @@ class FiqaDev(Dataset):
         return Adhoc.C(
             documents=self.COLLECTION.config(),
             topics=FilteredTopics.C(
-                topics=[BeirTopics.C(path=FiqaCollection.data_path / "queries.jsonl")],
+                topics=[BeirTopics.C(path=FiqaCollection.data_path / "files" / "queries.jsonl")],
                 qids_path=FiqaCollection.data_path / "judged_qids_dev.txt",
             ),
-            assessments=BeirAssessments.C(path=FiqaCollection.data_path / "dev.tsv"),
+            assessments=BeirAssessments.C(path=FiqaCollection.data_path / "files" / "dev.tsv"),
         )
 
 
@@ -426,10 +426,10 @@ class FiqaTest(Dataset):
         return Adhoc.C(
             documents=self.COLLECTION.config(),
             topics=FilteredTopics.C(
-                topics=[BeirTopics.C(path=FiqaCollection.data_path / "queries.jsonl")],
+                topics=[BeirTopics.C(path=FiqaCollection.data_path / "files" / "queries.jsonl")],
                 qids_path=FiqaCollection.data_path / "judged_qids_test.txt",
             ),
-            assessments=BeirAssessments.C(path=FiqaCollection.data_path / "test.tsv"),
+            assessments=BeirAssessments.C(path=FiqaCollection.data_path / "files" / "test.tsv"),
         )
 
 
@@ -460,10 +460,10 @@ class QuoraDev(Dataset):
         return Adhoc.C(
             documents=self.COLLECTION.config(),
             topics=FilteredTopics.C(
-                topics=[BeirTopics.C(path=QuoraCollection.data_path / "queries.jsonl")],
+                topics=[BeirTopics.C(path=QuoraCollection.data_path / "files" / "queries.jsonl")],
                 qids_path=QuoraCollection.data_path / "judged_qids_dev.txt",
             ),
-            assessments=BeirAssessments.C(path=QuoraCollection.data_path / "dev.tsv"),
+            assessments=BeirAssessments.C(path=QuoraCollection.data_path / "files" / "dev.tsv"),
         )
 
 
@@ -476,10 +476,10 @@ class QuoraTest(Dataset):
         return Adhoc.C(
             documents=self.COLLECTION.config(),
             topics=FilteredTopics.C(
-                topics=[BeirTopics.C(path=QuoraCollection.data_path / "queries.jsonl")],
+                topics=[BeirTopics.C(path=QuoraCollection.data_path / "files" / "queries.jsonl")],
                 qids_path=QuoraCollection.data_path / "judged_qids_test.txt",
             ),
-            assessments=BeirAssessments.C(path=QuoraCollection.data_path / "test.tsv"),
+            assessments=BeirAssessments.C(path=QuoraCollection.data_path / "files" / "test.tsv"),
         )
 
 
@@ -510,10 +510,10 @@ class DbpediaEntityDev(Dataset):
         return Adhoc.C(
             documents=self.COLLECTION.config(),
             topics=FilteredTopics.C(
-                topics=[BeirTopics.C(path=DbpediaEntityCollection.data_path / "queries.jsonl")],
+                topics=[BeirTopics.C(path=DbpediaEntityCollection.data_path / "files" / "queries.jsonl")],
                 qids_path=DbpediaEntityCollection.data_path / "judged_qids_dev.txt",
             ),
-            assessments=BeirAssessments.C(path=DbpediaEntityCollection.data_path / "dev.tsv"),
+            assessments=BeirAssessments.C(path=DbpediaEntityCollection.data_path / "files" / "dev.tsv"),
         )
 
 
@@ -526,10 +526,10 @@ class DbpediaEntityTest(Dataset):
         return Adhoc.C(
             documents=self.COLLECTION.config(),
             topics=FilteredTopics.C(
-                topics=[BeirTopics.C(path=DbpediaEntityCollection.data_path / "queries.jsonl")],
+                topics=[BeirTopics.C(path=DbpediaEntityCollection.data_path / "files" / "queries.jsonl")],
                 qids_path=DbpediaEntityCollection.data_path / "judged_qids_test.txt",
             ),
-            assessments=BeirAssessments.C(path=DbpediaEntityCollection.data_path / "test.tsv"),
+            assessments=BeirAssessments.C(path=DbpediaEntityCollection.data_path / "files" / "test.tsv"),
         )
 
 
@@ -561,10 +561,10 @@ class FeverTrain(Dataset):
         return Adhoc.C(
             documents=self.COLLECTION.config(),
             topics=FilteredTopics.C(
-                topics=[BeirTopics.C(path=FeverCollection.data_path / "queries.jsonl")],
+                topics=[BeirTopics.C(path=FeverCollection.data_path / "files" / "queries.jsonl")],
                 qids_path=FeverCollection.data_path / "judged_qids_train.txt",
             ),
-            assessments=BeirAssessments.C(path=FeverCollection.data_path / "train.tsv"),
+            assessments=BeirAssessments.C(path=FeverCollection.data_path / "files" / "train.tsv"),
         )
 
 
@@ -577,10 +577,10 @@ class FeverDev(Dataset):
         return Adhoc.C(
             documents=self.COLLECTION.config(),
             topics=FilteredTopics.C(
-                topics=[BeirTopics.C(path=FeverCollection.data_path / "queries.jsonl")],
+                topics=[BeirTopics.C(path=FeverCollection.data_path / "files" / "queries.jsonl")],
                 qids_path=FeverCollection.data_path / "judged_qids_dev.txt",
             ),
-            assessments=BeirAssessments.C(path=FeverCollection.data_path / "dev.tsv"),
+            assessments=BeirAssessments.C(path=FeverCollection.data_path / "files" / "dev.tsv"),
         )
 
 
@@ -593,10 +593,10 @@ class FeverTest(Dataset):
         return Adhoc.C(
             documents=self.COLLECTION.config(),
             topics=FilteredTopics.C(
-                topics=[BeirTopics.C(path=FeverCollection.data_path / "queries.jsonl")],
+                topics=[BeirTopics.C(path=FeverCollection.data_path / "files" / "queries.jsonl")],
                 qids_path=FeverCollection.data_path / "judged_qids_test.txt",
             ),
-            assessments=BeirAssessments.C(path=FeverCollection.data_path / "test.tsv"),
+            assessments=BeirAssessments.C(path=FeverCollection.data_path / "files" / "test.tsv"),
         )
 
 
@@ -627,10 +627,10 @@ class ScifactTrain(Dataset):
         return Adhoc.C(
             documents=self.COLLECTION.config(),
             topics=FilteredTopics.C(
-                topics=[BeirTopics.C(path=ScifactCollection.data_path / "queries.jsonl")],
+                topics=[BeirTopics.C(path=ScifactCollection.data_path / "files" / "queries.jsonl")],
                 qids_path=ScifactCollection.data_path / "judged_qids_train.txt",
             ),
-            assessments=BeirAssessments.C(path=ScifactCollection.data_path / "train.tsv"),
+            assessments=BeirAssessments.C(path=ScifactCollection.data_path / "files" / "train.tsv"),
         )
 
 
@@ -643,10 +643,10 @@ class ScifactTest(Dataset):
         return Adhoc.C(
             documents=self.COLLECTION.config(),
             topics=FilteredTopics.C(
-                topics=[BeirTopics.C(path=ScifactCollection.data_path / "queries.jsonl")],
+                topics=[BeirTopics.C(path=ScifactCollection.data_path / "files" / "queries.jsonl")],
                 qids_path=ScifactCollection.data_path / "judged_qids_test.txt",
             ),
-            assessments=BeirAssessments.C(path=ScifactCollection.data_path / "test.tsv"),
+            assessments=BeirAssessments.C(path=ScifactCollection.data_path / "files" / "test.tsv"),
         )
 
 

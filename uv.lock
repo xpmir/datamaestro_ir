@@ -363,6 +363,7 @@ dependencies = [
     { name = "attrs" },
     { name = "datamaestro" },
     { name = "experimaestro" },
+    { name = "impact-index" },
     { name = "typing-extensions" },
 ]
 
@@ -388,15 +389,13 @@ docs = [
     { name = "sphinx-rtd-theme" },
     { name = "sphinx-toolbox" },
 ]
-ir = [
-    { name = "impact-index" },
-]
 
 [package.metadata]
 requires-dist = [
     { name = "attrs" },
     { name = "datamaestro", specifier = ">=1.9.3" },
     { name = "experimaestro", specifier = ">=2.0.0" },
+    { name = "impact-index", specifier = ">=0.32.0" },
     { name = "typing-extensions" },
 ]
 
@@ -417,7 +416,6 @@ docs = [
     { name = "sphinx-rtd-theme", specifier = ">=3.1.0" },
     { name = "sphinx-toolbox", specifier = ">=4.1.2" },
 ]
-ir = [{ name = "impact-index", specifier = ">=0.32.0" }]
 
 [[package]]
 name = "decorator"
