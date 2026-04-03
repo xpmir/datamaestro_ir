@@ -11,19 +11,19 @@ from datamaestro_ir.download.docstore import docstore_builder
 from datamaestro_ir.data import Adhoc
 
 NANO_BEIR_DATA = {
-    "nano-arguana": "NanoArguAna",
-    "nano-climate-fever": "NanoClimateFEVER",
-    "nano-dbpedia-entity": "NanoDBPedia",
-    "nano-fever": "NanoFEVER",
-    "nano-fiqa": "NanoFiQA2018",
-    "nano-hotpotqa": "NanoHotpotQA",
-    "nano-msmarco": "NanoMSMARCO",
-    "nano-nfcorpus": "NanoNFCorpus",
-    "nano-nq": "NanoNQ",
-    "nano-quora": "NanoQuoraRetrieval",
-    "nano-scidocs": "NanoSCIDOCS",
-    "nano-scifact": "NanoSciFact",
-    "nano-webis-touche2020": "NanoTouche2020",
+    "arguana": "NanoArguAna",
+    "climate-fever": "NanoClimateFEVER",
+    "dbpedia-entity": "NanoDBPedia",
+    "fever": "NanoFEVER",
+    "fiqa": "NanoFiQA2018",
+    "hotpotqa": "NanoHotpotQA",
+    "msmarco": "NanoMSMARCO",
+    "nfcorpus": "NanoNFCorpus",
+    "nq": "NanoNQ",
+    "quora": "NanoQuoraRetrieval",
+    "scidocs": "NanoSCIDOCS",
+    "scifact": "NanoSciFact",
+    "webis-touche2020": "NanoTouche2020",
 }
 
 
