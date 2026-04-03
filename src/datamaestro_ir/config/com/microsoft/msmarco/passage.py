@@ -277,7 +277,9 @@ class TrainTriplesSmallText(Dataset):
     )
 
     def config(self) -> TrainingTripletsLines:
-        return TrainingTripletsLines.C(path=self.TRIPLES.path)
+        return TrainingTripletsLines.C(
+            path=self.TRIPLES.path, doc_ids=False, topic_ids=False
+        )
 
 
 

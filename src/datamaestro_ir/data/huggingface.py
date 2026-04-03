@@ -12,7 +12,7 @@ class HuggingFacePairwiseSampleDataset(HuggingFaceDataset, PairwiseSampleDataset
         ids: True if the triplet is made of IDs, False otherwise
     """
 
-    ids: Meta[bool]
+    ids: Meta[bool] = field(default=True, ignore_default=True)
 
     query_id: Meta[str] = field(default="qid", ignore_default=True)
     """The name of the field containing the query ID"""
