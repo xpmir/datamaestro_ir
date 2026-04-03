@@ -30,6 +30,7 @@ dependencies = [
     "attrs",
     "experimaestro>=2.0.0",
     "typing_extensions",
+    "impact-index>=0.32.0"
 ]
 
 [project.urls]
@@ -83,9 +84,6 @@ docs = [
     "sphinx-codeautolink>=0.15.0",
     "sphinx-rtd-theme>=3.1.0",
     "sphinx-toolbox>=4.1.2",
-]
-ir = [
-    "impact-index>=0.32.0",
 ]
 
 [tool.ruff]
