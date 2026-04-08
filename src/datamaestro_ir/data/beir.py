@@ -74,7 +74,7 @@ class BeirAssessments(AdhocAssessments):
             next(fp)  # skip header
             for line in fp:
                 parts = line.strip().split("\t")
-                qid, doc_id, score = parts[0], parts[1], float(parts[2])
+                qid, doc_id, score = parts[0], parts[1], int(parts[2])
                 assessments[qid].append(SimpleAdhocAssessment(doc_id=doc_id, rel=score))
 
         for qid, docs in assessments.items():
