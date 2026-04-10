@@ -246,3 +246,18 @@ def iter_tipster_collection(
 
     for path in sorted(files):
         yield from parse_tipster_file(path)
+
+
+def iter_tipster_for_store(
+    base_path: Path, patterns: List[str]
+) -> Iterator[tuple[dict[str, str], bytes]]:
+    """Iterate over TIPSTER documents yielding (keys, content) pairs
+    suitable for docstore_builder."""
+    import json
+
+    for doc in iter_tipster_collection(base_path, patterns):
+        text_item = doc["text_item"]
+        content = json.dumps(
+            {"title": text_item.title, "body": text_item.body}
+        ).encode("utf-8")
+        yield {"id": doc["id"]}, content

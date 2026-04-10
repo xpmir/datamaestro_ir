@@ -3,7 +3,10 @@
 See [https://trec.nist.gov/data/test_coll.html](https://trec.nist.gov/data/test_coll.html)
 """
 
-from datamaestro.download import reference
+import logging
+from pathlib import Path
+
+from datamaestro.download import FolderResource, reference
 from datamaestro.download.single import FileDownloader, ConcatDownloader
 from datamaestro.download.links import links
 from datamaestro.stream import TransformList
@@ -16,10 +19,104 @@ from datamaestro_ir.data.trec import (
     TrecTopics,
     TrecAdhocAssessments,
 )
-from datamaestro_ir.data import Adhoc
+from datamaestro_ir.data import Adhoc, DocumentStore
+from datamaestro_ir.data.stores import TipsterDocumentStore
 
 from . import tipster
 from datamaestro_ir.config.edu.upenn.ldc.aquaint import Aquaint
+
+logger = logging.getLogger(__name__)
+
+
+class _TipsterDocstoreBuilder(FolderResource):
+    """Builds a TipsterDocumentStore from a referenced document collection."""
+
+    def __init__(self, docs_ref):
+        super().__init__()
+        self._docs_ref = docs_ref
+        self._dependencies.append(docs_ref)
+
+    def _download(self, destination: Path) -> None:
+        import json
+
+        import impact_index
+
+        from datamaestro_ir.interfaces.trec import iter_tipster_collection
+
+        docs_config = self._docs_ref.config()
+
+        from tqdm import tqdm
+
+        destination.mkdir(parents=True, exist_ok=True)
+        logger.info("Building TIPSTER docstore in %s", destination)
+        builder = impact_index.DocumentStoreBuilder(str(destination), 4096, 3)
+        for doc in tqdm(
+            iter_tipster_collection(docs_config.path, docs_config.patterns),
+            desc="Building docstore",
+        ):
+            text_item = doc["text_item"]
+            content = json.dumps(
+                {"title": text_item.title, "body": text_item.body}
+            ).encode("utf-8")
+            builder.add({"id": doc["id"]}, content)
+        builder.build()
+
+
+def with_docstore(docs_cls):
+    """Create a .store variant of a document collection Dataset.
+
+    Returns a new Dataset whose config() yields a TipsterDocumentStore.
+    The original document files are referenced transiently (cleaned up
+    after the store is built).
+
+    Usage::
+
+        Trec7DocumentsStore = with_docstore(Trec7Documents)
+    """
+    base_id = docs_cls.__dataset__.id
+
+    @dataset(id=f"{base_id}.store")
+    class _Store(Dataset):
+        DOCUMENTS = reference(docs_cls)
+        DOCUMENTS.transient = True
+        store = _TipsterDocstoreBuilder(DOCUMENTS)
+
+        def config(self) -> TipsterDocumentStore:
+            return TipsterDocumentStore.C(path=self.store.path)
+
+    _Store.__qualname__ = f"{docs_cls.__name__}Store"
+    _Store.__name__ = f"{docs_cls.__name__}Store"
+    return _Store
+
+
+def with_store(adhoc_cls, docs_store_cls):
+    """Create a .withstore variant of an adhoc dataset.
+
+    The variant uses a pre-built TipsterDocumentStore instead of
+    raw document files.
+
+    Usage::
+
+        Robust2004WithStore = with_store(Robust2004, Trec7DocumentsStore)
+    """
+    base_id = adhoc_cls.__dataset__.id
+
+    @dataset(id=f"{base_id}.withstore")
+    class _WithStore(Dataset):
+        DOCUMENTS = reference(docs_store_cls)
+        BASE = reference(adhoc_cls)
+
+        def config(self) -> Adhoc:
+            base_config = self.BASE.config()
+            return Adhoc.C(
+                documents=self.DOCUMENTS.config(),
+                topics=base_config.topics,
+                assessments=base_config.assessments,
+            )
+
+    _WithStore.__qualname__ = f"{adhoc_cls.__name__}WithStore"
+    _WithStore.__name__ = f"{adhoc_cls.__name__}WithStore"
+    return _WithStore
 
 
 # --- TREC 1 (1992)
@@ -569,3 +666,26 @@ class Robust2005(Dataset):
             topics=self.TOPICS.config(),
             assessments=self.ASSESSMENTS.config(),
         )
+
+
+# --- Document stores ---
+
+Trec1DocumentsStore = with_docstore(Trec1Documents)
+Trec4DocumentsStore = with_docstore(Trec4Documents)
+Trec5DocumentsStore = with_docstore(Trec5Documents)
+Trec6DocumentsStore = with_docstore(Trec6Documents)
+Trec7DocumentsStore = with_docstore(Trec7Documents)
+AquaintStore = with_docstore(Aquaint)
+
+# --- WithStore variants ---
+
+Trec1WithStore = with_store(Trec1, Trec1DocumentsStore)
+Trec2WithStore = with_store(Trec2, Trec1DocumentsStore)
+Trec3WithStore = with_store(Trec3, Trec1DocumentsStore)
+Trec4WithStore = with_store(Trec4, Trec4DocumentsStore)
+Trec5WithStore = with_store(Trec5, Trec5DocumentsStore)
+Trec6WithStore = with_store(Trec6, Trec6DocumentsStore)
+Trec7WithStore = with_store(Trec7, Trec7DocumentsStore)
+Trec8WithStore = with_store(Trec8, Trec7DocumentsStore)
+Robust2004WithStore = with_store(Robust2004, Trec7DocumentsStore)
+Robust2005WithStore = with_store(Robust2005, AquaintStore)

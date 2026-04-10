@@ -10,6 +10,7 @@ from datamaestro_ir.data.base import (
 )
 from datamaestro_ir.data import CompressedDocumentStore, DocumentStore
 from datamaestro_ir.data.formats import (
+    DocumentWithTitle,
     MsMarcoDocument,
     TitleUrlDocument,
     WapoDocument,
@@ -174,6 +175,31 @@ class MsMarcoDocumentV2Store(CompressedDocumentStore):
             "id": keys["id"],
             "text_item": MsMarcoDocument(
                 url=data["url"],
+                title=data["title"],
+                body=data["body"],
+            ),
+        }
+
+
+# --- TIPSTER ---
+
+
+class TipsterDocumentStore(CompressedDocumentStore):
+    """Document store for TIPSTER/AQUAINT document collections.
+
+    Each document is stored as JSON with title and body fields,
+    matching the structured output of the TIPSTER SGML parser.
+    """
+
+    lookup_key = "id"
+
+    def converter(
+        self, internal_id: int, keys: dict[str, str], content: bytes
+    ) -> IDTextRecord:
+        data = json.loads(content)
+        return {
+            "id": keys["id"],
+            "text_item": DocumentWithTitle(
                 title=data["title"],
                 body=data["body"],
             ),
