@@ -19,7 +19,7 @@ from datamaestro_ir.data.trec import (
     TrecTopics,
     TrecAdhocAssessments,
 )
-from datamaestro_ir.data import Adhoc, DocumentStore
+from datamaestro_ir.data import Adhoc
 from datamaestro_ir.data.stores import TipsterDocumentStore
 
 from . import tipster
