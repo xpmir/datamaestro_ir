@@ -46,7 +46,15 @@ class Trec1Documents(Dataset):
     )
 
     def config(self) -> TipsterCollection:
-        return TipsterCollection.C(path=self.DOCUMENTS.path)
+        return TipsterCollection.C(
+            path=self.DOCUMENTS.path,
+            patterns=[
+                "*/documents/AP*",
+                "*/documents/FR*",
+                "*/documents/WSJ*",
+                "*/documents/ZF*",
+            ],
+        )
 
 
 @dataset(id=".1.topics", url="")
@@ -195,7 +203,16 @@ class Trec4Documents(Dataset):
     )
 
     def config(self) -> TipsterCollection:
-        return TipsterCollection.C(path=self.DOCUMENTS.path)
+        return TipsterCollection.C(
+            path=self.DOCUMENTS.path,
+            patterns=[
+                "*/documents/AP*",
+                "*/documents/FR*",
+                "*/documents/SJM*",
+                "*/documents/WSJ*",
+                "*/documents/ZF*",
+            ],
+        )
 
 
 @dataset(id=".4.topics")
@@ -256,7 +273,18 @@ class Trec5Documents(Dataset):
     )
 
     def config(self) -> TipsterCollection:
-        return TipsterCollection.C(path=self.DOCUMENTS.path)
+        return TipsterCollection.C(
+            path=self.DOCUMENTS.path,
+            patterns=[
+                "*/documents/AP*",
+                "*/documents/*/CR*",
+                "*/documents/FR*",
+                "*/documents/*/FR*",
+                "*/documents/*/FT*",
+                "*/documents/WSJ*",
+                "*/documents/ZF*",
+            ],
+        )
 
 
 @dataset(id=".5.topics")
@@ -313,7 +341,16 @@ class Trec6Documents(Dataset):
     )
 
     def config(self) -> TipsterCollection:
-        return TipsterCollection.C(path=self.DOCUMENTS.path)
+        return TipsterCollection.C(
+            path=self.DOCUMENTS.path,
+            patterns=[
+                "*/documents/*/CR*",
+                "*/documents/FB*",
+                "*/documents/*/FR*",
+                "*/documents/*/FT*",
+                "*/documents/LA*",
+            ],
+        )
 
 
 @dataset(id=".6.topics")
@@ -369,7 +406,15 @@ class Trec7Documents(Dataset):
     )
 
     def config(self) -> TipsterCollection:
-        return TipsterCollection.C(path=self.DOCUMENTS.path)
+        return TipsterCollection.C(
+            path=self.DOCUMENTS.path,
+            patterns=[
+                "*/documents/FB*",
+                "*/documents/*/FR*",
+                "*/documents/*/FT*",
+                "*/documents/LA*",
+            ],
+        )
 
 
 @dataset(id=".7.topics")

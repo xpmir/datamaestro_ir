@@ -2,7 +2,7 @@
 
 from datamaestro.context import DatafolderPath
 from datamaestro.definitions import Dataset, dataset
-from datamaestro.download.links import links, linkfolder
+from datamaestro.download.links import links, linkfolder, GlobChecker
 from datamaestro_ir.data.trec import TipsterCollection
 
 
@@ -14,11 +14,15 @@ class Apw(Dataset):
     """Associated Press (1998-2000)"""
 
     DOCUMENTS = linkfolder(
-        "documents", [DatafolderPath("edu.upenn.ldc.aquaint", "APW")]
+        "documents",
+        [DatafolderPath("edu.upenn.ldc.aquaint", "APW")],
+        checker=GlobChecker("*/*_APW_ENG*", "42c4746a12b2436476f62b081887b15d"),
     )
 
     def config(self) -> TipsterCollection:
-        return TipsterCollection.C(path=self.DOCUMENTS.path)
+        return TipsterCollection.C(
+            path=self.DOCUMENTS.path, patterns=["*/*_APW_ENG*"]
+        )
 
 
 @dataset(url=URL, id=".nyt")
@@ -26,11 +30,15 @@ class Nyt(Dataset):
     """New York Times (1998-2000)"""
 
     DOCUMENTS = linkfolder(
-        "documents", [DatafolderPath("edu.upenn.ldc.aquaint", "NYT")]
+        "documents",
+        [DatafolderPath("edu.upenn.ldc.aquaint", "NYT")],
+        checker=GlobChecker("*/*_NYT*", "1edc2eb9c63a431976b453e406cbea71"),
     )
 
     def config(self) -> TipsterCollection:
-        return TipsterCollection.C(path=self.DOCUMENTS.path)
+        return TipsterCollection.C(
+            path=self.DOCUMENTS.path, patterns=["*/*_NYT*"]
+        )
 
 
 @dataset(url=URL, id=".xie")
@@ -38,11 +46,15 @@ class Xie(Dataset):
     """Xinhua News Agency newswires (1996-2000)"""
 
     DOCUMENTS = linkfolder(
-        "documents", [DatafolderPath("edu.upenn.ldc.aquaint", "XIE")]
+        "documents",
+        [DatafolderPath("edu.upenn.ldc.aquaint", "XIE")],
+        checker=GlobChecker("*/*_XIN_ENG*", "2eaf5b3391ed943fe79daa0fead7005a"),
     )
 
     def config(self) -> TipsterCollection:
-        return TipsterCollection.C(path=self.DOCUMENTS.path)
+        return TipsterCollection.C(
+            path=self.DOCUMENTS.path, patterns=["*/*_XIN_ENG*"]
+        )
 
 
 @dataset(url=URL, id="")
@@ -52,4 +64,11 @@ class Aquaint(Dataset):
     DOCUMENTS = links("documents", apw=Apw, nyt=Nyt, xie=Xie)
 
     def config(self) -> TipsterCollection:
-        return TipsterCollection.C(path=self.DOCUMENTS.path)
+        return TipsterCollection.C(
+            path=self.DOCUMENTS.path,
+            patterns=[
+                "*/documents/*/*_APW_ENG*",
+                "*/documents/*/*_NYT*",
+                "*/documents/*/*_XIN_ENG*",
+            ],
+        )

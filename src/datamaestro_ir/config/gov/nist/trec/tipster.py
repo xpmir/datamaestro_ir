@@ -40,7 +40,7 @@ class Ap88(Dataset):
     )
 
     def config(self) -> TipsterCollection:
-        return TipsterCollection.C(path=self.DOCUMENTS.path)
+        return TipsterCollection.C(path=self.DOCUMENTS.path, patterns=["AP*"])
 
 
 @TIPSTER
@@ -54,7 +54,7 @@ class Ap89(Dataset):
     )
 
     def config(self) -> TipsterCollection:
-        return TipsterCollection.C(path=self.DOCUMENTS.path)
+        return TipsterCollection.C(path=self.DOCUMENTS.path, patterns=["AP*"])
 
 
 @TIPSTER
@@ -68,7 +68,7 @@ class Ap90(Dataset):
     )
 
     def config(self) -> TipsterCollection:
-        return TipsterCollection.C(path=self.DOCUMENTS.path)
+        return TipsterCollection.C(path=self.DOCUMENTS.path, patterns=["AP*"])
 
 
 @TIPSTER
@@ -82,7 +82,7 @@ class Doe1(Dataset):
     )
 
     def config(self) -> TipsterCollection:
-        return TipsterCollection.C(path=self.DOCUMENTS.path)
+        return TipsterCollection.C(path=self.DOCUMENTS.path, patterns=["DOE*"])
 
 
 # --- Wall Street Journal (1987-92)
@@ -99,7 +99,7 @@ class Wsj87(Dataset):
     )
 
     def config(self) -> TipsterCollection:
-        return TipsterCollection.C(path=self.DOCUMENTS.path)
+        return TipsterCollection.C(path=self.DOCUMENTS.path, patterns=["WSJ*"])
 
 
 @TIPSTER
@@ -113,7 +113,7 @@ class Wsj88(Dataset):
     )
 
     def config(self) -> TipsterCollection:
-        return TipsterCollection.C(path=self.DOCUMENTS.path)
+        return TipsterCollection.C(path=self.DOCUMENTS.path, patterns=["WSJ*"])
 
 
 @TIPSTER
@@ -127,7 +127,7 @@ class Wsj89(Dataset):
     )
 
     def config(self) -> TipsterCollection:
-        return TipsterCollection.C(path=self.DOCUMENTS.path)
+        return TipsterCollection.C(path=self.DOCUMENTS.path, patterns=["WSJ*"])
 
 
 @TIPSTER
@@ -141,7 +141,7 @@ class Wsj90(Dataset):
     )
 
     def config(self) -> TipsterCollection:
-        return TipsterCollection.C(path=self.DOCUMENTS.path)
+        return TipsterCollection.C(path=self.DOCUMENTS.path, patterns=["WSJ*"])
 
 
 @TIPSTER
@@ -155,7 +155,7 @@ class Wsj91(Dataset):
     )
 
     def config(self) -> TipsterCollection:
-        return TipsterCollection.C(path=self.DOCUMENTS.path)
+        return TipsterCollection.C(path=self.DOCUMENTS.path, patterns=["WSJ*"])
 
 
 @TIPSTER
@@ -169,7 +169,7 @@ class Wsj92(Dataset):
     )
 
     def config(self) -> TipsterCollection:
-        return TipsterCollection.C(path=self.DOCUMENTS.path)
+        return TipsterCollection.C(path=self.DOCUMENTS.path, patterns=["WSJ*"])
 
 
 # --- Federal Register (1988-89)
@@ -186,7 +186,7 @@ class Fr88(Dataset):
     )
 
     def config(self) -> TipsterCollection:
-        return TipsterCollection.C(path=self.DOCUMENTS.path)
+        return TipsterCollection.C(path=self.DOCUMENTS.path, patterns=["FR*"])
 
 
 @TIPSTER
@@ -200,7 +200,7 @@ class Fr89(Dataset):
     )
 
     def config(self) -> TipsterCollection:
-        return TipsterCollection.C(path=self.DOCUMENTS.path)
+        return TipsterCollection.C(path=self.DOCUMENTS.path, patterns=["FR*"])
 
 
 @TIPSTER
@@ -210,11 +210,11 @@ class Fr94(Dataset):
     DOCUMENTS = linkfolder(
         "documents",
         [DatafolderPath("gov.nist.trec.tipster", "Disk4/FR94")],
-        checker=GlobChecker("**/*", "014308e9aadd0033baf46c56c91d9505"),
+        checker=GlobChecker("*/FR*", "2ef2d16cc289ff1f60ea07b24aec1550"),
     )
 
     def config(self) -> TipsterCollection:
-        return TipsterCollection.C(path=self.DOCUMENTS.path)
+        return TipsterCollection.C(path=self.DOCUMENTS.path, patterns=["*/FR*"])
 
 
 # # ZIFF (1988-92)
@@ -231,7 +231,7 @@ class Ziff1(Dataset):
     )
 
     def config(self) -> TipsterCollection:
-        return TipsterCollection.C(path=self.DOCUMENTS.path)
+        return TipsterCollection.C(path=self.DOCUMENTS.path, patterns=["ZF*"])
 
 
 @TIPSTER
@@ -245,7 +245,7 @@ class Ziff2(Dataset):
     )
 
     def config(self) -> TipsterCollection:
-        return TipsterCollection.C(path=self.DOCUMENTS.path)
+        return TipsterCollection.C(path=self.DOCUMENTS.path, patterns=["ZF*"])
 
 
 @TIPSTER
@@ -259,7 +259,7 @@ class Ziff3(Dataset):
     )
 
     def config(self) -> TipsterCollection:
-        return TipsterCollection.C(path=self.DOCUMENTS.path)
+        return TipsterCollection.C(path=self.DOCUMENTS.path, patterns=["ZF*"])
 
 
 @TIPSTER
@@ -273,7 +273,7 @@ class Sjm1(Dataset):
     )
 
     def config(self) -> TipsterCollection:
-        return TipsterCollection.C(path=self.DOCUMENTS.path)
+        return TipsterCollection.C(path=self.DOCUMENTS.path, patterns=["SJM*"])
 
 
 @TIPSTER
@@ -283,11 +283,11 @@ class Cr1(Dataset):
     DOCUMENTS = linkfolder(
         "documents",
         [DatafolderPath("gov.nist.trec.tipster", "Disk4/CR")],
-        checker=GlobChecker("**/*", "85fb871f13de38bf6b0d36cbfec1d808"),
+        checker=GlobChecker("*/CR*", "d9e8ada78b16ee211d851a1f5b200a53"),
     )
 
     def config(self) -> TipsterCollection:
-        return TipsterCollection.C(path=self.DOCUMENTS.path)
+        return TipsterCollection.C(path=self.DOCUMENTS.path, patterns=["*/CR*"])
 
 
 @TIPSTER
@@ -297,11 +297,11 @@ class Ft1(Dataset):
     DOCUMENTS = linkfolder(
         "documents",
         [DatafolderPath("gov.nist.trec.tipster", "Disk4/FT")],
-        checker=GlobChecker("**/*", "807af9f4aa813a9fdf3390870fb37c9a"),
+        checker=GlobChecker("*/FT*", "807af9f4aa813a9fdf3390870fb37c9a"),
     )
 
     def config(self) -> TipsterCollection:
-        return TipsterCollection.C(path=self.DOCUMENTS.path)
+        return TipsterCollection.C(path=self.DOCUMENTS.path, patterns=["*/FT*"])
 
 
 @TIPSTER
@@ -315,7 +315,7 @@ class Fbis1(Dataset):
     )
 
     def config(self) -> TipsterCollection:
-        return TipsterCollection.C(path=self.DOCUMENTS.path)
+        return TipsterCollection.C(path=self.DOCUMENTS.path, patterns=["FB*"])
 
 
 @TIPSTER
@@ -329,4 +329,4 @@ class La8990(Dataset):
     )
 
     def config(self) -> TipsterCollection:
-        return TipsterCollection.C(path=self.DOCUMENTS.path)
+        return TipsterCollection.C(path=self.DOCUMENTS.path, patterns=["LA*"])

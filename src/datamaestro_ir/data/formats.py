@@ -13,7 +13,7 @@ class DocumentWithTitle(TextItem):
 
     @cached_property
     def text(self):
-        return f"{self.title} {self.body}"
+        return f"{self.title} {self.body}".strip()
 
 
 @define

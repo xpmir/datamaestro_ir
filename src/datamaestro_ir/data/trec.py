@@ -75,6 +75,10 @@ class TrecAdhocResults(AdhocResults):
 
 class TipsterCollection(Documents):
     path: Param[Path]
+    patterns: Param[List[str]]
 
     def iter(self):
-        raise NotImplementedError()
+        """Iterate over TIPSTER SGML documents"""
+        import datamaestro_ir.interfaces.trec as trec
+
+        yield from trec.iter_tipster_collection(self.path, self.patterns)
