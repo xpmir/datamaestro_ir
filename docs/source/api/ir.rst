@@ -70,6 +70,7 @@ Dataset-specific documents
 .. autoxpmconfig:: datamaestro_ir.data.stores.MsMarcoDocumentStore
 .. autoxpmconfig:: datamaestro_ir.data.stores.MsMarcoDocumentV2Store
 .. autoxpmconfig:: datamaestro_ir.data.stores.CastSegmentedPassageStore
+.. autoxpmconfig:: datamaestro_ir.data.stores.TipsterDocumentStore
 .. autoxpmconfig:: datamaestro_ir.data.PrefixedDocumentStore
 
 Assessments
