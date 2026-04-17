@@ -120,27 +120,38 @@ class LotteData(Dataset):
 
 
 class LotteDataset(Dataset):
-    """Base class for LoTTE per-task datasets."""
+    """Base class for LoTTE per-task datasets.
+
+    Each concrete subclass gets its own ``LOTTE`` reference resource via
+    ``__init_subclass__``. A base-class attribute won't do: the
+    ``@dataset`` decorator only scans ``vars(cls)`` (own __dict__) when
+    binding resources, so an inherited ``reference`` would never be
+    bound and ``LotteData`` would never get downloaded.
+    """
 
     DOMAIN: str
     SPLIT: str
     QTYPE: str
 
-    LOTTE = reference(LotteData)
+    def __init_subclass__(cls, **kwargs):
+        super().__init_subclass__(**kwargs)
+        cls.LOTTE = reference(LotteData)
 
     def config(self) -> Adhoc:
         domain = self.DOMAIN
         split = self.SPLIT
         qtype = self.QTYPE
+        data_root = LotteData.data_path
+        files_root = data_root / "files"
         return Adhoc.C(
             documents=LotteDocumentStore.C(
-                path=LotteData.data_path / f"store_{domain}_{split}",
+                path=data_root / f"store_{domain}_{split}",
             ),
             topics=LotteTopics.C(
-                path=LotteData.data_path / f"{domain}.{split}.{qtype}.queries.tsv",
+                path=files_root / f"{domain}.{split}.{qtype}.queries.tsv",
             ),
             assessments=LotteAssessments.C(
-                path=LotteData.data_path / f"{domain}.{split}.{qtype}.qrels.jsonl",
+                path=files_root / f"{domain}.{split}.{qtype}.qrels.jsonl",
             ),
         )
 
