@@ -28,6 +28,19 @@ class MsMarcoDocument(TextItem):
 
 
 @define
+class MsMarcoV2Passage(TextItem):
+    """MS MARCO v2 passage: a passage with its parent document id and character spans."""
+
+    passage: str
+    msmarco_document_id: str
+    spans: Tuple[Tuple[int, int], ...]
+
+    @cached_property
+    def text(self):
+        return self.passage
+
+
+@define
 class TitleDocument(TextItem):
     body: str
     title: str

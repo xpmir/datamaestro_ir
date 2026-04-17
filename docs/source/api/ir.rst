@@ -63,6 +63,7 @@ Dataset-specific documents
 .. autoxpmconfig:: datamaestro_ir.data.beir.BeirDocumentStore
 .. autoxpmconfig:: datamaestro_ir.data.lotte.LotteDocumentStore
 .. autoxpmconfig:: datamaestro_ir.data.stores.MsMarcoPassagesStore
+.. autoxpmconfig:: datamaestro_ir.data.stores.MsMarcoPassageV2Store
 .. autoxpmconfig:: datamaestro_ir.data.stores.CarParagraphStore
 .. autoxpmconfig:: datamaestro_ir.data.stores.WapoDocumentStore
 .. autoxpmconfig:: datamaestro_ir.data.stores.WapoPassageStore

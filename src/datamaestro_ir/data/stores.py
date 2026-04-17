@@ -12,6 +12,7 @@ from datamaestro_ir.data import CompressedDocumentStore, DocumentStore
 from datamaestro_ir.data.formats import (
     DocumentWithTitle,
     MsMarcoDocument,
+    MsMarcoV2Passage,
     TitleUrlDocument,
     WapoDocument,
 )
@@ -155,6 +156,38 @@ class MsMarcoDocumentStore(CompressedDocumentStore):
                 url=data["url"],
                 title=data["title"],
                 body=data["body"],
+            ),
+        }
+
+
+class MsMarcoPassageV2Store(CompressedDocumentStore):
+    """Document store for MS MARCO passage collection v2.
+
+    Each passage has its text, parent document id, and character spans
+    within that document.
+    """
+
+    lookup_key = "id"
+
+    def converter(
+        self, internal_id: int, keys: dict[str, str], content: bytes
+    ) -> IDTextRecord:
+        import re
+
+        data = json.loads(content)
+        raw_spans = data["spans"]
+        if isinstance(raw_spans, str):
+            spans = tuple(
+                (int(a), int(b)) for a, b in re.findall(r"\((\d+),(\d+)\)", raw_spans)
+            )
+        else:
+            spans = tuple(tuple(s) for s in raw_spans)
+        return {
+            "id": keys["id"],
+            "text_item": MsMarcoV2Passage(
+                passage=data["passage"],
+                msmarco_document_id=data["docid"],
+                spans=spans,
             ),
         }
 
