@@ -171,3 +171,54 @@ class ListwiseDistillationSamplesTSVWithAnnotations(ListwiseDistillationSamplesT
             self.qrels_dict[qrel.topic_id] = [
                 assess.doc_id for assess in qrel.assessments if assess.rel > 0
             ]
+
+
+@dataclass
+class PointwiseDistillationSample(Generic[DocT, QueryT]):
+    """A (query, document, teacher-score) triple.
+
+    The document carries the teacher's similarity / relevance score as a
+    :class:`ScoredDocument`; this is the pointwise analogue of
+    :class:`PairwiseDistillationSample` (which pairs two docs per query).
+    """
+
+    query: QueryT
+    """The query"""
+
+    document: DocT
+    """The document (typically a ``ScoredDocument``) with its teacher score"""
+
+    def get_queries(self) -> List[QueryT]:
+        return [self.query]
+
+    def with_queries(
+        self, qs: "List[QueryT2]"
+    ) -> "PointwiseDistillationSample[DocT, QueryT2]":
+        return PointwiseDistillationSample(qs[0], self.document)
+
+    def get_documents(self) -> List[DocT]:
+        return [self.document]
+
+    def with_documents(
+        self, ds: "List[DocT2]"
+    ) -> "PointwiseDistillationSample[DocT2, QueryT]":
+        return PointwiseDistillationSample(self.query, ds[0])
+
+
+class PointwiseDistillationSamples(Config, Iterable[PointwiseDistillationSample]):
+    """Iterable of pointwise distillation samples."""
+
+    def __iter__(self) -> Iterator[PointwiseDistillationSample]:
+        raise NotImplementedError()
+
+
+class ConcatPointwiseDistillationSamples(PointwiseDistillationSamples):
+    """Concatenate several :class:`PointwiseDistillationSamples` sources
+    in sequence (SQL UNION ALL semantics — no deduplication)."""
+
+    sources: Param[List[PointwiseDistillationSamples]]
+    """Sources to iterate in order."""
+
+    def __iter__(self) -> Iterator[PointwiseDistillationSample]:
+        for source in self.sources:
+            yield from source
