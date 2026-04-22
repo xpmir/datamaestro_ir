@@ -124,12 +124,13 @@ class EmbeddingsVariants(AxesVariants):
 @datatasks("learning to rank")
 @dataset(id="", url=URL, variants=EmbeddingsVariants)
 class EmbeddingsPreTraining(Dataset):
-    """LightOn ``embeddings-pre-training`` — teacher-scored (query,
-    document, similarity) pairs across 73 source corpora.
+    """LightOn ``embeddings-pre-training`` teacher-scored pretraining pairs.
 
-    Variant axes: ``name`` (config), ``streaming``, ``filter_drop``,
-    ``filter_duplicate``, ``min_similarity``, ``top_percentile``. See
-    :class:`EmbeddingsPreTrainingSamples` for filter semantics.
+    Teacher-scored ``(query, document, similarity)`` pairs across 73
+    source corpora. Variant axes: ``name`` (config), ``streaming``,
+    ``filter_drop``, ``filter_duplicate``, ``min_similarity``,
+    ``top_percentile``. See :class:`EmbeddingsPreTrainingSamples` for
+    filter semantics.
     """
 
     def config(self, **kw) -> EmbeddingsPreTrainingSamples:
