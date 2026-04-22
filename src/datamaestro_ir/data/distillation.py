@@ -11,8 +11,8 @@ from typing import (
     TypeVar,
 )
 
-from experimaestro import Config, Meta, Param
-from datamaestro.data import File
+from experimaestro import Meta, Param
+from datamaestro.data import Base, File
 from datamaestro_ir.data import AdhocAssessments
 from datamaestro_ir.data.base import (
     IDRecord,
@@ -52,7 +52,7 @@ class PairwiseDistillationSample(Generic[DocT, QueryT]):
         return PairwiseDistillationSample(self.query, tuple(ds))
 
 
-class PairwiseDistillationSamples(Config, Iterable[PairwiseDistillationSample]):
+class PairwiseDistillationSamples(Base, Iterable[PairwiseDistillationSample]):
     """Pairwise distillation file"""
 
     def __iter__(self) -> Iterator[PairwiseDistillationSample]:
@@ -121,7 +121,7 @@ class ListwiseDistillationSample(Generic[DocT, QueryT]):
         return ListwiseDistillationSample(self.query, list(ds))
 
 
-class ListwiseDistillationSamples(Config, Iterable[ListwiseDistillationSample]):
+class ListwiseDistillationSamples(Base, Iterable[ListwiseDistillationSample]):
     """Listwise distillation file"""
 
     def __iter__(self) -> Iterator[ListwiseDistillationSample]:
@@ -205,7 +205,7 @@ class PointwiseDistillationSample(Generic[DocT, QueryT]):
         return PointwiseDistillationSample(self.query, ds[0])
 
 
-class PointwiseDistillationSamples(Config, Iterable[PointwiseDistillationSample]):
+class PointwiseDistillationSamples(Base, Iterable[PointwiseDistillationSample]):
     """Iterable of pointwise distillation samples."""
 
     def __iter__(self) -> Iterator[PointwiseDistillationSample]:
