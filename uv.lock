@@ -333,7 +333,7 @@ wheels = [
 
 [[package]]
 name = "datamaestro"
-version = "1.11.0"
+version = "1.11.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "bitmath" },
@@ -351,9 +351,21 @@ dependencies = [
     { name = "tqdm" },
     { name = "urllib3" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/85/55/9b000db955ef9d23f8fedf9ad14706ddc7e7a86e4f9a38a424ebf15c507d/datamaestro-1.11.0.tar.gz", hash = "sha256:685119c247da79768bf536900dc0dceab417915992553bdecd6a3ca22bdb3411", size = 276979, upload-time = "2026-04-23T08:07:35.855Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/61/21/c5d919e81d64e3e1c0e63e8b52a91a9768a527a1712e8bda95f8f1d4aeea/datamaestro-1.11.2.tar.gz", hash = "sha256:bf10d7a602ce450b1e00e6d6be153eed0f606970a5dd19213479594542948692", size = 289832, upload-time = "2026-04-23T09:54:34.337Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/89/2e/142150be14bfc7a918e312be1172ec4eacfc315c452d25d27debd2ac882c/datamaestro-1.11.0-py3-none-any.whl", hash = "sha256:2d47f5c8f5b7729ecb3dd71704eadad98d4a065d591c51cad912ec99e117682e", size = 117573, upload-time = "2026-04-23T08:07:34.093Z" },
+    { url = "https://files.pythonhosted.org/packages/95/21/37655bdc8aa812bb0e206600107d0c73d6100aaf47fcee9a9835638a60d4/datamaestro-1.11.2-py3-none-any.whl", hash = "sha256:acd104c7ddc2ab2c0d712cbe794dc1f1d4c990389abfdd460a07006d83a81ccf", size = 131191, upload-time = "2026-04-23T09:54:32.442Z" },
+]
+
+[package.optional-dependencies]
+docs = [
+    { name = "myst-parser", version = "4.0.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
+    { name = "myst-parser", version = "5.0.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
+    { name = "sphinx", version = "8.1.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
+    { name = "sphinx", version = "9.0.4", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version == '3.11.*'" },
+    { name = "sphinx", version = "9.1.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
+    { name = "sphinx-codeautolink" },
+    { name = "sphinx-rtd-theme" },
+    { name = "sphinx-toolbox" },
 ]
 
 [[package]]
@@ -380,21 +392,14 @@ dev = [
     { name = "sphobjinv" },
 ]
 docs = [
-    { name = "datamaestro" },
-    { name = "myst-parser", version = "4.0.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
-    { name = "myst-parser", version = "5.0.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
-    { name = "sphinx", version = "8.1.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
-    { name = "sphinx", version = "9.0.4", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version == '3.11.*'" },
-    { name = "sphinx", version = "9.1.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
-    { name = "sphinx-codeautolink" },
+    { name = "datamaestro", extra = ["docs"] },
     { name = "sphinx-rtd-theme" },
-    { name = "sphinx-toolbox" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "attrs" },
-    { name = "datamaestro", specifier = ">=1.10.4" },
+    { name = "datamaestro", specifier = ">=1.11.2" },
     { name = "experimaestro", specifier = ">=2.0.0" },
     { name = "impact-index", specifier = ">=1.3.1" },
     { name = "lxml" },
@@ -411,12 +416,8 @@ dev = [
     { name = "sphobjinv", specifier = ">=2.3.1.3" },
 ]
 docs = [
-    { name = "datamaestro", specifier = ">=0.8.5" },
-    { name = "myst-parser", specifier = ">=0.18.0" },
-    { name = "sphinx", specifier = ">=8.1.3" },
-    { name = "sphinx-codeautolink", specifier = ">=0.15.0" },
+    { name = "datamaestro", extras = ["docs"] },
     { name = "sphinx-rtd-theme", specifier = ">=3.1.0" },
-    { name = "sphinx-toolbox", specifier = ">=4.1.2" },
 ]
 
 [[package]]
