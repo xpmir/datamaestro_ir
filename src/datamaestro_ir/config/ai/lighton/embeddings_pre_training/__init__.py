@@ -22,7 +22,7 @@ from __future__ import annotations
 
 from typing import Optional
 
-from datamaestro.definitions import dataset, Dataset, datatags, datatasks
+from datamaestro.definitions import dataset, Dataset
 from datamaestro.variants import AxesVariants, Axis
 
 from datamaestro_ir.data.lighton import EmbeddingsPreTrainingSamples
@@ -139,8 +139,6 @@ class EmbeddingsVariants(AxesVariants):
 
 # Family — id derived from the package path (``id=""`` drops the class
 # name so the registered id is exactly ``ai.lighton.embeddings_pre_training``).
-@datatags("information retrieval", "distillation", "pre-training")
-@datatasks("learning to rank")
 @dataset(id="", url=URL, variants=EmbeddingsVariants)
 class EmbeddingsPreTraining(Dataset):
     """LightOn ``embeddings-pre-training`` teacher-scored pretraining pairs.

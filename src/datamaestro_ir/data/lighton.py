@@ -8,6 +8,7 @@ from typing import Iterator, Optional
 
 from experimaestro import Meta, Param, field
 
+from datamaestro.definitions import datatags
 from .distillation import PointwiseDistillationSample
 from .huggingface import HuggingFacePointwiseDistillationSamples
 
@@ -15,6 +16,7 @@ from .huggingface import HuggingFacePointwiseDistillationSamples
 logger = logging.getLogger(__name__)
 
 
+@datatags("pre-training")
 class EmbeddingsPreTrainingSamples(HuggingFacePointwiseDistillationSamples):
     """``lightonai/embeddings-pre-training`` pointwise samples with the
     dataset-specific recipe knobs.

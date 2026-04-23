@@ -1,4 +1,4 @@
-from datamaestro.definitions import dataset, Dataset, datatasks
+from datamaestro.definitions import dataset, Dataset
 from datamaestro.download.single import FileDownloader
 from datamaestro.download import reference
 from datamaestro_ir.data.beir import (
@@ -122,7 +122,7 @@ def register_nano_beir_subsets():
             Full.__name__ = f"NanoBeir_{n.replace('-', '_')}"
             Full.__module__ = __name__
             Full = dataset(id=f"co.huggingface.nano-beir.{n}")(Full)
-            return datatasks("information retrieval")(Full)
+            return Full
 
         Full = make_full_class()
         globals()[Full.__name__] = Full

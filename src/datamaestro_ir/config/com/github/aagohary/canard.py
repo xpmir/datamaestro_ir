@@ -1,4 +1,4 @@
-from datamaestro.definitions import Dataset, datatasks, datatags, dataset
+from datamaestro.definitions import Dataset, datatasks, dataset
 from datamaestro.download.single import FileDownloader
 from datamaestro.utils import HashCheck
 
@@ -6,7 +6,6 @@ from datamaestro.data.ml import Supervised
 from datamaestro_ir.data.conversation.canard import CanardDataset
 
 
-@datatags("conversation", "context", "query")
 @datatasks("query rewriting")
 @dataset(url="https://sites.google.com/view/qanta/projects/canard", id="")
 class Main(Dataset):

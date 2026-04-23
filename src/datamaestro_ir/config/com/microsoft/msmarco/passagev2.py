@@ -13,7 +13,7 @@ import json
 from typing import Callable, IO, Iterator
 
 from datamaestro.annotations.agreement import useragreement
-from datamaestro.definitions import Dataset, datatasks, dataset
+from datamaestro.definitions import Dataset, dataset
 from datamaestro.download import reference
 from datamaestro.download.single import FileDownloader
 from datamaestro.utils import HashCheck
@@ -140,7 +140,6 @@ class TrainRun(Dataset):
 
 
 @lua
-@datatasks("information retrieval", "passage retrieval")
 @dataset(url="https://microsoft.github.io/msmarco/TREC-Deep-Learning.html")
 class Train(Dataset):
     """MS MARCO v2 passage train dataset"""
@@ -158,7 +157,6 @@ class Train(Dataset):
 
 
 @lua
-@datatasks("information retrieval", "passage retrieval")
 @dataset(url="https://microsoft.github.io/msmarco/TREC-Deep-Learning.html")
 class TrainWithrun(Dataset):
     """MS MARCO v2 passage train dataset with top-100 run"""
@@ -220,7 +218,6 @@ class Dev1Run(Dataset):
 
 
 @lua
-@datatasks("information retrieval", "passage retrieval")
 @dataset(url="https://microsoft.github.io/msmarco/TREC-Deep-Learning.html")
 class Dev1(Dataset):
     """MS MARCO v2 passage dev1 dataset"""
@@ -238,7 +235,6 @@ class Dev1(Dataset):
 
 
 @lua
-@datatasks("information retrieval", "passage retrieval")
 @dataset(url="https://microsoft.github.io/msmarco/TREC-Deep-Learning.html")
 class Dev1Withrun(Dataset):
     """MS MARCO v2 passage dev1 dataset with top-100 run"""
@@ -300,7 +296,6 @@ class Dev2Run(Dataset):
 
 
 @lua
-@datatasks("information retrieval", "passage retrieval")
 @dataset(url="https://microsoft.github.io/msmarco/TREC-Deep-Learning.html")
 class Dev2(Dataset):
     """MS MARCO v2 passage dev2 dataset"""
@@ -318,7 +313,6 @@ class Dev2(Dataset):
 
 
 @lua
-@datatasks("information retrieval", "passage retrieval")
 @dataset(url="https://microsoft.github.io/msmarco/TREC-Deep-Learning.html")
 class Dev2Withrun(Dataset):
     """MS MARCO v2 passage dev2 dataset with top-100 run"""
@@ -380,7 +374,6 @@ class Trec2021Run(Dataset):
 
 
 @lua
-@datatasks("information retrieval", "passage retrieval")
 @dataset(url="https://microsoft.github.io/msmarco/TREC-Deep-Learning-2021.html")
 class Trec2021(Dataset):
     """TREC Deep Learning 2021 (passage v2)"""
@@ -398,7 +391,6 @@ class Trec2021(Dataset):
 
 
 @lua
-@datatasks("information retrieval", "passage retrieval")
 @dataset(url="https://microsoft.github.io/msmarco/TREC-Deep-Learning-2021.html")
 class Trec2021Withrun(Dataset):
     """TREC Deep Learning 2021 (passage v2) with top-100 run"""
@@ -460,7 +452,6 @@ class Trec2022Run(Dataset):
 
 
 @lua
-@datatasks("information retrieval", "passage retrieval")
 @dataset(url="https://microsoft.github.io/msmarco/TREC-Deep-Learning-2022.html")
 class Trec2022(Dataset):
     """TREC Deep Learning 2022 (passage v2)"""
@@ -478,7 +469,6 @@ class Trec2022(Dataset):
 
 
 @lua
-@datatasks("information retrieval", "passage retrieval")
 @dataset(url="https://microsoft.github.io/msmarco/TREC-Deep-Learning-2022.html")
 class Trec2022Withrun(Dataset):
     """TREC Deep Learning 2022 (passage v2) with top-100 run"""
@@ -540,7 +530,6 @@ class Trec2023Run(Dataset):
 
 
 @lua
-@datatasks("information retrieval", "passage retrieval")
 @dataset(url="https://microsoft.github.io/msmarco/TREC-Deep-Learning-2023.html")
 class Trec2023(Dataset):
     """TREC Deep Learning 2023 (passage v2)"""
@@ -558,7 +547,6 @@ class Trec2023(Dataset):
 
 
 @lua
-@datatasks("information retrieval", "passage retrieval")
 @dataset(url="https://microsoft.github.io/msmarco/TREC-Deep-Learning-2023.html")
 class Trec2023Withrun(Dataset):
     """TREC Deep Learning 2023 (passage v2) with top-100 run"""

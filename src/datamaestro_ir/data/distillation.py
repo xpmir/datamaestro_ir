@@ -13,6 +13,7 @@ from typing import (
 
 from experimaestro import Meta, Param
 from datamaestro.data import Base, File
+from datamaestro.definitions import datatags, datatasks
 from datamaestro_ir.data import AdhocAssessments
 from datamaestro_ir.data.base import (
     IDRecord,
@@ -52,6 +53,8 @@ class PairwiseDistillationSample(Generic[DocT, QueryT]):
         return PairwiseDistillationSample(self.query, tuple(ds))
 
 
+@datatags("pairwise", "distillation")
+@datatasks("learning to rank")
 class PairwiseDistillationSamples(Base, Iterable[PairwiseDistillationSample]):
     """Pairwise distillation file"""
 
@@ -121,6 +124,8 @@ class ListwiseDistillationSample(Generic[DocT, QueryT]):
         return ListwiseDistillationSample(self.query, list(ds))
 
 
+@datatags("listwise", "distillation")
+@datatasks("learning to rank")
 class ListwiseDistillationSamples(Base, Iterable[ListwiseDistillationSample]):
     """Listwise distillation file"""
 
@@ -205,6 +210,8 @@ class PointwiseDistillationSample(Generic[DocT, QueryT]):
         return PointwiseDistillationSample(self.query, ds[0])
 
 
+@datatags("pointwise", "distillation")
+@datatasks("learning to rank")
 class PointwiseDistillationSamples(Base, Iterable[PointwiseDistillationSample]):
     """Iterable of pointwise distillation samples."""
 

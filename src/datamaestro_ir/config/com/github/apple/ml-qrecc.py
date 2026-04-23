@@ -1,13 +1,12 @@
 # See documentation on https://datamaestro.readthedocs.io
 
-from datamaestro.definitions import Dataset, datatasks, datatags, dataset
+from datamaestro.definitions import Dataset, datatasks, dataset
 from datamaestro.data.ml import Supervised
 from datamaestro.download.archive import ZipDownloader
 from datamaestro.utils import HashCheck
 from datamaestro_ir.data.conversation.qrecc import QReCCDataset
 
 
-@datatags("conversation", "context", "query")
 @datatasks("query rewriting")
 @dataset(
     url="https://github.com/apple/ml-qrecc",

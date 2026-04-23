@@ -1,7 +1,7 @@
 """CORD-19 dataset"""
 
 from datamaestro.annotations.agreement import useragreement
-from datamaestro.definitions import Dataset, datatasks, dataset
+from datamaestro.definitions import Dataset, dataset
 from datamaestro.download import reference
 from datamaestro.download.single import FileDownloader
 from datamaestro.utils import HashCheck
@@ -86,7 +86,6 @@ class Cord19Round5Assessments(Dataset):
         return TrecAdhocAssessments.C(path=self.DATA.path)
 
 
-@datatasks("information retrieval", "passage retrieval")
 @dataset(url="https://ir.nist.gov/covidSubmit/data.html")
 class Cord19Round5(Dataset):
     """CORD-19 IR collection (round 5)

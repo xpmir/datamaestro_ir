@@ -37,7 +37,7 @@ from __future__ import annotations
 
 from typing import Optional
 
-from datamaestro.definitions import dataset, Dataset, datatags, datatasks
+from datamaestro.definitions import dataset, Dataset
 from datamaestro.variants import Axis, AxesVariants
 
 from datamaestro_ir.data.distillation import (
@@ -79,13 +79,6 @@ class DenseonLateonVariants(AxesVariants):
     delivery — while still reaching ``config()`` via the resolved kwargs."""
 
 
-@datatags(
-    "information retrieval",
-    "distillation",
-    "pre-training",
-    "recipe",
-)
-@datatasks("learning to rank")
 @dataset(id="", url=URL, variants=DenseonLateonVariants)
 class DenseonLateon(Dataset):
     """DenseON-LateON mGTE-style pre-training recipe built by UNIONing

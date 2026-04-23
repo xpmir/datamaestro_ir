@@ -21,7 +21,7 @@ from pathlib import Path
 from datamaestro.annotations.agreement import useragreement
 from datamaestro.download.single import FileDownloader
 from datamaestro.download import FileResource, FilesCopy, reference
-from datamaestro.definitions import Dataset, datatasks, datatags, dataset
+from datamaestro.definitions import Dataset, dataset
 from datamaestro.download.archive import TarDownloader
 from datamaestro_ir.data import RerankAdhoc, Adhoc, TrainingTripletsLines
 from datamaestro_ir.data.csv import (
@@ -215,7 +215,6 @@ class TrainQrels(Dataset):
 
 
 @lua
-@datatasks("information retrieval", "passage retrieval")
 @dataset(url="https://github.com/microsoft/MSMARCO-Passage-Ranking")
 class Train(Dataset):
     """MS-Marco train dataset"""
@@ -233,7 +232,6 @@ class Train(Dataset):
 
 
 @lua
-@datatasks("information retrieval", "passage retrieval")
 @dataset(url="https://github.com/microsoft/MSMARCO-Passage-Ranking")
 class TrainWithrun(Dataset):
     """MSMarco train dataset, including the top-1000 to documents to re-rank"""
@@ -335,7 +333,6 @@ class DevQrels(Dataset):
 
 
 @lua
-@datatasks("information retrieval", "passage retrieval")
 @dataset(url="https://github.com/microsoft/MSMARCO-Passage-Ranking")
 class Dev(Dataset):
     """MS-Marco dev dataset"""
@@ -353,7 +350,6 @@ class Dev(Dataset):
 
 
 @lua
-@datatasks("information retrieval", "passage retrieval")
 @dataset(url="https://github.com/microsoft/MSMARCO-Passage-Ranking")
 class DevWithrun(Dataset):
     """MSMarco dev dataset, including the top-1000 to documents to re-rank"""
@@ -367,7 +363,6 @@ class DevWithrun(Dataset):
 
 
 @lua
-@datatasks("information retrieval", "passage retrieval")
 @dataset(url="https://github.com/microsoft/MSMARCO-Passage-Ranking")
 class DevJudged(Dataset):
     """MS-Marco dev dataset, restricted to judged queries"""
@@ -410,7 +405,6 @@ class EvalWithrun(Dataset):
 
 
 @lua
-@datatasks("information retrieval", "passage retrieval")
 @dataset(url="https://github.com/microsoft/MSMARCO-Passage-Ranking")
 class DevSmall(Dataset):
     """MS-Marco dev small dataset"""
@@ -485,7 +479,6 @@ class Trec2019Qrels(Dataset):
 
 
 @lua
-@datatasks("information retrieval", "passage retrieval")
 @dataset(url="https://microsoft.github.io/msmarco/TREC-Deep-Learning-2019.html")
 class Trec2019(Dataset):
     "TREC Deep Learning (2019)"
@@ -503,7 +496,6 @@ class Trec2019(Dataset):
 
 
 @lua
-@datatasks("information retrieval", "passage retrieval")
 @dataset(url="https://microsoft.github.io/msmarco/TREC-Deep-Learning-2019.html")
 class Trec2019Withrun(Dataset):
     """TREC Deep Learning (2019), including the top-1000 to documents to re-rank"""
@@ -517,7 +509,6 @@ class Trec2019Withrun(Dataset):
 
 
 @lua
-@datatasks("information retrieval", "passage retrieval")
 @dataset(url="https://microsoft.github.io/msmarco/TREC-Deep-Learning-2019.html")
 class Trec2019Judged(Dataset):
     """TREC Deep Learning (2019), restricted to judged queries"""
@@ -563,8 +554,6 @@ class Trec2020Queries(Dataset):
 
 
 @lua
-@datatasks("information retrieval", "passage retrieval")
-@datatags("reranking")
 @dataset(
     url="https://microsoft.github.io/msmarco/TREC-Deep-Learning-2020.html",
 )
@@ -597,7 +586,6 @@ class Trec2020Qrels(Dataset):
 
 
 @lua
-@datatasks("information retrieval", "passage retrieval")
 @dataset(url="https://microsoft.github.io/msmarco/TREC-Deep-Learning-2020.html")
 class Trec2020(Dataset):
     "TREC Deep Learning (2020)"
@@ -615,7 +603,6 @@ class Trec2020(Dataset):
 
 
 @lua
-@datatasks("information retrieval", "passage retrieval")
 @dataset(url="https://microsoft.github.io/msmarco/TREC-Deep-Learning-2020.html")
 class Trec2020Withrun(Dataset):
     """TREC Deep Learning (2020), including the top-1000 to documents to re-rank"""
@@ -629,7 +616,6 @@ class Trec2020Withrun(Dataset):
 
 
 @lua
-@datatasks("information retrieval", "passage retrieval")
 @dataset(url="https://microsoft.github.io/msmarco/TREC-Deep-Learning-2020.html")
 class Trec2020Judged(Dataset):
     """TREC Deep Learning (2020), restricted to judged queries"""
@@ -674,7 +660,6 @@ class TrecDlHardQrels(Dataset):
 
 
 @lua
-@datatasks("information retrieval", "passage retrieval")
 @dataset(url="https://github.com/grill-lab/DL-Hard")
 class TrecDlHard(Dataset):
     """A more challenging subset of TREC DL 2019 and 2020 passage queries

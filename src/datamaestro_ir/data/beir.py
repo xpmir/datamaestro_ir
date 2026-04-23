@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 from typing import Iterator, List
 
-from datamaestro.definitions import Param, Meta
+from datamaestro.definitions import Param, Meta, datatags
 from experimaestro import field
 
 from datamaestro_ir.data import (
@@ -21,6 +21,7 @@ from datamaestro_ir.data.base import (
 from datamaestro_ir.data.formats import TitleDocument
 
 
+@datatags("document")
 class BeirDocumentStore(CompressedDocumentStore):
     """Document store for BEIR datasets.
 

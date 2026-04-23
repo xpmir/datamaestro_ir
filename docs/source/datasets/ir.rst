@@ -1,9 +1,7 @@
 Information Retrieval Datasets
 ==============================
 
-This section lists native IR dataset definitions. For access to hundreds
-more IR datasets, see :doc:`irds` (ir-datasets integration).
-
+This section lists native IR dataset definitions.
 
 MS MARCO Passage
 ----------------

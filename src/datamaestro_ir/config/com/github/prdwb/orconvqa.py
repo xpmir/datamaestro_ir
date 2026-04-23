@@ -1,6 +1,6 @@
 # See documentation on https://datamaestro.readthedocs.io
 
-from datamaestro.definitions import Dataset, datatasks, datatags, dataset
+from datamaestro.definitions import Dataset, datatasks, dataset
 from datamaestro.download.single import FileDownloader
 from datamaestro.utils import HashCheck
 
@@ -9,7 +9,6 @@ from datamaestro_ir.data.conversation.orconvqa import OrConvQADataset
 from datamaestro.data.ml import Supervised
 
 
-@datatags("conversation", "context", "query")
 @datatasks("query rewriting")
 @dataset(
     url="https://github.com/prdwb/orconvqa-release",

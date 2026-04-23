@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 from typing import Iterator, List
 
-from datamaestro.definitions import Meta, Param
+from datamaestro.definitions import Meta, Param, datatags
 from experimaestro import field
 
 from datamaestro_ir.data import (
@@ -20,6 +20,7 @@ from datamaestro_ir.data.base import (
 )
 
 
+@datatags("passage")
 class LotteDocumentStore(CompressedDocumentStore):
     """Document store for LoTTE datasets.
 

@@ -14,6 +14,7 @@ access to Information Retrieval datasets for research in:
    getting_started
    api/index
    datasets/index
+   search-datasets
 
 
 Installation

@@ -9,7 +9,7 @@ See: https://github.com/stanford-futuredata/ColBERT
 
 from pathlib import Path
 
-from datamaestro.definitions import Dataset, datatasks, dataset
+from datamaestro.definitions import Dataset, dataset
 from datamaestro.download import FilesCopy, reference
 from datamaestro.download.archive import TarDownloader
 from datamaestro_ir.data import Adhoc
@@ -159,7 +159,6 @@ class LotteDataset(Dataset):
 # --- Lifestyle ---
 
 
-@datatasks("information retrieval")
 @dataset(Adhoc, url=LOTTE_URL)
 class LifestyleDevSearch(LotteDataset):
     DOMAIN = "lifestyle"
@@ -167,7 +166,6 @@ class LifestyleDevSearch(LotteDataset):
     QTYPE = "search"
 
 
-@datatasks("information retrieval")
 @dataset(Adhoc, url=LOTTE_URL)
 class LifestyleDevForum(LotteDataset):
     DOMAIN = "lifestyle"
@@ -175,7 +173,6 @@ class LifestyleDevForum(LotteDataset):
     QTYPE = "forum"
 
 
-@datatasks("information retrieval")
 @dataset(Adhoc, url=LOTTE_URL)
 class LifestyleTestSearch(LotteDataset):
     DOMAIN = "lifestyle"
@@ -183,7 +180,6 @@ class LifestyleTestSearch(LotteDataset):
     QTYPE = "search"
 
 
-@datatasks("information retrieval")
 @dataset(Adhoc, url=LOTTE_URL)
 class LifestyleTestForum(LotteDataset):
     DOMAIN = "lifestyle"
@@ -194,7 +190,6 @@ class LifestyleTestForum(LotteDataset):
 # --- Recreation ---
 
 
-@datatasks("information retrieval")
 @dataset(Adhoc, url=LOTTE_URL)
 class RecreationDevSearch(LotteDataset):
     DOMAIN = "recreation"
@@ -202,7 +197,6 @@ class RecreationDevSearch(LotteDataset):
     QTYPE = "search"
 
 
-@datatasks("information retrieval")
 @dataset(Adhoc, url=LOTTE_URL)
 class RecreationDevForum(LotteDataset):
     DOMAIN = "recreation"
@@ -210,7 +204,6 @@ class RecreationDevForum(LotteDataset):
     QTYPE = "forum"
 
 
-@datatasks("information retrieval")
 @dataset(Adhoc, url=LOTTE_URL)
 class RecreationTestSearch(LotteDataset):
     DOMAIN = "recreation"
@@ -218,7 +211,6 @@ class RecreationTestSearch(LotteDataset):
     QTYPE = "search"
 
 
-@datatasks("information retrieval")
 @dataset(Adhoc, url=LOTTE_URL)
 class RecreationTestForum(LotteDataset):
     DOMAIN = "recreation"
@@ -229,7 +221,6 @@ class RecreationTestForum(LotteDataset):
 # --- Science ---
 
 
-@datatasks("information retrieval")
 @dataset(Adhoc, url=LOTTE_URL)
 class ScienceDevSearch(LotteDataset):
     DOMAIN = "science"
@@ -237,7 +228,6 @@ class ScienceDevSearch(LotteDataset):
     QTYPE = "search"
 
 
-@datatasks("information retrieval")
 @dataset(Adhoc, url=LOTTE_URL)
 class ScienceDevForum(LotteDataset):
     DOMAIN = "science"
@@ -245,7 +235,6 @@ class ScienceDevForum(LotteDataset):
     QTYPE = "forum"
 
 
-@datatasks("information retrieval")
 @dataset(Adhoc, url=LOTTE_URL)
 class ScienceTestSearch(LotteDataset):
     DOMAIN = "science"
@@ -253,7 +242,6 @@ class ScienceTestSearch(LotteDataset):
     QTYPE = "search"
 
 
-@datatasks("information retrieval")
 @dataset(Adhoc, url=LOTTE_URL)
 class ScienceTestForum(LotteDataset):
     DOMAIN = "science"
@@ -264,7 +252,6 @@ class ScienceTestForum(LotteDataset):
 # --- Technology ---
 
 
-@datatasks("information retrieval")
 @dataset(Adhoc, url=LOTTE_URL)
 class TechnologyDevSearch(LotteDataset):
     DOMAIN = "technology"
@@ -272,7 +259,6 @@ class TechnologyDevSearch(LotteDataset):
     QTYPE = "search"
 
 
-@datatasks("information retrieval")
 @dataset(Adhoc, url=LOTTE_URL)
 class TechnologyDevForum(LotteDataset):
     DOMAIN = "technology"
@@ -280,7 +266,6 @@ class TechnologyDevForum(LotteDataset):
     QTYPE = "forum"
 
 
-@datatasks("information retrieval")
 @dataset(Adhoc, url=LOTTE_URL)
 class TechnologyTestSearch(LotteDataset):
     DOMAIN = "technology"
@@ -288,7 +273,6 @@ class TechnologyTestSearch(LotteDataset):
     QTYPE = "search"
 
 
-@datatasks("information retrieval")
 @dataset(Adhoc, url=LOTTE_URL)
 class TechnologyTestForum(LotteDataset):
     DOMAIN = "technology"
@@ -299,7 +283,6 @@ class TechnologyTestForum(LotteDataset):
 # --- Writing ---
 
 
-@datatasks("information retrieval")
 @dataset(Adhoc, url=LOTTE_URL)
 class WritingDevSearch(LotteDataset):
     DOMAIN = "writing"
@@ -307,7 +290,6 @@ class WritingDevSearch(LotteDataset):
     QTYPE = "search"
 
 
-@datatasks("information retrieval")
 @dataset(Adhoc, url=LOTTE_URL)
 class WritingDevForum(LotteDataset):
     DOMAIN = "writing"
@@ -315,7 +297,6 @@ class WritingDevForum(LotteDataset):
     QTYPE = "forum"
 
 
-@datatasks("information retrieval")
 @dataset(Adhoc, url=LOTTE_URL)
 class WritingTestSearch(LotteDataset):
     DOMAIN = "writing"
@@ -323,7 +304,6 @@ class WritingTestSearch(LotteDataset):
     QTYPE = "search"
 
 
-@datatasks("information retrieval")
 @dataset(Adhoc, url=LOTTE_URL)
 class WritingTestForum(LotteDataset):
     DOMAIN = "writing"
@@ -334,7 +314,6 @@ class WritingTestForum(LotteDataset):
 # --- Pooled ---
 
 
-@datatasks("information retrieval")
 @dataset(Adhoc, url=LOTTE_URL)
 class PooledDevSearch(LotteDataset):
     DOMAIN = "pooled"
@@ -342,7 +321,6 @@ class PooledDevSearch(LotteDataset):
     QTYPE = "search"
 
 
-@datatasks("information retrieval")
 @dataset(Adhoc, url=LOTTE_URL)
 class PooledDevForum(LotteDataset):
     DOMAIN = "pooled"
@@ -350,7 +328,6 @@ class PooledDevForum(LotteDataset):
     QTYPE = "forum"
 
 
-@datatasks("information retrieval")
 @dataset(Adhoc, url=LOTTE_URL)
 class PooledTestSearch(LotteDataset):
     DOMAIN = "pooled"
@@ -358,7 +335,6 @@ class PooledTestSearch(LotteDataset):
     QTYPE = "search"
 
 
-@datatasks("information retrieval")
 @dataset(Adhoc, url=LOTTE_URL)
 class PooledTestForum(LotteDataset):
     DOMAIN = "pooled"

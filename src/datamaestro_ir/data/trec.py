@@ -2,6 +2,7 @@ import re
 from typing import Dict, List, Optional
 from experimaestro import documentation, Param, Meta
 from pathlib import Path
+from datamaestro.definitions import datatags
 from datamaestro_ir.data import (
     AdhocRunDict,
     Documents,
@@ -73,6 +74,7 @@ class TrecAdhocResults(AdhocResults):
         return results
 
 
+@datatags("document")
 class TipsterCollection(Documents):
     path: Param[Path]
     patterns: Param[List[str]]

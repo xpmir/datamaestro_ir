@@ -9,7 +9,7 @@ from attrs import define
 from typing import Callable, Dict, Iterator, List, Optional, Tuple, Union
 import random
 from experimaestro import Config, field
-from datamaestro.definitions import datatasks, Param, Meta
+from datamaestro.definitions import datatags, datatasks, Param, Meta
 from datamaestro.data import Base
 from datamaestro_ir.utils.files import auto_open
 from datamaestro_ir.utils.iter import BatchIterator
@@ -30,6 +30,7 @@ from .base import (  # noqa: F401
 AdhocRunDict = dict[str, dict[str, float]]
 
 
+@datatags("collection")
 class Documents(Base):
     """A set of documents with identifiers
 
@@ -277,6 +278,7 @@ class AdhocIndex(DocumentStore):
         raise NotImplementedError(f"For class {self.__class__}")
 
 
+@datatags("topics")
 class Topics(Base, ABC):
     """A set of topics with associated IDs"""
 
@@ -334,6 +336,7 @@ class FilteredTopics(Topics):
                     yield record
 
 
+@datatags("qrels")
 class AdhocAssessments(Base, ABC):
     """Ad-hoc assessments (qrels)"""
 
@@ -342,6 +345,7 @@ class AdhocAssessments(Base, ABC):
         raise NotImplementedError(f"For class {self.__class__}")
 
 
+@datatags("run")
 class AdhocRun(Base):
     """IR adhoc run"""
 
@@ -361,7 +365,7 @@ class AdhocResults(Base):
         raise NotImplementedError(f"For class {self.__class__}")
 
 
-@datatasks("information retrieval")
+@datatasks("adhoc retrieval")
 class Adhoc(Base):
     """An Adhoc IR collection with documents, topics and their assessments"""
 
@@ -375,6 +379,7 @@ class Adhoc(Base):
     """The set of assessments (for each topic)"""
 
 
+@datatasks("learning to rank")
 class RerankAdhoc(Adhoc):
     """Re-ranking ad-hoc task based on an existing run"""
 
@@ -395,6 +400,8 @@ TripletRecord = Union[IDRecord, TextRecord, IDTextRecord]
 Triplets = Tuple[TripletRecord, TripletRecord, TripletRecord]
 
 
+@datatags("triples")
+@datatasks("learning to rank")
 class TrainingTriplets(Base, ABC):
     """Triplet for training IR systems: query / query ID, positive document,
     negative document"""
@@ -464,6 +471,8 @@ class PairwiseSample(ABC):
     are the algorithm used to retrieve the negatives"""
 
 
+@datatags("pairwise")
+@datatasks("learning to rank")
 class PairwiseSampleDataset(Base, ABC):
     """Datasets where each record is a query with positive and negative samples"""
 

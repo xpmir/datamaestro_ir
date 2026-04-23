@@ -15,7 +15,7 @@ See `<https://www.treccast.ai/>`_ for more details.
 
 from hashlib import md5
 
-from datamaestro.definitions import Dataset, datatags, datatasks, dataset
+from datamaestro.definitions import Dataset, datatasks, dataset
 from datamaestro.download import reference
 from datamaestro.download.single import FileDownloader
 from datamaestro.utils import HashCheck
@@ -216,8 +216,7 @@ class CastV3Documents(Dataset):
 # ============================================================================
 
 
-@datatags("conversation", "context", "query")
-@datatasks("conversational search", "passage retrieval")
+@datatasks("conversational search")
 @dataset(
     id=".2019.train",
     url="https://www.treccast.ai/",
@@ -244,17 +243,14 @@ class Train2019(Dataset):
     def config(self) -> Adhoc:
         return Adhoc.C(
             topics=ConversationUserTopics.C(
-                conversations=CastConversations.C(
-                    path=self.TOPICS.path, year=2019
-                )
+                conversations=CastConversations.C(path=self.TOPICS.path, year=2019)
             ),
             assessments=TrecAdhocAssessments.C(path=self.QRELS.path),
             documents=self.DOCUMENTS.config(),
         )
 
 
-@datatags("conversation", "context", "query")
-@datatasks("conversational search", "passage retrieval")
+@datatasks("conversational search")
 @dataset(
     id=".2019",
     url="https://www.treccast.ai/",
@@ -281,17 +277,14 @@ class Test2019(Dataset):
     def config(self) -> Adhoc:
         return Adhoc.C(
             topics=ConversationUserTopics.C(
-                conversations=CastConversations.C(
-                    path=self.TOPICS.path, year=2019
-                )
+                conversations=CastConversations.C(path=self.TOPICS.path, year=2019)
             ),
             assessments=TrecAdhocAssessments.C(path=self.QRELS.path),
             documents=self.DOCUMENTS.config(),
         )
 
 
-@datatags("conversation", "context", "query")
-@datatasks("conversational search", "passage retrieval")
+@datatasks("conversational search")
 @dataset(
     id=".2020",
     url="https://www.treccast.ai/",
@@ -319,17 +312,14 @@ class Test2020(Dataset):
     def config(self) -> Adhoc:
         return Adhoc.C(
             topics=ConversationUserTopics.C(
-                conversations=CastConversations.C(
-                    path=self.TOPICS.path, year=2020
-                )
+                conversations=CastConversations.C(path=self.TOPICS.path, year=2020)
             ),
             assessments=TrecAdhocAssessments.C(path=self.QRELS.path),
             documents=self.DOCUMENTS.config(),
         )
 
 
-@datatags("conversation", "context", "query")
-@datatasks("conversational search", "passage retrieval")
+@datatasks("conversational search")
 @dataset(
     id=".2021",
     url="https://www.treccast.ai/",
@@ -357,17 +347,14 @@ class Test2021(Dataset):
     def config(self) -> Adhoc:
         return Adhoc.C(
             topics=ConversationUserTopics.C(
-                conversations=CastConversations.C(
-                    path=self.TOPICS.path, year=2021
-                )
+                conversations=CastConversations.C(path=self.TOPICS.path, year=2021)
             ),
             assessments=TrecAdhocAssessments.C(path=self.QRELS.path),
             documents=self.DOCUMENTS.config(),
         )
 
 
-@datatags("conversation", "context", "query")
-@datatasks("conversational search", "passage retrieval")
+@datatasks("conversational search")
 @dataset(
     id=".2022",
     url="https://www.treccast.ai/",
@@ -395,9 +382,7 @@ class Test2022(Dataset):
     def config(self) -> Adhoc:
         return Adhoc.C(
             topics=ConversationUserTopics.C(
-                conversations=CastConversations.C(
-                    path=self.TOPICS.path, year=2022
-                )
+                conversations=CastConversations.C(path=self.TOPICS.path, year=2022)
             ),
             assessments=TrecAdhocAssessments.C(path=self.QRELS.path),
             documents=self.DOCUMENTS.config(),

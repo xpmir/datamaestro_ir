@@ -4,6 +4,7 @@ from functools import cached_property
 from pathlib import Path
 from typing import Dict, Iterator, List, Optional, Set
 from experimaestro import field, Param, Meta
+from datamaestro.definitions import datatags
 from datamaestro_ir.data.base import (
     IDTextRecord,
     SimpleTextItem,
@@ -18,6 +19,7 @@ from datamaestro_ir.data.formats import (
 )
 
 
+@datatags("passage")
 class MsMarcoPassagesStore(CompressedDocumentStore):
     """Document store for MS MARCO passages where internal ID = external ID"""
 
@@ -44,6 +46,7 @@ class MsMarcoPassagesStore(CompressedDocumentStore):
 # --- CAR v2.0 paragraphs ---
 
 
+@datatags("passage")
 class CarParagraphStore(CompressedDocumentStore):
     """Document store for TREC CAR v2.0 paragraphs.
 
@@ -64,6 +67,7 @@ class CarParagraphStore(CompressedDocumentStore):
 # --- WAPO ---
 
 
+@datatags("document")
 class WapoDocumentStore(CompressedDocumentStore):
     """Document store for Washington Post (WAPO) v2/v4 full documents.
 
@@ -91,6 +95,7 @@ class WapoDocumentStore(CompressedDocumentStore):
         }
 
 
+@datatags("passage")
 class WapoPassageStore(CompressedDocumentStore):
     """Document store for WAPO paragraph-level passages (CaST v0).
 
@@ -113,6 +118,7 @@ class WapoPassageStore(CompressedDocumentStore):
 # --- KILT ---
 
 
+@datatags("document")
 class KiltDocumentStore(CompressedDocumentStore):
     """Document store for KILT (Knowledge Intensive Language Tasks) knowledge source.
 
@@ -138,6 +144,7 @@ class KiltDocumentStore(CompressedDocumentStore):
 # --- MS MARCO Documents ---
 
 
+@datatags("document")
 class MsMarcoDocumentStore(CompressedDocumentStore):
     """Document store for MS MARCO document collection (v1).
 
@@ -160,6 +167,7 @@ class MsMarcoDocumentStore(CompressedDocumentStore):
         }
 
 
+@datatags("passage")
 class MsMarcoPassageV2Store(CompressedDocumentStore):
     """Document store for MS MARCO passage collection v2.
 
@@ -192,6 +200,7 @@ class MsMarcoPassageV2Store(CompressedDocumentStore):
         }
 
 
+@datatags("document")
 class MsMarcoDocumentV2Store(CompressedDocumentStore):
     """Document store for MS MARCO document collection v2.
 
@@ -217,6 +226,7 @@ class MsMarcoDocumentV2Store(CompressedDocumentStore):
 # --- TIPSTER ---
 
 
+@datatags("document")
 class TipsterDocumentStore(CompressedDocumentStore):
     """Document store for TIPSTER/AQUAINT document collections.
 
@@ -242,6 +252,7 @@ class TipsterDocumentStore(CompressedDocumentStore):
 # --- CaST Segmented Passages ---
 
 
+@datatags("passage")
 class CastSegmentedPassageStore(DocumentStore):
     """Document store for CaST segmented passages (v2/v3).
 

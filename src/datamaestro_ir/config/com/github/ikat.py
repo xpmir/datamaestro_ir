@@ -1,6 +1,6 @@
 # See documentation on https://datamaestro.readthedocs.io
 
-from datamaestro.definitions import Dataset, datatasks, datatags, dataset
+from datamaestro.definitions import Dataset, datatasks, dataset
 from datamaestro_ir.data.conversation.base import ConversationUserTopics
 
 from datamaestro.utils import HashCheck
@@ -8,7 +8,6 @@ from datamaestro.download.single import FileDownloader
 from datamaestro_ir.data.conversation.ikat import IkatConversations
 
 
-@datatags("conversation", "context", "query")
 @datatasks("conversational search", "query rewriting")
 @dataset(
     id=".2025",
@@ -34,7 +33,6 @@ class Test2025(Dataset):
         )
 
 
-@datatags("conversation", "context", "query")
 @datatasks("conversational search", "query rewriting")
 @dataset(
     id=".2024",
@@ -60,7 +58,6 @@ class Test2024(Dataset):
         )
 
 
-@datatags("conversation", "context", "query")
 @datatasks("conversational search", "query rewriting")
 @dataset(
     id=".2023",

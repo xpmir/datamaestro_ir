@@ -1,12 +1,10 @@
 # See documentation on https://datamaestro.readthedocs.io
 
-from datamaestro.definitions import datatasks, datatags, dataset
+from datamaestro.definitions import dataset
 from datamaestro_ir.data.huggingface import HuggingFacePairwiseSampleDataset
 from datamaestro.download.huggingface import hf_download
 
 
-@datatags("information retrieval", "hard negatives", "msmarco")
-@datatasks("learning to rank")
 @hf_download(
     "dataset",
     "sentence-transformers/msmarco-hard-negatives",
