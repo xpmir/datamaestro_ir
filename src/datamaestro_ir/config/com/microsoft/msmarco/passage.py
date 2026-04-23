@@ -1,11 +1,17 @@
-"""MS MARCO (Microsoft Machine Reading Comprehension) is a large scale dataset focused on machine reading comprehension, question answering, and passage ranking. A variant of this task will be the part of TREC and AFIRM 2019. For Updates about TREC 2019 please follow This Repository Passage Reranking task Task Given a query q and a the 1000 most relevant passages P = p1, p2, p3,... p1000, as retrieved by BM25 a succeful system is expected to rerank the most relevant passage as high as possible. For this task not all 1000 relevant items have a human labeled relevant passage. Evaluation will be done using MRR.
+"""MS MARCO Passage Ranking collection.
 
-**Publication**:
-Tri Nguyen, Mir Rosenberg, Xia Song, Jianfeng Gao, Saurabh Tiwary, RanganMajumder, and Li Deng. 2016.
-MS MARCO: A Human Generated MAchineReading COmprehension Dataset. In CoCo@NIPS.
+A large-scale dataset focused on machine reading comprehension, question
+answering, and passage ranking. The passage reranking task provides a query
+and the top-1000 BM25 passages; a system is expected to rerank the most
+relevant passage as high as possible. Not all 1000 passages are judged;
+evaluation uses MRR.
 
+**Publication**: Tri Nguyen, Mir Rosenberg, Xia Song, Jianfeng Gao,
+Saurabh Tiwary, Rangan Majumder, and Li Deng. 2016. *MS MARCO: A Human
+Generated MAchine Reading COmprehension Dataset.* In CoCo@NIPS.
 
-See [https://github.com/microsoft/MSMARCO-Passage-Ranking](https://github.com/microsoft/MSMARCO-Passage-Ranking) for more details
+See [MSMARCO-Passage-Ranking](https://github.com/microsoft/MSMARCO-Passage-Ranking)
+for more details.
 """
 
 import logging
@@ -124,9 +130,7 @@ class Documents(Dataset):
                             if not match:
                                 break
                             try:
-                                fixed = (
-                                    match.group().encode("latin1").decode("utf8")
-                                )
+                                fixed = match.group().encode("latin1").decode("utf8")
                                 if len(fixed) == 1:
                                     content = (
                                         content[: match.start()]
@@ -149,11 +153,14 @@ class Documents(Dataset):
 
     # These files are not used directly by the document store,
     # but they are needed by dev small queries and qrels
-    files = FilesCopy(DOCUMENTS, {
-        "queries.dev.small.tsv": "queries.dev.small.tsv",
-        "qrels.dev.small.tsv": "qrels.dev.small.tsv",
-        "queries.eval.small.tsv": "queries.eval.small.tsv",
-    })
+    files = FilesCopy(
+        DOCUMENTS,
+        {
+            "queries.dev.small.tsv": "queries.dev.small.tsv",
+            "qrels.dev.small.tsv": "qrels.dev.small.tsv",
+            "queries.eval.small.tsv": "queries.eval.small.tsv",
+        },
+    )
 
     def config(self) -> MsMarcoPassagesStore:
         return MsMarcoPassagesStore.C(path=self.store.path, count=self.DOC_COUNT)
@@ -280,7 +287,6 @@ class TrainTriplesSmallText(Dataset):
         return TrainingTripletsLines.C(
             path=self.TRIPLES.path, doc_ids=False, topic_ids=False
         )
-
 
 
 # ---
@@ -414,12 +420,13 @@ class DevSmall(Dataset):
     def config(self) -> Adhoc:
         return Adhoc.C(
             documents=self.COLLECTION.config(),
-            topics=Topics.C(path=Documents.data_path / "files" / "queries.dev.small.tsv"),
+            topics=Topics.C(
+                path=Documents.data_path / "files" / "queries.dev.small.tsv"
+            ),
             assessments=TrecAdhocAssessments.C(
                 path=Documents.data_path / "files" / "qrels.dev.small.tsv"
             ),
         )
-
 
 
 @lua
@@ -436,6 +443,7 @@ class EvalQueriesSmall(Dataset):
 # ---
 # --- TREC 2019
 # ---
+
 
 @lua
 @dataset()
@@ -681,16 +689,61 @@ class TrecDlHard(Dataset):
     QRELS = reference(TrecDlHardQrels)
 
     # From https://github.com/grill-lab/DL-Hard/blob/main/dataset/folds.json
-    HARD_QIDS = qids_file("hard_qids", [
-        "915593", "451602", "966413", "1056204", "182539", "655914", "67316",
-        "883915", "1049519", "174463", "794429", "588587", "1114646", "537817",
-        "1065636", "144862", "443396", "332593", "1103812", "19335", "177604",
-        "1108939", "264403", "86606", "1133485", "1117817", "705609", "315637",
-        "673670", "1105792", "801118", "507445", "87452", "88495", "554515",
-        "166046", "730539", "1108100", "1109707", "1056416", "190044", "527433",
-        "489204", "877809", "1106007", "47923", "1136769", "1112341", "1103153",
-        "273695",
-    ])
+    HARD_QIDS = qids_file(
+        "hard_qids",
+        [
+            "915593",
+            "451602",
+            "966413",
+            "1056204",
+            "182539",
+            "655914",
+            "67316",
+            "883915",
+            "1049519",
+            "174463",
+            "794429",
+            "588587",
+            "1114646",
+            "537817",
+            "1065636",
+            "144862",
+            "443396",
+            "332593",
+            "1103812",
+            "19335",
+            "177604",
+            "1108939",
+            "264403",
+            "86606",
+            "1133485",
+            "1117817",
+            "705609",
+            "315637",
+            "673670",
+            "1105792",
+            "801118",
+            "507445",
+            "87452",
+            "88495",
+            "554515",
+            "166046",
+            "730539",
+            "1108100",
+            "1109707",
+            "1056416",
+            "190044",
+            "527433",
+            "489204",
+            "877809",
+            "1106007",
+            "47923",
+            "1136769",
+            "1112341",
+            "1103153",
+            "273695",
+        ],
+    )
 
     def config(self) -> Adhoc:
         from datamaestro_ir.data import FilteredTopics

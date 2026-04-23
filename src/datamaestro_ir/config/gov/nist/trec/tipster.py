@@ -1,20 +1,14 @@
-"""
+"""TIPSTER document collections.
 
-TIPSTER is sometimes also called the Text Research Collection Volume or TREC.
+Also known as the Text Research Collection Volume or TREC. Sponsored by
+ARPA/SISTO to advance the state of the art in document detection and data
+extraction from large, real-world collections. The detection data is a test
+collection built at NIST for the TIPSTER and related TREC projects: three
+CD-ROMs of SGML-encoded documents from LDC plus queries and relevance
+judgments from NIST.
 
-The TIPSTER project was sponsored by the Software and Intelligent Systems Technology
-Office of the Advanced Research Projects Agency (ARPA/SISTO) in an effort to significantly
-advance the state of the art in effective document detection (information retrieval) and
-data extraction from large, real-world data collections.
-
-The detection data is comprised of a test collection built at NIST for the TIPSTER project
-and the related TREC project. The TREC project has many other participating information
-retrieval research groups, working on the same task as the TIPSTER groups, but meeting
-once a year in a workshop to compare results (similar to MUC). The test collection consists
-of three CD-ROMs of SGML encoded documents distributed by LDC plus queries and answers
-(relevant documents) distributed by NIST.
-
-See also https://trec.nist.gov/data/docs_eng.html and https://trec.nist.gov/data/intro_eng.html
+See also https://trec.nist.gov/data/docs_eng.html and
+https://trec.nist.gov/data/intro_eng.html.
 """
 
 from datamaestro_ir.data.trec import TipsterCollection

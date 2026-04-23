@@ -5,6 +5,19 @@ This section lists datasets for knowledge distillation in neural IR,
 where teacher model scores are used to train student rankers.
 
 
+
+Pointwise Distillation
+----------------------
+
+Pointwise distillation datasets provide teacher-scored ``(query, document,
+similarity)`` triples — a single document per query together with a teacher
+similarity score.
+
+.. dm:datasets:: ai.lighton.embeddings_pre_training ir
+
+.. dm:datasets:: ai.lighton.embeddings_pre_training.denseon_lateon ir
+
+
 Pairwise Distillation
 ---------------------
 
@@ -28,13 +41,5 @@ Listwise Distillation
 
 Listwise distillation datasets contain ranked lists of documents for each query,
 produced by a teacher model.
-
-
-Rank-DistilLM
-~~~~~~~~~~~~~~
-
-Ranked passage lists from `rank-distillm <https://github.com/webis-de/rank-distillm>`_
-for MS MARCO training queries. Includes BM25 and ColBERTv2 first-stage retrieval
-results, as well as RankZephyr reranked lists at various cutoffs.
 
 .. dm:datasets:: com.github.webis-de.rank-distillm ir

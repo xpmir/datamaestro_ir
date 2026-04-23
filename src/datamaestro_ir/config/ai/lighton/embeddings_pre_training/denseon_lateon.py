@@ -1,7 +1,7 @@
-"""DenseON-LateON mGTE-style training recipe for
-``lightonai/embeddings-pre-training``.
+"""DenseON-LateON mGTE-style training recipe
 
-UNIONs three groups of configs with different per-group filter rules:
+
+Union three groups of configs with different per-group filter rules:
 
 1. Standard sources (all configs except ``fw-edu``, ``wikipedia_hlp_cm``,
    and ``wikipedia_hlp_dl``): keep rows with ``drop=False`` and
@@ -59,23 +59,30 @@ _STANDARD = [c for c in CONFIGS if c != _FW_EDU and c not in _HLP_WIKI]
 
 
 class DenseonLateonVariants(AxesVariants):
-    # ``seed`` changes what the dataset yields (which Concat vs
-    # Interleave class, plus in-source shuffle order), so it stays in
-    # the id; ``elide_default=True`` drops it when left at ``None`` so
-    # the pre-variants id ``…denseon_lateon`` is preserved.
+    """Variant space for the DenseON-LateON pre-training recipe."""
+
     seed = Axis(type=Optional[int], default=None, elide_default=True)
-    # ``download`` only toggles streaming on each source — same data,
-    # different loading mode — so it's excluded from the id entirely
-    # (``in_id=False``). It still reaches ``config()`` via the resolved
-    # kwargs and participates in the per-variant cache key.
+    """Randomisation seed. ``None`` (default) concatenates the three
+    groups in order (``ConcatPointwise``). A non-null integer switches
+    to :class:`~datamaestro_ir.data.distillation.RandomInterleavePointwiseDistillationSamples`
+    — uniformly picking a source at each step — and propagates the seed
+    to each HuggingFace source's ``.shuffle(seed=…)`` for in-source
+    randomisation. Changes what the dataset yields, so it stays in the
+    id; ``elide_default=True`` drops it from the id when left at
+    ``None`` to preserve the pre-variants id ``…denseon_lateon``."""
+
     download = Axis([False, True], default=False, type=bool, in_id=False)
+    """``False`` (default) streams from the Hub; ``True`` downloads each
+    source config to the local HF cache (``streaming=False``). Use with
+    care — the full dataset is ~2TB. Excluded from the id (``in_id=False``)
+    because it only toggles the loading mode — same data, different
+    delivery — while still reaching ``config()`` via the resolved kwargs."""
 
 
 @datatags(
     "information retrieval",
     "distillation",
     "pre-training",
-    "mgte",
     "recipe",
 )
 @datatasks("learning to rank")

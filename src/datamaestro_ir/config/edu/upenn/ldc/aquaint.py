@@ -1,4 +1,11 @@
-"""The AQUAINT Corpus, Linguistic Data Consortium (LDC) catalog number LDC2002T31 and ISBN 1-58563-240-6 consists of newswire text data in English, drawn from three sources: the Xinhua News Service (People's Republic of China), the New York Times News Service, and the Associated Press Worldstream News Service. It was prepared by the LDC for the AQUAINT Project, and will be used in official benchmark evaluations conducted by National Institute of Standards and Technology (NIST)."""
+"""AQUAINT newswire corpus.
+
+LDC catalog number LDC2002T31 (ISBN 1-58563-240-6). Newswire text in English
+drawn from three sources: the Xinhua News Service (PRC), the New York Times
+News Service, and the Associated Press Worldstream News Service. Prepared by
+the LDC for the AQUAINT Project and used in official NIST benchmark
+evaluations.
+"""
 
 from datamaestro.context import DatafolderPath
 from datamaestro.definitions import Dataset, dataset
@@ -20,9 +27,7 @@ class Apw(Dataset):
     )
 
     def config(self) -> TipsterCollection:
-        return TipsterCollection.C(
-            path=self.DOCUMENTS.path, patterns=["*/*_APW_ENG*"]
-        )
+        return TipsterCollection.C(path=self.DOCUMENTS.path, patterns=["*/*_APW_ENG*"])
 
 
 @dataset(url=URL, id=".nyt")
@@ -36,9 +41,7 @@ class Nyt(Dataset):
     )
 
     def config(self) -> TipsterCollection:
-        return TipsterCollection.C(
-            path=self.DOCUMENTS.path, patterns=["*/*_NYT*"]
-        )
+        return TipsterCollection.C(path=self.DOCUMENTS.path, patterns=["*/*_NYT*"])
 
 
 @dataset(url=URL, id=".xie")
@@ -52,9 +55,7 @@ class Xie(Dataset):
     )
 
     def config(self) -> TipsterCollection:
-        return TipsterCollection.C(
-            path=self.DOCUMENTS.path, patterns=["*/*_XIN_ENG*"]
-        )
+        return TipsterCollection.C(path=self.DOCUMENTS.path, patterns=["*/*_XIN_ENG*"])
 
 
 @dataset(url=URL, id="")

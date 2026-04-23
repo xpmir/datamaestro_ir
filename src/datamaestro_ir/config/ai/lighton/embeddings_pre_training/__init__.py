@@ -110,16 +110,31 @@ CONFIGS = [
 
 
 class EmbeddingsVariants(AxesVariants):
+    """Variant space for ``lightonai/embeddings-pre-training``."""
+
     name = Axis(CONFIGS)
-    # ``streaming`` is a pure loading-mode flag (same data either way);
-    # ``in_id=False`` keeps it out of the formatted selector and dataset
-    # id. The underlying ``HuggingFaceDataset.streaming`` field is also
-    # ``Meta``, so experimaestro's identity hash already ignores it.
+    """HuggingFace config name — selects one of the 73 source corpora."""
+
     streaming = Axis([False, True], default=True, type=bool, in_id=False)
+    """Pure loading-mode flag (same data either way); excluded from the
+    formatted selector and dataset id. The underlying
+    ``HuggingFaceDataset.streaming`` field is also ``Meta``, so
+    experimaestro's identity hash already ignores it."""
+
     filter_drop = Axis([True, False], default=True, type=bool)
+    """When ``True``, skip rows with ``drop=True`` (the upstream dataset's
+    recommended pre-training subset)."""
+
     filter_duplicate = Axis([True, False], default=True, type=bool)
+    """When ``True``, skip rows whose ``duplicate`` column is not null."""
+
     min_similarity = Axis(type=Optional[float], default=None)
+    """Minimum teacher similarity (inclusive). Rows below are skipped."""
+
     top_percentile = Axis(type=Optional[float], default=None)
+    """Keep only the top fraction of rows by similarity (e.g. ``0.35``
+    for the FineWeb-Edu top-35% recipe). Threshold is estimated from a
+    reservoir sample, so it works in streaming mode."""
 
 
 # Family — id derived from the package path (``id=""`` drops the class

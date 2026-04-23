@@ -1,5 +1,6 @@
-"""
-Pre-computed Anserini indices provided by Jimmy Lin (U. Waterloo)
+"""Pre-computed Anserini indices.
+
+Provided by Jimmy Lin (U. Waterloo).
 """
 
 from datamaestro.definitions import dataset

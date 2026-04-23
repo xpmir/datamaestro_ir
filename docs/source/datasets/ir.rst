@@ -128,3 +128,23 @@ Example usage:
    documents = adhoc.documents
    topics = adhoc.topics
    assessments = adhoc.assessments
+
+
+TREC CAR
+--------
+
+The `TREC Complex Answer Retrieval <http://trec-car.cs.unh.edu/>`_ paragraph
+corpus — ~29.8M paragraphs extracted from Wikipedia, used as a document
+collection in several TREC tracks including CaST.
+
+.. dm:datasets:: gov.nist.trec.car ir
+
+
+Washington Post
+---------------
+
+`Washington Post <https://trec.nist.gov/data/wapost/>`_ document collections
+used in several TREC tracks. These collections require a data-use agreement
+with NIST and must be provided locally via ``DatafolderPath``.
+
+.. dm:datasets:: gov.nist.trec.wapo ir
