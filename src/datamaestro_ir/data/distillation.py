@@ -222,3 +222,36 @@ class ConcatPointwiseDistillationSamples(PointwiseDistillationSamples):
     def __iter__(self) -> Iterator[PointwiseDistillationSample]:
         for source in self.sources:
             yield from source
+
+
+class RandomInterleavePointwiseDistillationSamples(PointwiseDistillationSamples):
+    """Randomly interleave samples from multiple sources.
+
+    At each step, uniformly pick a source among the ones not yet exhausted
+    and yield its next item. Order within each source is preserved — apply
+    the source's own shuffle (e.g. HF streaming ``.shuffle(seed=...)``) if
+    you also want in-source randomisation.
+    """
+
+    sources: Param[List[PointwiseDistillationSamples]]
+    """Sources to interleave."""
+
+    seed: Param[int]
+    """Seed for the source-selection RNG."""
+
+    def __iter__(self) -> Iterator[PointwiseDistillationSample]:
+        import random
+
+        rng = random.Random(self.seed)
+        iters = [iter(s) for s in self.sources]
+        active = list(range(len(iters)))
+        while active:
+            idx = rng.randrange(len(active))
+            i = active[idx]
+            try:
+                yield next(iters[i])
+            except StopIteration:
+                # O(1) removal — order of `active` doesn't matter under
+                # uniform sampling.
+                active[idx] = active[-1]
+                active.pop()

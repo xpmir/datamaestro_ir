@@ -152,6 +152,7 @@ Distillation
 .. autoxpmconfig:: datamaestro_ir.data.distillation.ListwiseDistillationSamplesTSVWithAnnotations
 .. autoxpmconfig:: datamaestro_ir.data.distillation.PointwiseDistillationSamples
 .. autoxpmconfig:: datamaestro_ir.data.distillation.ConcatPointwiseDistillationSamples
+.. autoxpmconfig:: datamaestro_ir.data.distillation.RandomInterleavePointwiseDistillationSamples
 .. autoxpmconfig:: datamaestro_ir.data.huggingface.HuggingFacePointwiseDistillationSamples
 .. autoxpmconfig:: datamaestro_ir.data.lighton.EmbeddingsPreTrainingSamples
 
