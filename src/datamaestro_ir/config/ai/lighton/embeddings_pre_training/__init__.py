@@ -10,7 +10,7 @@ query-style selector on the dataset id::
 All 73 HF configs are exposed through the ``name`` axis; additional axes
 cover loading mode and the dataset's recipe knobs (``drop`` filter,
 ``duplicate`` filter, ``similarity`` floor, and top-percentile subset).
-See ``datamaestro.variants`` for the query syntax.
+See :class:`datamaestro.variants.AxesVariants` for the query syntax.
 
 The recipe from the mGTE technical report lives in a sibling module
 (``denseon_lateon``) because it UNIONs multiple configs with

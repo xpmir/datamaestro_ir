@@ -142,8 +142,13 @@ Training triplets
 
 .. autoxpmconfig:: datamaestro_ir.data.huggingface.HuggingFacePairwiseSampleDataset
 
+.. autoclass:: datamaestro_ir.data.PairwiseSample
+    :members:
+
 Distillation
 ************
+
+Config classes that stream teacher-scored samples:
 
 .. autoxpmconfig:: datamaestro_ir.data.distillation.PairwiseDistillationSamples
 .. autoxpmconfig:: datamaestro_ir.data.distillation.PairwiseDistillationSamplesTSV
@@ -155,6 +160,15 @@ Distillation
 .. autoxpmconfig:: datamaestro_ir.data.distillation.RandomInterleavePointwiseDistillationSamples
 .. autoxpmconfig:: datamaestro_ir.data.huggingface.HuggingFacePointwiseDistillationSamples
 .. autoxpmconfig:: datamaestro_ir.data.lighton.EmbeddingsPreTrainingSamples
+
+Records yielded by the iterators above:
+
+.. autoclass:: datamaestro_ir.data.distillation.PairwiseDistillationSample
+    :members:
+.. autoclass:: datamaestro_ir.data.distillation.ListwiseDistillationSample
+    :members:
+.. autoclass:: datamaestro_ir.data.distillation.PointwiseDistillationSample
+    :members:
 
 Transforms
 **********

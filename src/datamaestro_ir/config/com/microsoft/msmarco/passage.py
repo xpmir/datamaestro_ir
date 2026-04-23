@@ -10,7 +10,7 @@ evaluation uses MRR.
 Saurabh Tiwary, Rangan Majumder, and Li Deng. 2016. *MS MARCO: A Human
 Generated MAchine Reading COmprehension Dataset.* In CoCo@NIPS.
 
-See [MSMARCO-Passage-Ranking](https://github.com/microsoft/MSMARCO-Passage-Ranking)
+See `MSMARCO-Passage-Ranking <https://github.com/microsoft/MSMARCO-Passage-Ranking>`_
 for more details.
 """
 

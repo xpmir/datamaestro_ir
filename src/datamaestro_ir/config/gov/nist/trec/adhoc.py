@@ -1,6 +1,6 @@
-"""TREC Adhoc datasets and tasks
+"""TREC Adhoc datasets and tasks.
 
-See [https://trec.nist.gov/data/test_coll.html](https://trec.nist.gov/data/test_coll.html)
+See https://trec.nist.gov/data/test_coll.html.
 """
 
 import logging
