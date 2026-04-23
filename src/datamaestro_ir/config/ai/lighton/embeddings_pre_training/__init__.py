@@ -111,7 +111,11 @@ CONFIGS = [
 
 class EmbeddingsVariants(AxesVariants):
     name = Axis(CONFIGS)
-    streaming = Axis([False, True], default=True, type=bool)
+    # ``streaming`` is a pure loading-mode flag (same data either way);
+    # ``in_id=False`` keeps it out of the formatted selector and dataset
+    # id. The underlying ``HuggingFaceDataset.streaming`` field is also
+    # ``Meta``, so experimaestro's identity hash already ignores it.
+    streaming = Axis([False, True], default=True, type=bool, in_id=False)
     filter_drop = Axis([True, False], default=True, type=bool)
     filter_duplicate = Axis([True, False], default=True, type=bool)
     min_similarity = Axis(type=Optional[float], default=None)
