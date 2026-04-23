@@ -6,7 +6,7 @@ import logging
 import random
 from typing import Iterator, Optional
 
-from experimaestro import Meta, field
+from experimaestro import Meta, Param, field
 
 from .distillation import PointwiseDistillationSample
 from .huggingface import HuggingFacePointwiseDistillationSamples
@@ -56,9 +56,35 @@ class EmbeddingsPreTrainingSamples(HuggingFacePointwiseDistillationSamples):
     """Seed for the reservoir sampler so threshold estimation is
     deterministic."""
 
+    shuffle_seed: Param[Optional[int]] = field(default=None, ignore_default=True)
+    """If set, pass through to the HuggingFace dataset's ``.shuffle(seed=…)``
+    so iteration order is randomised per source. Meant to pair with a
+    cross-source random interleave (e.g.
+    :class:`~datamaestro_ir.data.distillation.RandomInterleavePointwiseDistillationSamples`)
+    for fully shuffled training streams. ``Param`` — different seeds
+    produce different sample orderings, so this affects identity."""
+
+    shuffle_buffer_size: Param[int] = field(default=10_000, ignore_default=True)
+    """Buffer size for streaming-mode shuffle (HF approximates a full
+    permutation with a rolling buffer of this size). ``Param`` because
+    the approximation quality — and thus the exact stream of rows — is
+    a function of the buffer size."""
+
+    def _iter_data(self):
+        ds = self.data
+        if self.shuffle_seed is not None:
+            if self.streaming:
+                ds = ds.shuffle(
+                    seed=self.shuffle_seed,
+                    buffer_size=self.shuffle_buffer_size,
+                )
+            else:
+                ds = ds.shuffle(seed=self.shuffle_seed)
+        return iter(ds)
+
     def __iter__(self) -> Iterator[PointwiseDistillationSample]:
         threshold = self._resolve_percentile_threshold()
-        for row in self.data:
+        for row in self._iter_data():
             if self.filter_drop and self._get(row, self.drop_field):
                 continue
             if (

@@ -12,6 +12,18 @@ UNIONs three groups of configs with different per-group filter rules:
 3. ``wikipedia_hlp_cm`` and ``wikipedia_hlp_dl``: included as-is, no
    filter.
 
+Variant axes:
+
+- ``seed``: ``null`` (default) concatenates the three groups in order
+  (``ConcatPointwise``). A non-null integer switches to
+  :class:`~datamaestro_ir.data.distillation.RandomInterleavePointwiseDistillationSamples`
+  — uniformly picking a source at each step — and propagates the seed to
+  each HuggingFace source's ``.shuffle(seed=…)`` for in-source
+  randomisation.
+- ``download``: ``false`` (default) streams from the Hub;
+  ``true`` downloads each source config to the local HF cache
+  (``streaming=False``). Use with care — the full dataset is ~2TB.
+
 Id derived from the package path:
 ``ai.lighton.embeddings_pre_training.denseon_lateon``.
 
@@ -23,9 +35,16 @@ config names are ``fw-edu``, ``wikipedia_hlp_cm`` and ``wikipedia_hlp_dl``
 
 from __future__ import annotations
 
-from datamaestro.definitions import dataset, Dataset, datatags, datatasks
+from typing import Optional
 
-from datamaestro_ir.data.distillation import ConcatPointwiseDistillationSamples
+from datamaestro.definitions import dataset, Dataset, datatags, datatasks
+from datamaestro.variants import Axis, AxesVariants
+
+from datamaestro_ir.data.distillation import (
+    ConcatPointwiseDistillationSamples,
+    PointwiseDistillationSamples,
+    RandomInterleavePointwiseDistillationSamples,
+)
 from datamaestro_ir.data.lighton import EmbeddingsPreTrainingSamples
 
 from . import CONFIGS, REPO_ID, URL
@@ -39,6 +58,19 @@ _HLP_WIKI = {"wikipedia_hlp_cm", "wikipedia_hlp_dl"}
 _STANDARD = [c for c in CONFIGS if c != _FW_EDU and c not in _HLP_WIKI]
 
 
+class DenseonLateonVariants(AxesVariants):
+    # ``seed`` changes what the dataset yields (which Concat vs
+    # Interleave class, plus in-source shuffle order), so it stays in
+    # the id; ``elide_default=True`` drops it when left at ``None`` so
+    # the pre-variants id ``…denseon_lateon`` is preserved.
+    seed = Axis(type=Optional[int], default=None, elide_default=True)
+    # ``download`` only toggles streaming on each source — same data,
+    # different loading mode — so it's excluded from the id entirely
+    # (``in_id=False``). It still reaches ``config()`` via the resolved
+    # kwargs and participates in the per-variant cache key.
+    download = Axis([False, True], default=False, type=bool, in_id=False)
+
+
 @datatags(
     "information retrieval",
     "distillation",
@@ -47,13 +79,20 @@ _STANDARD = [c for c in CONFIGS if c != _FW_EDU and c not in _HLP_WIKI]
     "recipe",
 )
 @datatasks("learning to rank")
-@dataset(id="", url=URL)
+@dataset(id="", url=URL, variants=DenseonLateonVariants)
 class DenseonLateon(Dataset):
     """DenseON-LateON mGTE-style pre-training recipe built by UNIONing
     three groups of ``lightonai/embeddings-pre-training`` configs with
     group-specific filters."""
 
-    def config(self) -> ConcatPointwiseDistillationSamples:
+    def config(
+        self,
+        seed: Optional[int] = None,
+        download: bool = False,
+    ) -> PointwiseDistillationSamples:
+        streaming = not download
+        shuffle_seed = seed  # None ⇒ no per-source shuffle.
+
         sources = []
 
         # (1) Standard sources — drop/duplicate filter + similarity >= 3.
@@ -62,10 +101,11 @@ class DenseonLateon(Dataset):
                 repo_id=REPO_ID,
                 name=cfg,
                 split="train",
-                streaming=True,
+                streaming=streaming,
                 filter_drop=True,
                 filter_duplicate=True,
                 min_similarity=3.0,
+                shuffle_seed=shuffle_seed,
             )
             for cfg in _STANDARD
         )
@@ -76,10 +116,11 @@ class DenseonLateon(Dataset):
                 repo_id=REPO_ID,
                 name=_FW_EDU,
                 split="train",
-                streaming=True,
+                streaming=streaming,
                 filter_drop=False,
                 filter_duplicate=False,
                 top_percentile=0.35,
+                shuffle_seed=shuffle_seed,
             )
         )
 
@@ -89,11 +130,17 @@ class DenseonLateon(Dataset):
                 repo_id=REPO_ID,
                 name=cfg,
                 split="train",
-                streaming=True,
+                streaming=streaming,
                 filter_drop=False,
                 filter_duplicate=False,
+                shuffle_seed=shuffle_seed,
             )
             for cfg in sorted(_HLP_WIKI)
         )
 
-        return ConcatPointwiseDistillationSamples.C(sources=sources)
+        if seed is None:
+            return ConcatPointwiseDistillationSamples.C(sources=sources)
+        return RandomInterleavePointwiseDistillationSamples.C(
+            sources=sources,
+            seed=seed,
+        )
