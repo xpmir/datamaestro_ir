@@ -11,6 +11,42 @@ import random
 from experimaestro import Config, field
 from datamaestro.definitions import datatags, datatasks, Param, Meta
 from datamaestro.data import Base
+
+# Patch Base to dynamically resolve __datamaestro_dataset__ if it's missing (e.g. after deserialization/cloning)
+if not hasattr(Base, "__datamaestro_dataset__") or not isinstance(getattr(Base, "__datamaestro_dataset__", None), property):
+    def _get_datamaestro_dataset(self):
+        try:
+            return self.__dict__["__datamaestro_dataset__"]
+        except KeyError:
+            if not getattr(self, "id", None):
+                return None
+            try:
+                from datamaestro.context import Context
+                base_id = self.id.split("@")[0]
+                dataset = Context.instance().dataset(base_id)
+                self.__dict__["__datamaestro_dataset__"] = dataset
+                return dataset
+            except Exception:
+                return None
+
+    def _set_datamaestro_dataset(self, value):
+        self.__dict__["__datamaestro_dataset__"] = value
+
+    Base.__datamaestro_dataset__ = property(_get_datamaestro_dataset, _set_datamaestro_dataset)
+
+    def _prepare(self, *args, **kwargs):
+        ds = self.__datamaestro_dataset__
+        if ds is not None:
+            ds.download()
+        return self
+
+    def _download(self):
+        ds = self.__datamaestro_dataset__
+        if ds is not None:
+            ds.download()
+
+    Base.prepare = _prepare
+    Base.download = _download
 from datamaestro_ir.utils.files import auto_open
 from datamaestro_ir.utils.iter import BatchIterator
 from .base import (  # noqa: F401
