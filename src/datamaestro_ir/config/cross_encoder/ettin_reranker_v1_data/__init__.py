@@ -7,8 +7,6 @@ as a parameterized variant family.
 
 from __future__ import annotations
 
-from typing import Optional
-
 from datamaestro.definitions import dataset, Dataset
 from datamaestro.variants import AxesVariants, Axis
 from datamaestro_ir.data.huggingface import HuggingFacePointwiseDistillationSamples
