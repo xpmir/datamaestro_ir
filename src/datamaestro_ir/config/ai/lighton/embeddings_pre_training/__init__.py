@@ -151,6 +151,12 @@ class EmbeddingsPreTraining(Dataset):
     """
 
     def config(self, **kw) -> EmbeddingsPreTrainingSamples:
+        import logging
+        if kw.get("streaming", True):
+            logging.warning(
+                "Using streaming mode, will not download the dataset. "
+                "Use streaming=false (e.g. ai.lighton.embeddings_pre_training[...,streaming=false]) to download."
+            )
         return EmbeddingsPreTrainingSamples.C(
             repo_id=REPO_ID,
             split="train",
