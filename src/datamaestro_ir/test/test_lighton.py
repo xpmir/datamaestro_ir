@@ -366,3 +366,33 @@ class TestDenseonLateonRecipe:
             assert src.filter_duplicate is False
             assert src.min_similarity is None
             assert src.top_percentile is None
+
+
+@pytest.mark.parametrize(
+    "dataset_name",
+    [
+        "arguana",
+        "climate_fever",
+        "dbpedia_entity",
+        "fever",
+        "fiqa",
+        "hotpotqa",
+        "msmarco",
+        "nfcorpus",
+        "nq",
+        "quora",
+        "scidocs",
+        "scifact",
+        "trec_covid",
+        "webis_touche2020",
+    ],
+)
+def test_beir_decontaminated_registrations(dataset_name: str):
+    from datamaestro import prepare_dataset
+
+    ds_id = f"ai.lighton.beir_decontaminated.{dataset_name}"
+    ds = prepare_dataset(ds_id)
+    assert ds is not None
+    assert ds.id == ds_id
+
+
