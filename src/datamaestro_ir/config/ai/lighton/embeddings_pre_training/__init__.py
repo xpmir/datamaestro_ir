@@ -152,6 +152,7 @@ class EmbeddingsPreTraining(Dataset):
 
     def config(self, **kw) -> EmbeddingsPreTrainingSamples:
         import logging
+
         if kw.get("streaming", True):
             logging.warning(
                 "Using streaming mode, will not download the dataset. "

@@ -186,9 +186,7 @@ def register_beir_decontaminated_subsets():
 
                 SplitAdhoc.__name__ = f"LightOnDecontaminated_{n}_{s}"
                 SplitAdhoc.__module__ = __name__
-                return dataset(id=f"ai.lighton.beir_decontaminated.{n}.{s}")(
-                    SplitAdhoc
-                )
+                return dataset(id=f"ai.lighton.beir_decontaminated.{n}.{s}")(SplitAdhoc)
 
             SplitClass = make_adhoc_split()
             globals()[SplitClass.__name__] = SplitClass

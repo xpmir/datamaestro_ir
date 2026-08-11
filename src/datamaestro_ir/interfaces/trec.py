@@ -257,7 +257,7 @@ def iter_tipster_for_store(
 
     for doc in iter_tipster_collection(base_path, patterns):
         text_item = doc["text_item"]
-        content = json.dumps(
-            {"title": text_item.title, "body": text_item.body}
-        ).encode("utf-8")
+        content = json.dumps({"title": text_item.title, "body": text_item.body}).encode(
+            "utf-8"
+        )
         yield {"id": doc["id"]}, content

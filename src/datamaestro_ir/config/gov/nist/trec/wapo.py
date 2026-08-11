@@ -16,7 +16,11 @@ from pathlib import Path
 from datamaestro.context import DatafolderPath
 from datamaestro.definitions import Dataset, dataset
 from datamaestro.download.links import linkfolder
-from datamaestro_ir.data.stores import KiltDocumentStore, WapoDocumentStore, WapoPassageStore
+from datamaestro_ir.data.stores import (
+    KiltDocumentStore,
+    WapoDocumentStore,
+    WapoPassageStore,
+)
 from datamaestro_ir.download.docstore import docstore_builder
 
 logger = logging.getLogger(__name__)
@@ -29,9 +33,7 @@ def _wapo_raw_iter(source: Path):
 
     Handles both .jl and .jl within tar archives.
     """
-    for jl_path in sorted(source.glob("**/*.jl")) + sorted(
-        source.glob("**/*.jsonl")
-    ):
+    for jl_path in sorted(source.glob("**/*.jl")) + sorted(source.glob("**/*.jsonl")):
         with open(jl_path, "rt") as fp:
             for line in fp:
                 if line.strip():
@@ -210,10 +212,7 @@ class WapoV4Documents(Dataset):
             body = ""
             if data.get("contents"):
                 for item in data["contents"]:
-                    if (
-                        item is not None
-                        and item.get("subtype") == "paragraph"
-                    ):
+                    if item is not None and item.get("subtype") == "paragraph":
                         body += " " + item.get("content", "")
             body = re.sub(CLEANR, "", body).replace("\n", " ").strip()
 

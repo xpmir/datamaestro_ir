@@ -394,5 +394,3 @@ def test_beir_decontaminated_registrations(dataset_name: str):
     ds = prepare_dataset(ds_id)
     assert ds is not None
     assert ds.id == ds_id
-
-

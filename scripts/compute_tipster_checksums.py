@@ -62,7 +62,9 @@ def main():
             print(f"WARNING: {folder} not found, skipping {name}", file=sys.stderr)
             continue
         md5, count = compute_glob_checksum(folder, glob)
-        print(f'{name:10s}  glob={glob!r:10s}  files={count:4d}  md5="{md5}"  ({disk_path})')
+        print(
+            f'{name:10s}  glob={glob!r:10s}  files={count:4d}  md5="{md5}"  ({disk_path})'
+        )
 
 
 if __name__ == "__main__":

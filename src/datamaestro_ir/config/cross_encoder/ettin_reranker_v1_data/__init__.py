@@ -16,16 +16,45 @@ URL = f"https://huggingface.co/datasets/{REPO_ID}"
 
 # The 39 configurations of cross-encoder/ettin-reranker-v1-data
 CONFIGS = [
-    "agnews", "altlex", "amazon_qa", "amazon_reviews", "arxiv_title_abstract",
-    "beir_dbpedia", "biorxiv_title_abstract", "cc_news_en", "cnn_dailymail",
-    "fw_edu", "gooaq_qa", "medrxiv_title_abstract", "msmarco", "mtp", "npr",
-    "paq", "quora", "reddit", "reddit_body_comment", "rerank_fever",
-    "rerank_fiqa", "rerank_hotpotqa", "rerank_msmarco", "rerank_nq",
-    "rerank_squadv2", "rerank_trivia", "s2orc_abstract_citation",
-    "s2orc_citation_titles", "s2orc_title_abstract", "stackexchange_body_body",
-    "stackexchange_duplicate_questions", "stackexchange_qa",
-    "stackexchange_title_body", "stackoverflow_title_body", "wikianswers",
-    "wikihow", "yahoo_answer", "yahoo_qa", "yahoo_question_body"
+    "agnews",
+    "altlex",
+    "amazon_qa",
+    "amazon_reviews",
+    "arxiv_title_abstract",
+    "beir_dbpedia",
+    "biorxiv_title_abstract",
+    "cc_news_en",
+    "cnn_dailymail",
+    "fw_edu",
+    "gooaq_qa",
+    "medrxiv_title_abstract",
+    "msmarco",
+    "mtp",
+    "npr",
+    "paq",
+    "quora",
+    "reddit",
+    "reddit_body_comment",
+    "rerank_fever",
+    "rerank_fiqa",
+    "rerank_hotpotqa",
+    "rerank_msmarco",
+    "rerank_nq",
+    "rerank_squadv2",
+    "rerank_trivia",
+    "s2orc_abstract_citation",
+    "s2orc_citation_titles",
+    "s2orc_title_abstract",
+    "stackexchange_body_body",
+    "stackexchange_duplicate_questions",
+    "stackexchange_qa",
+    "stackexchange_title_body",
+    "stackoverflow_title_body",
+    "wikianswers",
+    "wikihow",
+    "yahoo_answer",
+    "yahoo_qa",
+    "yahoo_question_body",
 ]
 
 
@@ -45,6 +74,7 @@ class EttinRerankerV1Data(Dataset):
 
     def config(self, **kw) -> HuggingFacePointwiseDistillationSamples:
         import logging
+
         if kw.get("streaming", True):
             logging.warning(
                 "Using streaming mode, will not download the dataset. "

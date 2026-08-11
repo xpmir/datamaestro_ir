@@ -25,8 +25,7 @@ class MsmarcoBm25Annotated(Dataset):
 
     RUN = FileDownloader(
         "bm25__msmarco_passage_train_judged.run",
-        url=f"{ZENODO_BASE}"
-        "__bm25__msmarco-passage-train-judged.run?download=1",
+        url=f"{ZENODO_BASE}__bm25__msmarco-passage-train-judged.run?download=1",
         checker=HashCheck("835372b2ab4d20acf10addeae526c559", md5),
     )
 
@@ -53,8 +52,7 @@ class MsmarcoColbertv2Annotated(Dataset):
 
     RUN = FileDownloader(
         "colbert__msmarco_passage_train_judged.run",
-        url=f"{ZENODO_BASE}"
-        "__colbert__msmarco-passage-train-judged.run?download=1",
+        url=f"{ZENODO_BASE}__colbert__msmarco-passage-train-judged.run?download=1",
         checker=HashCheck("6ed152027f7270f32fcbfaaa6def951e", md5),
     )
 

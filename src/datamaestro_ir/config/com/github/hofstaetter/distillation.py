@@ -6,9 +6,7 @@ from datamaestro.download.single import FileDownloader
 from datamaestro.utils import HashCheck
 from datamaestro_ir.data.distillation import PairwiseDistillationSamplesTSV
 
-ZENODO_BASE = (
-    "https://zenodo.org/record/4068216/files/"
-)
+ZENODO_BASE = "https://zenodo.org/record/4068216/files/"
 
 
 @dataset(url="https://github.com/sebastian-hofstaetter/neural-ranking-kd")
@@ -46,8 +44,7 @@ class MsmarcoBertTeacher(Dataset):
 
     SCORES = FileDownloader(
         "bertbase_cat_msmarcopassage_train_scores_ids.tsv",
-        url=f"{ZENODO_BASE}"
-        "bertbase_cat_msmarcopassage_train_scores_ids.tsv?download=1",
+        url=f"{ZENODO_BASE}bertbase_cat_msmarcopassage_train_scores_ids.tsv?download=1",
         checker=HashCheck("a2575af08a19b47c2041e67c9efcd917", md5),
     )
 

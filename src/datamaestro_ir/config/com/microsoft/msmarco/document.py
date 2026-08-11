@@ -62,9 +62,11 @@ class Documents(Dataset):
                 line = line.strip()
                 if line == "<DOC>":
                     docno_line = fp.readline().strip()
-                    doc_id = docno_line.replace("<DOCNO>", "").replace(
-                        "</DOCNO>", ""
-                    ).strip()
+                    doc_id = (
+                        docno_line.replace("<DOCNO>", "")
+                        .replace("</DOCNO>", "")
+                        .strip()
+                    )
                     url = fp.readline().strip()
                     title = fp.readline().strip()
 
