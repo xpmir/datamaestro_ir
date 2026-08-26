@@ -7,12 +7,16 @@ as a parameterized variant family.
 
 from __future__ import annotations
 
+from typing import Optional
 from datamaestro.definitions import dataset, Dataset
 from datamaestro.variants import AxesVariants, Axis
 from datamaestro_ir.data.huggingface import HuggingFacePointwiseDistillationSamples
 
 REPO_ID = "cross-encoder/ettin-reranker-v1-data"
 URL = f"https://huggingface.co/datasets/{REPO_ID}"
+
+# Default pinned revision before wikihow was removed upstream
+DEFAULT_REVISION = "7f07e8686db233d934eacde4bf47a9995f73811e"
 
 # The 39 configurations of cross-encoder/ettin-reranker-v1-data
 CONFIGS = [
@@ -63,6 +67,9 @@ class EttinVariants(AxesVariants):
 
     name = Axis(CONFIGS)
     """HuggingFace config name."""
+
+    revision = Axis(type=Optional[str], default=DEFAULT_REVISION, in_id=False)
+    """HuggingFace repository commit revision SHA."""
 
     streaming = Axis([False, True], default=True, type=bool, in_id=False)
     """Streaming mode flag."""
