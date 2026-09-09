@@ -11,17 +11,51 @@ Each exposes:
 - Full Adhoc benchmark combining docs, queries, and qrels
 """
 
+from pathlib import Path
+from typing import Iterator
 from datamaestro.definitions import dataset, Dataset
 from datamaestro.download.single import FileDownloader
 from datamaestro.download import reference
 from datamaestro_ir.data import Adhoc
+from datamaestro_ir.data.base import AdhocAssessedTopic, SimpleAdhocAssessment
 from datamaestro_ir.data.beir import (
     BeirDocumentStore,
     BeirParquetTopics,
     BeirParquetAssessments,
-    beir_parquet_docstore_iter,
 )
 from datamaestro_ir.download.docstore import docstore_builder
+
+
+def limit_parquet_docstore_iter(path: Path) -> Iterator[tuple[dict[str, str], bytes]]:
+    """Iterates LIMIT corpus Parquet rows, replacing spaces in doc IDs with underscores for TREC compliance."""
+    import pandas as pd
+
+    df = pd.read_parquet(path)
+    for _, row in df.iterrows():
+        title = row.get("title", "")
+        text = row["text"]
+        content = (title + "\0" + text).encode("utf-8")
+        doc_id = str(row["_id"]).replace(" ", "_")
+        yield {"id": doc_id}, content
+
+
+class LimitParquetAssessments(BeirParquetAssessments):
+    """LIMIT qrels from Parquet, replacing spaces in document IDs with underscores for TREC compliance."""
+
+    def iter(self) -> Iterator[AdhocAssessedTopic]:
+        import pandas as pd
+        from collections import defaultdict
+
+        df = pd.read_parquet(self.path)
+        assessments = defaultdict(list)
+        for _, row in df.iterrows():
+            qid = str(row["query-id"])
+            doc_id = str(row["corpus-id"]).replace(" ", "_")
+            score = int(row.get("score", 1.0))
+            assessments[qid].append(SimpleAdhocAssessment(doc_id=doc_id, rel=score))
+
+        for qid, docs in assessments.items():
+            yield AdhocAssessedTopic(topic_id=qid, assessments=docs)
 
 LIMIT_VARIANTS = {
     "limit": {
@@ -58,7 +92,7 @@ def register_limit_subsets():
                 CORPUS = FileDownloader("corpus.parquet", url)
                 STORE = docstore_builder(
                     source=CORPUS,
-                    iter_factory=beir_parquet_docstore_iter,
+                    iter_factory=limit_parquet_docstore_iter,
                     keys=["id"],
                     doc_count=count,
                 )
@@ -101,8 +135,8 @@ def register_limit_subsets():
             class Qrels(Dataset):
                 QRELS = FileDownloader("qrels.parquet", url)
 
-                def config(self) -> BeirParquetAssessments:
-                    return BeirParquetAssessments.C(
+                def config(self) -> LimitParquetAssessments:
+                    return LimitParquetAssessments.C(
                         id=self.__dataset__.id, path=self.QRELS.path
                     )
 
