@@ -34,6 +34,7 @@ config names are ``fw-edu``, ``wikipedia_hlp_cm`` and ``wikipedia_hlp_dl``
 """
 
 from __future__ import annotations
+import logging
 
 from typing import Optional
 
@@ -90,6 +91,11 @@ class DenseonLateon(Dataset):
         seed: Optional[int] = None,
         download: bool = False,
     ) -> PointwiseDistillationSamples:
+        if not download:
+            logging.warning(
+                "Using streaming mode, will not download the dataset. "
+                "Use download=true (e.g. ai.lighton.embeddings_pre_training.denseon_lateon[download=true]) to download."
+            )
         streaming = not download
         shuffle_seed = seed  # None ⇒ no per-source shuffle.
 
