@@ -7,7 +7,6 @@ from datamaestro_ir.data import Adhoc
 from datamaestro_ir.data.beir import (
     BeirDocumentStore,
     BeirParquetTopics,
-    BeirParquetAssessments,
 )
 
 
@@ -91,7 +90,8 @@ def test_limit_trec_run_compatibility():
         with run_path.open() as fp:
             line = fp.readline()
         tokens = line.strip().split()
-        assert len(tokens) == 6, f"Expected 6 tokens in TREC run line, got {len(tokens)}: {line}"
+        assert len(tokens) == 6, (
+            f"Expected 6 tokens in TREC run line, got {len(tokens)}: {line}"
+        )
         assert tokens[2] == doc["id"]
         assert parse_run(run_path) == {"query_0": {doc["id"]: "2.5"}}
-

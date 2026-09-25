@@ -57,6 +57,7 @@ class LimitParquetAssessments(BeirParquetAssessments):
         for qid, docs in assessments.items():
             yield AdhocAssessedTopic(topic_id=qid, assessments=docs)
 
+
 LIMIT_VARIANTS = {
     "limit": {
         "repo": "orionweller/LIMIT",
