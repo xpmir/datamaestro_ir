@@ -64,6 +64,23 @@ Example usage:
        print(doc["id"], doc["text_item"].text)
 
 
+BEIR Decontaminated Benchmark (LightOn)
+---------------------------------------
+
+Decontaminated versions of the 14 BEIR benchmarks from `LightOn <https://huggingface.co/datasets/lightonai>`_,
+removing contaminated query-document pairs as described in `their blog post <https://huggingface.co/blog/lightonai/denseon-lateon#decontaminated-beir-datasets>`_.
+
+.. dm:datasets:: ai.lighton.beir_decontaminated ir
+
+Example usage:
+
+.. code-block:: python
+
+   from datamaestro import prepare_dataset
+
+   adhoc = prepare_dataset("ai.lighton.beir_decontaminated.arguana")
+
+
 LoTTE Benchmark
 ---------------
 
