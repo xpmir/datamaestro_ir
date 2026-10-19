@@ -23,7 +23,9 @@ class Index(AdhocIndex):
     storeDocvectors: Param[bool] = field(default=False, ignore_default=True)
     storeRaw: Param[bool] = field(default=False, ignore_default=True)
     storeContents: Param[bool] = field(default=False, ignore_default=True)
-    stemmer: Annotated[str, Choices(["porter", "krovetz", "none"])] = field(default="porter", ignore_default=True)
+    stemmer: Annotated[str, Choices(["porter", "krovetz", "none"])] = field(
+        default="porter", ignore_default=True
+    )
 
     _index_reader = None
     _stats = None
@@ -54,9 +56,7 @@ class Index(AdhocIndex):
     @cached_property
     def terms(self):
         """Returns a map"""
-        return {
-            entry.term: (entry.df, entry.cf) for entry in self.index_reader.terms()
-        }
+        return {entry.term: (entry.df, entry.cf) for entry in self.index_reader.terms()}
 
     def iter_documents(self) -> List[Tuple[str, str]]:
         """Returns the document contents"""
