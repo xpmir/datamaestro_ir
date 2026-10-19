@@ -36,6 +36,9 @@ dependencies = [
     "lxml",
 ]
 
+[project.optional-dependencies]
+parquet = ["pandas", "pyarrow"]
+
 [project.urls]
 Homepage = "https://github.com/xpmir/datamaestro_ir"
 Documentation = "https://datamaestro-ir.readthedocs.io/en/latest/"
@@ -75,6 +78,8 @@ norecursedirs = ["node_modules"]
 dev = [
     "docutils>=0.21.2",
     "git-cliff>=2.11.0",
+    "pandas",
+    "pyarrow",
     "pytest>=8.4.1",
     "ruff>=0.8",
     "sphinx>=7",
