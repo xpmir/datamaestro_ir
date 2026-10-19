@@ -388,9 +388,9 @@ class TestDenseonLateonRecipe:
     ],
 )
 def test_beir_decontaminated_registrations(dataset_name: str):
-    from datamaestro import prepare_dataset
+    from datamaestro import get_dataset
 
     ds_id = f"ai.lighton.beir_decontaminated.{dataset_name}"
-    ds = prepare_dataset(ds_id)
+    ds = get_dataset(ds_id)
     assert ds is not None
     assert ds.id == ds_id
