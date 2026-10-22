@@ -154,11 +154,7 @@ class SingleConversationTreeNode(ConversationNode):
 
     @entry.setter
     def entry(self, record: ConversationEntry):
-        try:
-            self.tree.history[self.index] = record
-        except Exception as e:
-            print(e)
-            raise
+        self.tree.history[self.index] = record
 
     def history(self) -> Sequence[ConversationEntry]:
         return self.tree.history[self.index + 1 :]
@@ -237,7 +233,7 @@ class ConversationUserTopics(Topics):
     def iter(self) -> Iterator[ConversationEntry]:
         """Returns an iterator over topics"""
         # Extracts topics from conversations, Each user query is a topic (can perform retrieval on it)
-        # TODO: merge with xpmir.learning.DatasetConversationBase -> same logic
+        # Note: same logic as xpmir.learning.DatasetConversationBase (could be merged)
 
         records: List[ConversationEntry] = []
         for conversation in self.conversations.__iter__():

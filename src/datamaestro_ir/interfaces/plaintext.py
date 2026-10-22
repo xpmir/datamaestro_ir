@@ -4,7 +4,7 @@ from pathlib import Path
 def read_sv(file, sep):
     if hasattr(file, "read"):
         for line in file:
-            # TODO: handle values with sep, blank values, etc?
+            # Note: values containing sep, blank values, etc. are not handled
             yield line.rstrip("\r\n").split(sep)
     else:
         _open = open
@@ -22,7 +22,7 @@ def read_sv(file, sep):
 def write_sv(file, data, sep):
     if hasattr(file, "write"):
         for values in data:
-            # TODO: handle values with sep, blank values, etc?
+            # Note: values containing sep, blank values, etc. are not handled
             file.write(sep.join(map(str, values)) + "\n")
         file.flush()
     else:
