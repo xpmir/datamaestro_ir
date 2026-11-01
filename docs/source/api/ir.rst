@@ -159,6 +159,7 @@ Config classes that stream teacher-scored samples:
 .. autoxpmconfig:: datamaestro_ir.data.distillation.ConcatPointwiseDistillationSamples
 .. autoxpmconfig:: datamaestro_ir.data.distillation.RandomInterleavePointwiseDistillationSamples
 .. autoxpmconfig:: datamaestro_ir.data.huggingface.HuggingFacePointwiseDistillationSamples
+.. autoxpmconfig:: datamaestro_ir.data.huggingface.HuggingFaceListwiseDistillationSamples
 .. autoxpmconfig:: datamaestro_ir.data.lighton.EmbeddingsPreTrainingSamples
 
 Records yielded by the iterators above:

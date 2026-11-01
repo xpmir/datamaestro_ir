@@ -38,6 +38,7 @@ dependencies = [
 
 [project.optional-dependencies]
 parquet = ["pandas", "pyarrow"]
+huggingface = ["datasets"]
 
 [project.urls]
 Homepage = "https://github.com/xpmir/datamaestro_ir"

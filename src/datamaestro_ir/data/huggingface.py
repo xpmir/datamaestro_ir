@@ -2,8 +2,10 @@ from typing import Iterator
 from experimaestro import Meta, field
 from datamaestro.data.huggingface import HuggingFaceDataset
 from . import PairwiseSample, PairwiseSampleDataset
-from .base import ScoredDocument, SimpleTextItem
+from .base import IDRecord, ScoredDocument, SimpleTextItem, TextRecord
 from .distillation import (
+    ListwiseDistillationSample,
+    ListwiseDistillationSamples,
     PointwiseDistillationSample,
     PointwiseDistillationSamples,
 )
@@ -64,4 +66,48 @@ class HuggingFacePointwiseDistillationSamples(
                 {"text_item": SimpleTextItem(row[self.document_field])},
                 float(row[self.score_field]),
             ),
+        )
+
+
+class HuggingFaceListwiseDistillationSamples(
+    HuggingFaceDataset, ListwiseDistillationSamples
+):
+    """(query, [(document, teacher-score), ...]) samples from a HuggingFace dataset.
+
+    Each row holds a query, a list of documents and a parallel list of teacher
+    scores. Override the field-name ``Meta`` attributes when the source dataset
+    uses different column names.
+    """
+
+    ids: Meta[bool] = field(default=True, ignore_default=True)
+    """True if queries and documents are IDs, False if they are texts"""
+
+    query_field: Meta[str] = field(default="query", ignore_default=True)
+    """Name of the column holding the query (ID or text)."""
+
+    documents_field: Meta[str] = field(default="docs", ignore_default=True)
+    """Name of the column holding the list of documents (IDs or texts)."""
+
+    scores_field: Meta[str] = field(default="scores", ignore_default=True)
+    """Name of the column holding the list of teacher scores."""
+
+    def __iter__(self) -> Iterator[ListwiseDistillationSample]:
+        for row in self.data:
+            yield self._build_sample(row)
+
+    def _record(self, value) -> IDRecord | TextRecord:
+        if self.ids:
+            return IDRecord(id=str(value))
+        return TextRecord(text_item=SimpleTextItem(value))
+
+    def _build_sample(self, row) -> ListwiseDistillationSample:
+        documents = row[self.documents_field]
+        scores = row[self.scores_field]
+        assert len(documents) == len(scores), "documents and scores lengths differ"
+        return ListwiseDistillationSample(
+            query=self._record(row[self.query_field]),
+            documents=[
+                ScoredDocument(self._record(doc), float(score))
+                for doc, score in zip(documents, scores)
+            ],
         )
