@@ -8,6 +8,7 @@ The core abstractions are:
 - **Documents** - Collections of documents to be searched
 - **Topics** - Queries or information needs
 - **Assessments** - Relevance judgments (qrels) linking topics to relevant documents
+- **AdhocCollection** - Documents and topics, without assessments (e.g. hidden test sets)
 - **Adhoc** - A complete IR test collection combining documents, topics, and assessments
 
 For training neural rankers:
@@ -24,6 +25,8 @@ Data objects
 
 Collection
 ----------
+
+.. autoxpmconfig:: datamaestro_ir.data.AdhocCollection
 
 .. autoxpmconfig:: datamaestro_ir.data.Adhoc
 

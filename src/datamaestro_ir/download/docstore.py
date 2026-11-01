@@ -2,7 +2,7 @@ import json
 import logging
 import urllib.request
 from pathlib import Path
-from typing import Any, Callable, IO, Iterator, Optional, Tuple
+from typing import Any, Callable, IO, Iterator, Optional, Sequence, Tuple, Union
 
 from tqdm import tqdm
 
@@ -16,12 +16,18 @@ class docstore_builder(FolderResource):
     Takes a ``FileResource`` as a transient dependency for the source data.
     The framework handles downloading/caching the source file and cleaning
     up intermediate data.
+
+    ``source`` can also be a sequence of resources (e.g. a corpus split
+    into several shards); ``iter_factory`` then receives the list of their
+    paths, in order.
     """
 
     def __init__(
         self,
-        source: Resource,
-        iter_factory: Callable[[Path], Iterator[tuple[dict[str, str], bytes]]],
+        source: Union[Resource, Sequence[Resource]],
+        iter_factory: Callable[
+            [Union[Path, list[Path]]], Iterator[tuple[dict[str, str], bytes]]
+        ],
         *,
         keys: list[str],
         checker: Optional[FileChecker] = None,
@@ -30,8 +36,10 @@ class docstore_builder(FolderResource):
         doc_count: Optional[int] = None,
     ):
         """
-        :param source: A Resource providing the source data (file or folder)
-        :param iter_factory: Given the source file path, yields (keys, content) pairs
+        :param source: A Resource providing the source data (file or folder),
+            or a sequence of resources
+        :param iter_factory: Given the source file path (or the list of paths
+            when ``source`` is a sequence), yields (keys, content) pairs
         :param keys: Key field names (documents the schema)
         :param checker: Optional hash check on the source file
         :param block_size: Documents per compressed block
@@ -45,16 +53,24 @@ class docstore_builder(FolderResource):
         self.block_size = block_size
         self.zstd_level = zstd_level
         self.doc_count = doc_count
-        self._dependencies.append(source)
+        if isinstance(source, Resource):
+            self._dependencies.append(source)
+        else:
+            if checker is not None:
+                raise ValueError("checker is only supported with a single source")
+            self._dependencies.extend(source)
 
     def _download(self, destination: Path) -> None:
         import impact_index
 
         destination.mkdir(parents=True, exist_ok=True)
 
-        source_path = self.source.path
-        if self.checker:
-            self.checker.check(source_path)
+        if isinstance(self.source, Resource):
+            source_path = self.source.path
+            if self.checker:
+                self.checker.check(source_path)
+        else:
+            source_path = [s.path for s in self.source]
 
         logging.info(
             "Building the document store in %s from %s", destination, source_path

@@ -4,18 +4,14 @@ Registers all 14 decontaminated BEIR benchmarks from https://huggingface.co/data
 under `ai.lighton.beir_decontaminated.<dataset_name>`.
 """
 
-from datamaestro.definitions import Dataset, dataset
-from datamaestro.download import reference
 from datamaestro.download.single import FileDownloader
 
-from datamaestro_ir.data import Adhoc
 from datamaestro_ir.data.beir import (
-    BeirDocumentStore,
     BeirParquetAssessments,
     BeirParquetTopics,
     beir_parquet_docstore_iter,
 )
-from datamaestro_ir.download.docstore import docstore_builder
+from datamaestro_ir.definitions import DatasetFactory
 
 LIGHTON_BEIR_DECONTAMINATED = {
     "arguana": {
@@ -98,131 +94,40 @@ LIGHTON_BEIR_DECONTAMINATED = {
 
 
 def register_beir_decontaminated_subsets():
+    datasets = DatasetFactory(
+        __name__,
+        prefix="ai.lighton.beir_decontaminated",
+        class_prefix="LightOnDecontaminated",
+    )
     for name, info in LIGHTON_BEIR_DECONTAMINATED.items():
-        base_url = (
-            f"https://huggingface.co/datasets/lightonai/{info['repo']}/resolve/main"
+        repo_url = f"https://huggingface.co/datasets/lightonai/{info['repo']}"
+        base_url = f"{repo_url}/resolve/main"
+
+        docs = datasets.docstore(
+            f"{name}.documents",
+            FileDownloader("corpus.parquet", f"{base_url}/corpus.parquet"),
+            iter_factory=beir_parquet_docstore_iter,
+        )
+        queries = datasets.file(
+            f"{name}.queries",
+            BeirParquetTopics,
+            QUERIES=FileDownloader("queries.parquet", f"{base_url}/queries.parquet"),
         )
 
-        # 1. Documents
-        def make_docs_class(n=name, url=f"{base_url}/corpus.parquet"):
-            class Docs(Dataset):
-                CORPUS = FileDownloader("corpus.parquet", url)
-                STORE = docstore_builder(
-                    source=CORPUS,
-                    iter_factory=beir_parquet_docstore_iter,
-                    keys=["id"],
-                )
+        # Qrels and ad hoc task for each split
+        qrels = {}
+        for split, qrels_file in info["splits"].items():
+            qrels[split] = datasets.file(
+                f"{name}.qrels.{split}",
+                BeirParquetAssessments,
+                QRELS=FileDownloader(
+                    f"qrels_{split}.parquet", f"{base_url}/{qrels_file}"
+                ),
+            )
+            datasets.adhoc(f"{name}.{split}", docs, queries, qrels[split])
 
-                def config(self) -> BeirDocumentStore:
-                    return BeirDocumentStore.C(
-                        id=self.__dataset__.id, path=self.STORE.path
-                    )
-
-            Docs.__name__ = f"LightOnDecontaminated_{n}_Docs"
-            Docs.__module__ = __name__
-            return dataset(id=f"ai.lighton.beir_decontaminated.{n}.documents")(Docs)
-
-        DocsClass = make_docs_class()
-        globals()[DocsClass.__name__] = DocsClass
-
-        # 2. Queries
-        def make_queries_class(n=name, url=f"{base_url}/queries.parquet"):
-            class Queries(Dataset):
-                QUERIES = FileDownloader("queries.parquet", url)
-
-                def config(self) -> BeirParquetTopics:
-                    return BeirParquetTopics.C(
-                        id=self.__dataset__.id, path=self.QUERIES.path
-                    )
-
-            Queries.__name__ = f"LightOnDecontaminated_{n}_Queries"
-            Queries.__module__ = __name__
-            return dataset(id=f"ai.lighton.beir_decontaminated.{n}.queries")(Queries)
-
-        QueriesClass = make_queries_class()
-        globals()[QueriesClass.__name__] = QueriesClass
-
-        # 3. Qrels per split
-        qrel_classes = {}
-        for split_name, qrel_file in info["splits"].items():
-
-            def make_qrels_class(
-                n=name, s=split_name, f=qrel_file, url=f"{base_url}/{qrel_file}"
-            ):
-                class Qrels(Dataset):
-                    QRELS = FileDownloader(f"qrels_{s}.parquet", url)
-
-                    def config(self) -> BeirParquetAssessments:
-                        return BeirParquetAssessments.C(
-                            id=self.__dataset__.id, path=self.QRELS.path
-                        )
-
-                Qrels.__name__ = f"LightOnDecontaminated_{n}_Qrels_{s}"
-                Qrels.__module__ = __name__
-                return dataset(id=f"ai.lighton.beir_decontaminated.{n}.qrels.{s}")(
-                    Qrels
-                )
-
-            QrelsClass = make_qrels_class()
-            qrel_classes[split_name] = QrelsClass
-            globals()[QrelsClass.__name__] = QrelsClass
-
-            # 4. Adhoc benchmark per split
-            def make_adhoc_split(
-                n=name, s=split_name, d=DocsClass, q=QueriesClass, r=QrelsClass
-            ):
-                class SplitAdhoc(Dataset):
-                    DOCS = reference(d)
-                    QUERIES = reference(q)
-                    QRELS = reference(r)
-
-                    def config(self) -> Adhoc:
-                        return Adhoc.C(
-                            id=self.__dataset__.id,
-                            documents=self.DOCS.config(),
-                            topics=self.QUERIES.config(),
-                            assessments=self.QRELS.config(),
-                        )
-
-                SplitAdhoc.__name__ = f"LightOnDecontaminated_{n}_{s}"
-                SplitAdhoc.__module__ = __name__
-                return dataset(id=f"ai.lighton.beir_decontaminated.{n}.{s}")(SplitAdhoc)
-
-            SplitClass = make_adhoc_split()
-            globals()[SplitClass.__name__] = SplitClass
-
-        # 5. Default Adhoc dataset (points to test split)
-        test_qrels = qrel_classes["test"]
-
-        def make_default_adhoc(
-            n=name,
-            repo=info["repo"],
-            d=DocsClass,
-            q=QueriesClass,
-            r=test_qrels,
-        ):
-            class DefaultAdhoc(Dataset):
-                DOCS = reference(d)
-                QUERIES = reference(q)
-                QRELS = reference(r)
-
-                def config(self) -> Adhoc:
-                    return Adhoc.C(
-                        id=self.__dataset__.id,
-                        documents=self.DOCS.config(),
-                        topics=self.QUERIES.config(),
-                        assessments=self.QRELS.config(),
-                    )
-
-            DefaultAdhoc.__name__ = f"LightOnDecontaminated_{n}"
-            DefaultAdhoc.__module__ = __name__
-            return dataset(
-                id=f"ai.lighton.beir_decontaminated.{n}",
-                url=f"https://huggingface.co/datasets/lightonai/{repo}",
-            )(DefaultAdhoc)
-
-        DefaultClass = make_default_adhoc()
-        globals()[DefaultClass.__name__] = DefaultClass
+        # Default ad hoc task (test split)
+        datasets.adhoc(name, docs, queries, qrels["test"], url=repo_url)
 
 
 register_beir_decontaminated_subsets()

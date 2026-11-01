@@ -366,14 +366,20 @@ class AdhocResults(Base):
 
 
 @datatasks("adhoc retrieval")
-class Adhoc(Base):
-    """An Adhoc IR collection with documents, topics and their assessments"""
+class AdhocCollection(Base):
+    """An Adhoc IR collection with documents and topics, but without
+    (public) assessments, e.g. a test set with hidden relevance judgments"""
 
     documents: Param[Documents]
     """The set of documents"""
 
     topics: Param[Topics]
     """The set of topics"""
+
+
+@datatasks("adhoc retrieval")
+class Adhoc(AdhocCollection):
+    """An Adhoc IR collection with documents, topics and their assessments"""
 
     assessments: Param[AdhocAssessments]
     """The set of assessments (for each topic)"""
