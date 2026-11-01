@@ -105,6 +105,32 @@ Example usage:
        print(doc["id"], doc["text_item"].text)
 
 
+MIRACL
+------
+
+`MIRACL <https://project-miracl.github.io/>`_ (Multilingual Information
+Retrieval Across a Continuum of Languages) is a multilingual ad hoc retrieval
+benchmark over Wikipedia passages in 18 languages. For each language, the
+passage corpus is available as ``<lang>.documents``, the topics of each split
+(``train``, ``dev``, ``test-a``, ``test-b``, depending on the language) as
+``<lang>.<split>.topics``, and the full ad hoc task as ``<lang>.<split>``
+(for ``test-a`` and ``test-b``, whose relevance judgments are not public,
+this is an ``AdhocCollection`` without assessments: use ``dev`` for evaluation).
+
+.. dm:datasets:: io.github.project-miracl ir
+
+Example usage:
+
+.. code-block:: python
+
+   from datamaestro import prepare_dataset
+
+   adhoc = prepare_dataset("io.github.project-miracl.sw.dev")
+
+   for doc in adhoc.documents.iter():
+       print(doc["id"], doc["text_item"].title, doc["text_item"].body)
+
+
 TIPSTER Collections
 -------------------
 
