@@ -2,14 +2,23 @@
 
 from __future__ import annotations
 
+from functools import cached_property
 import logging
 import random
 from typing import Iterator, Optional
 
 from experimaestro import Meta, Param, field
 
+from datamaestro.data.huggingface import HuggingFaceDataset
 from datamaestro.definitions import datatags
-from .distillation import PointwiseDistillationSample
+from datamaestro.download.huggingface import hf_download_and_prepare
+from datamaestro.requirements import require
+from .base import ScoredDocument, SimpleTextItem, TextRecord
+from .distillation import (
+    ListwiseDistillationSample,
+    ListwiseDistillationSamples,
+    PointwiseDistillationSample,
+)
 from .huggingface import HuggingFacePointwiseDistillationSamples
 
 
@@ -163,3 +172,194 @@ class EmbeddingsPreTrainingSamples(HuggingFacePointwiseDistillationSamples):
             len(sample),
         )
         return threshold
+
+
+@datatags("fine-tuning")
+class EmbeddingsFineTuningSamples(HuggingFaceDataset, ListwiseDistillationSamples):
+    """``lightonai/embeddings-fine-tuning-filtered-en`` contrastive fine-tuning samples.
+
+    Each split (e.g. ``fiqa_en``, ``msmarco_en``) is stored across three relational
+    HuggingFace configs (``queries``, ``documents``, ``scores``). When materialized
+    via :attr:`data`, the three tables are joined into a unified Arrow dataset with
+    columns:
+      - ``query`` (str)
+      - ``positive`` (str)
+      - ``negative_0`` .. ``negative_{num_negatives - 1}`` (str)
+      - ``teacher_scores`` (list[float])
+    """
+
+    num_negatives: Param[int] = field(default=10, ignore_default=True)
+    """Number of mined hard negatives per query to retain from the scores table."""
+
+    def __validate__(self):
+        super().__validate__()
+        if self.num_negatives <= 0:
+            raise ValueError(
+                f"[{self.__class__.__name__}] num_negatives must be > 0, got {self.num_negatives}"
+            )
+
+    def download(self):
+        """Materialise the ``queries``, ``documents``, and ``scores`` tables for split ``self.name``."""
+        super(HuggingFaceDataset, self).download()
+        require(self.__class__, what=f"{self.__class__.__name__} ({self.source})")
+
+        if self.streaming or self.local_path is not None:
+            return
+
+        if not self.name:
+            raise ValueError(
+                f"[{self.__class__.__name__}] 'name' (split name, e.g. 'fiqa_en') must be set to download."
+            )
+
+        for table in ("queries", "documents", "scores"):
+            hf_download_and_prepare(
+                self.source,
+                table,
+                split=self.name,
+                revision=self.revision,
+            )
+
+    def _load_table(self, table: str):
+        if self.streaming:
+            from datasets import load_dataset
+
+            return load_dataset(
+                self.source,
+                table,
+                data_files=f"{table}/{self.name}-*",
+                split="train",
+                revision=self.revision,
+                streaming=True,
+                verification_mode="no_checks",
+            )
+
+        builder = hf_download_and_prepare(
+            self.source,
+            table,
+            split=self.name,
+            revision=self.revision,
+        )
+        return builder.as_dataset(split=self.name)
+
+    @cached_property
+    def data(self):
+        require(self.__class__, what=f"{self.__class__.__name__} ({self.source})")
+
+        if self.local_path is not None:
+            from datasets import load_from_disk
+
+            try:
+                return load_from_disk(str(self.local_path))
+            except Exception:
+                from datasets import load_dataset
+
+                return load_dataset(str(self.local_path))
+
+        if not self.name:
+            raise ValueError(
+                f"[{self.__class__.__name__}] 'name' (split name, e.g. 'fiqa_en') must be set when local_path is None."
+            )
+
+        logger.info(
+            "[EmbeddingsFineTuningSamples] Loading and joining tables (queries, documents, scores) for split '%s' from '%s'...",
+            self.name,
+            self.source,
+        )
+        queries_ds = self._load_table("queries")
+        documents_ds = self._load_table("documents")
+        scores_ds = self._load_table("scores")
+
+        queries_map = dict(zip(queries_ds["query_id"], queries_ds["query"]))
+        documents_map = dict(zip(documents_ds["document_id"], documents_ds["document"]))
+        num_negatives = self.num_negatives
+        split_name = self.name
+
+        def _join_batch(batch: dict) -> dict:
+            q_texts = []
+            pos_texts = []
+            t_scores = []
+            neg_cols = [[] for _ in range(num_negatives)]
+
+            has_rerank = "rerank_scores" in batch
+            scores_col = batch["rerank_scores"] if has_rerank else batch.get("scores")
+
+            for idx, (qid, doc_ids) in enumerate(
+                zip(batch["query_id"], batch["document_ids"])
+            ):
+                if len(doc_ids) < num_negatives + 1:
+                    raise ValueError(
+                        f"[EmbeddingsFineTuningSamples] Split '{split_name}' query_id={qid} has only "
+                        f"{len(doc_ids)} document_ids, expected at least {num_negatives + 1}."
+                    )
+                if qid not in queries_map:
+                    raise KeyError(
+                        f"[EmbeddingsFineTuningSamples] Split '{split_name}' query_id={qid} missing from queries table."
+                    )
+                q_texts.append(queries_map[qid])
+
+                pos_id = doc_ids[0]
+                if pos_id not in documents_map:
+                    raise KeyError(
+                        f"[EmbeddingsFineTuningSamples] Split '{split_name}' positive document_id={pos_id} missing from documents table."
+                    )
+                pos_texts.append(documents_map[pos_id])
+
+                for neg_idx in range(num_negatives):
+                    neg_id = doc_ids[1 + neg_idx]
+                    if neg_id not in documents_map:
+                        raise KeyError(
+                            f"[EmbeddingsFineTuningSamples] Split '{split_name}' negative document_id={neg_id} missing from documents table."
+                        )
+                    neg_cols[neg_idx].append(documents_map[neg_id])
+
+                if scores_col is not None and scores_col[idx] is not None:
+                    t_scores.append(
+                        [float(s) for s in scores_col[idx][: num_negatives + 1]]
+                    )
+                else:
+                    t_scores.append([1.0] + [0.0] * num_negatives)
+
+            result = {
+                "query": q_texts,
+                "positive": pos_texts,
+                "teacher_scores": t_scores,
+            }
+            for neg_idx in range(num_negatives):
+                result[f"negative_{neg_idx}"] = neg_cols[neg_idx]
+            return result
+
+        joined_ds = scores_ds.map(
+            _join_batch,
+            batched=True,
+            batch_size=10_000,
+            remove_columns=scores_ds.column_names,
+            desc=f"Joining LightOn fine-tuning split ({self.name})",
+        )
+        logger.info(
+            "[EmbeddingsFineTuningSamples] Joined split '%s': %d rows (%d negatives/query).",
+            self.name,
+            len(joined_ds),
+            num_negatives,
+        )
+        return joined_ds
+
+    def _build_sample(self, row: dict) -> ListwiseDistillationSample:
+        docs = [
+            ScoredDocument(TextRecord(text_item=SimpleTextItem(row["positive"])), 1.0)
+        ]
+        for neg_idx in range(self.num_negatives):
+            docs.append(
+                ScoredDocument(
+                    TextRecord(text_item=SimpleTextItem(row[f"negative_{neg_idx}"])),
+                    0.0,
+                )
+            )
+        return ListwiseDistillationSample(
+            query=TextRecord(text_item=SimpleTextItem(row["query"])),
+            documents=docs,
+        )
+
+    def __iter__(self) -> Iterator[ListwiseDistillationSample]:
+        for row in self.data:
+            yield self._build_sample(row)
+
