@@ -85,6 +85,7 @@ def _register_all():
             iter_factory=_read_corpus,
             doc_count=info.doc_count,
             url=CORPUS_URL,
+            languages=[lang],
         )
 
         base_url = f"{TOPICS_URL}/miracl-v1.0-{lang}"

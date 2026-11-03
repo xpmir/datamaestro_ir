@@ -46,6 +46,7 @@ class DatasetFactory(BaseDatasetFactory):
         name: Optional[str] = None,
         doc: Optional[str] = None,
         url: Optional[str] = None,
+        languages: Optional[Sequence[str]] = None,
     ) -> DatasetClass:
         """Registers a document store (:class:`BeirDocumentStore`) built from
         one or several source files
@@ -56,6 +57,7 @@ class DatasetFactory(BaseDatasetFactory):
             the list of paths
         :param iter_factory: Iterates over (keys, content) pairs from the
             source path(s)
+        :param languages: Languages of the documents (ISO 639-1 codes)
         """
         sources = source if isinstance(source, dict) else {"CORPUS": source}
         store = docstore_builder(
@@ -66,7 +68,11 @@ class DatasetFactory(BaseDatasetFactory):
         )
 
         def config(self) -> BeirDocumentStore:
-            return BeirDocumentStore.C(id=self.__dataset__.id, path=self.STORE.path)
+            return BeirDocumentStore.C(
+                id=self.__dataset__.id,
+                path=self.STORE.path,
+                languages=list(languages) if languages else None,
+            )
 
         return self.register(
             ds_id,
