@@ -40,6 +40,10 @@ class Documents(Base):
     count: Meta[Optional[int]]
     """Number of documents"""
 
+    languages: Meta[Optional[List[str]]] = field(default=None, ignore_default=True)
+    """Languages of the documents (ISO 639-1 codes), if known -- e.g. to
+    select a language-specific text analyzer"""
+
     def iter(self) -> Iterator[IDTextRecord]:
         """Returns an iterator over documents"""
         return self.iter_documents()
