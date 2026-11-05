@@ -2,14 +2,24 @@
 
 from __future__ import annotations
 
+from functools import cached_property
 import logging
 import random
+from pathlib import Path
 from typing import Iterator, Optional
 
 from experimaestro import Meta, Param, field
 
+from datamaestro.data.huggingface import HuggingFaceDataset
 from datamaestro.definitions import datatags
-from .distillation import PointwiseDistillationSample
+from datamaestro.download.huggingface import hf_download_and_prepare, hf_is_prepared
+from datamaestro.requirements import require
+from .base import ScoredDocument, SimpleTextItem, TextRecord
+from .distillation import (
+    ListwiseDistillationSample,
+    ListwiseDistillationSamples,
+    PointwiseDistillationSample,
+)
 from .huggingface import HuggingFacePointwiseDistillationSamples
 
 
@@ -163,3 +173,254 @@ class EmbeddingsPreTrainingSamples(HuggingFacePointwiseDistillationSamples):
             len(sample),
         )
         return threshold
+
+
+@datatags("fine-tuning")
+class EmbeddingsFineTuningSamples(HuggingFaceDataset, ListwiseDistillationSamples):
+    """``lightonai/embeddings-fine-tuning-filtered-en`` contrastive fine-tuning samples.
+
+    Each split (e.g. ``fiqa_en``, ``msmarco_en``) is stored across three relational
+    HuggingFace configs (``queries``, ``documents``, ``scores``). When materialized
+    via :attr:`data`, the three tables are joined into a unified Arrow dataset with
+    columns:
+      - ``query`` (str)
+      - ``positive`` (str)
+      - ``negative_0`` .. ``negative_{num_negatives - 1}`` (str)
+      - ``teacher_scores`` (list[float])
+    """
+
+    num_negatives: Param[int] = field(default=10, ignore_default=True)
+    """Number of mined hard negatives per query to retain from the scores table."""
+
+    def __validate__(self):
+        if self.num_negatives <= 0:
+            raise ValueError(
+                f"[{self.__class__.__name__}] num_negatives must be > 0, got {self.num_negatives}"
+            )
+
+    def download(self):
+        """Materialise the ``queries``, ``documents``, and ``scores`` tables for split ``self.name``."""
+        super(HuggingFaceDataset, self).download()
+        require(self.__class__, what=f"{self.__class__.__name__} ({self.source})")
+
+        if self.streaming or self.local_path is not None:
+            return
+
+        if not self.name:
+            raise ValueError(
+                f"[{self.__class__.__name__}] 'name' (split name, e.g. 'fiqa_en') must be set to download."
+            )
+
+        for table in ("queries", "documents", "scores"):
+            try:
+                hf_download_and_prepare(
+                    self.source,
+                    table,
+                    split=self.name,
+                    revision=self.revision,
+                )
+            except Exception as exc:
+                from datamaestro.definitions import DownloadError
+
+                raise DownloadError(
+                    f"Could not download HuggingFace dataset {self.source} "
+                    f"(table={table!r}, split={self.name!r})"
+                ) from exc
+
+    def is_prepared(self) -> bool:
+        """Whether all three tables (``queries``, ``documents``, ``scores``) for ``self.name`` are cached."""
+        if not super(HuggingFaceDataset, self).is_prepared():
+            return False
+        if self.streaming:
+            return True
+        if self.local_path is not None:
+            return Path(self.local_path).exists()
+        if not self.name:
+            return False
+        return all(
+            hf_is_prepared(self.source, table, split=self.name)
+            for table in ("queries", "documents", "scores")
+        )
+
+    def _load_table(self, table: str):
+        if self.streaming:
+            from datasets import load_dataset
+
+            return load_dataset(
+                self.source,
+                table,
+                data_files=f"{table}/{self.name}-*",
+                split="train",
+                revision=self.revision,
+                streaming=True,
+                verification_mode="no_checks",
+            )
+
+        builder = hf_download_and_prepare(
+            self.source,
+            table,
+            split=self.name,
+            revision=self.revision,
+        )
+        return builder.as_dataset(split=self.name)
+
+    @cached_property
+    def data(self):
+        require(self.__class__, what=f"{self.__class__.__name__} ({self.source})")
+
+        if self.local_path is not None:
+            from datasets import load_from_disk
+
+            try:
+                return load_from_disk(str(self.local_path))
+            except Exception:
+                from datasets import load_dataset
+
+                return load_dataset(str(self.local_path))
+
+        if not self.name:
+            raise ValueError(
+                f"[{self.__class__.__name__}] 'name' (split name, e.g. 'fiqa_en') must be set when local_path is None."
+            )
+
+        logger.info(
+            "[EmbeddingsFineTuningSamples] Loading and joining tables (queries, documents, scores) for split '%s' from '%s'...",
+            self.name,
+            self.source,
+        )
+        queries_ds = self._load_table("queries")
+        documents_ds = self._load_table("documents")
+        scores_ds = self._load_table("scores")
+
+        import pyarrow as pa
+        import pyarrow.compute as pc
+        from datasets import Dataset
+        from datasets.fingerprint import Hasher
+        from datasets.table import InMemoryTable
+
+        queries_table: pa.Table = queries_ds.data.table
+        documents_table: pa.Table = documents_ds.data.table
+        scores_table: pa.Table = scores_ds.data.table
+        num_negatives = self.num_negatives
+        split_name = self.name
+        num_rows = len(scores_table)
+
+        if num_rows > 0:
+            doc_list_lens = pc.list_value_length(scores_table["document_ids"])
+            min_len = pc.min(doc_list_lens).as_py()
+            if min_len is None or min_len < num_negatives + 1:
+                raise ValueError(
+                    f"[EmbeddingsFineTuningSamples] Split '{split_name}' has a row with only "
+                    f"{min_len} document_ids, expected at least {num_negatives + 1}."
+                )
+
+        q_indices = pc.index_in(
+            scores_table["query_id"], value_set=queries_table["query_id"]
+        )
+        if q_indices.null_count > 0:
+            raise KeyError(
+                f"[EmbeddingsFineTuningSamples] Split '{split_name}' has "
+                f"{q_indices.null_count} query_id(s) missing from queries table."
+            )
+        query_col = queries_table["query"].take(q_indices)
+
+        # Extract positive (index 0) and negatives (indices 1..num_negatives) and
+        # resolve all document_ids against documents_table in a single hash-table pass.
+        per_col_doc_ids = [
+            pc.list_element(scores_table["document_ids"], i)
+            for i in range(num_negatives + 1)
+        ]
+        all_doc_ids = pa.chunked_array(
+            [chunk for col in per_col_doc_ids for chunk in col.chunks]
+        )
+        all_doc_indices = pc.index_in(
+            all_doc_ids, value_set=documents_table["document_id"]
+        )
+        if all_doc_indices.null_count > 0:
+            raise KeyError(
+                f"[EmbeddingsFineTuningSamples] Split '{split_name}' has "
+                f"{all_doc_indices.null_count} document_id(s) missing from documents table."
+            )
+
+        positive_col = documents_table["document"].take(
+            all_doc_indices.slice(0, num_rows)
+        )
+        negative_cols = {
+            f"negative_{neg_idx}": documents_table["document"].take(
+                all_doc_indices.slice((neg_idx + 1) * num_rows, num_rows)
+            )
+            for neg_idx in range(num_negatives)
+        }
+
+        score_col_name = (
+            "rerank_scores"
+            if "rerank_scores" in scores_table.column_names
+            else ("scores" if "scores" in scores_table.column_names else None)
+        )
+        if score_col_name is not None and scores_table[score_col_name].null_count == 0:
+            teacher_scores_col = pc.list_slice(
+                scores_table[score_col_name], 0, num_negatives + 1
+            )
+        else:
+            default_row = [1.0] + [0.0] * num_negatives
+            if score_col_name is None:
+                teacher_scores_col = pa.array(
+                    [default_row] * num_rows, type=pa.list_(pa.float64())
+                )
+            else:
+                raw_scores = scores_table[score_col_name].to_pylist()
+                teacher_scores_col = pa.array(
+                    [
+                        [float(s) for s in row[: num_negatives + 1]]
+                        if row is not None
+                        else default_row
+                        for row in raw_scores
+                    ],
+                    type=pa.list_(pa.float64()),
+                )
+
+        joined_table = pa.table(
+            {
+                "query": query_col,
+                "positive": positive_col,
+                "teacher_scores": teacher_scores_col,
+                **negative_cols,
+            }
+        )
+        fingerprint = Hasher.hash(
+            (
+                scores_ds._fingerprint,
+                queries_ds._fingerprint,
+                documents_ds._fingerprint,
+                num_negatives,
+            )
+        )
+        joined_ds = Dataset(InMemoryTable(joined_table), fingerprint=fingerprint)
+        logger.info(
+            "[EmbeddingsFineTuningSamples] Joined split '%s': %d rows (%d negatives/query).",
+            self.name,
+            len(joined_ds),
+            num_negatives,
+        )
+        return joined_ds
+
+    def _build_sample(self, row: dict) -> ListwiseDistillationSample:
+        docs = [
+            ScoredDocument(TextRecord(text_item=SimpleTextItem(row["positive"])), 1.0)
+        ]
+        for neg_idx in range(self.num_negatives):
+            docs.append(
+                ScoredDocument(
+                    TextRecord(text_item=SimpleTextItem(row[f"negative_{neg_idx}"])),
+                    0.0,
+                )
+            )
+        return ListwiseDistillationSample(
+            query=TextRecord(text_item=SimpleTextItem(row["query"])),
+            documents=docs,
+        )
+
+    def __iter__(self) -> Iterator[ListwiseDistillationSample]:
+        for row in self.data:
+            yield self._build_sample(row)
+
