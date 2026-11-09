@@ -30,7 +30,7 @@ Full documentation: [datamaestro-ir.readthedocs.io](https://datamaestro-ir.readt
 ### Knowledge Distillation & Training Data
 
 - **MS MARCO Ensemble/BERT Teacher** — 40M triples with teacher scores
-- **rank-distillm** — BM25/ColBERTv2/RankZephyr annotated passages
+- **rank-distillm** — BM25/ColBERTv2/RankZephyr annotated passages, monoELECTRA-large teacher scores on ColBERTv2 top-100
 - **MS MARCO Hard Negatives** — hard negatives mined from multiple retrieval models
 - **Neural Ranking KD** — knowledge distillation teacher scores
 - **LightOn [`embeddings-pre-training`](https://huggingface.co/datasets/lightonai/embeddings-pre-training)** — 73-config variant family `ai.lighton.embeddings_pre_training[...]` + DenseON-LateON mGTE recipe `...denseon_lateon`.

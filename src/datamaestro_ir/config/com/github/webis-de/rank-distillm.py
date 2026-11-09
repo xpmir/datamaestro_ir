@@ -156,3 +156,31 @@ class RankzephyrColbert10000Sampled10Annotated(Dataset):
             with_queryid=True,
             path=self.RUN.path,
         )
+
+
+@dataset(url="https://github.com/webis-de/rank-distillm")
+class MonoelectraColbertAll100(Dataset):
+    """monoELECTRA-large scores for the top-100 ColBERTv2 passages
+
+    For all judged MS MARCO passage training queries (502,939 queries x 100
+    passages). Teacher run used to fine-tune TITE (Schlatt et al., SIGIR 2025).
+
+    The file is distributed gzipped and decompressed on download, so the md5
+    below is the one of the decompressed run (the Zenodo md5 of the .gz is
+    5abc9a6c2cdf986c0aedcea853f0b34c).
+    """
+
+    RUN = FileDownloader(
+        "monoelectra_colbert__msmarco_passage_train_judged.run",
+        url="https://zenodo.org/records/15753974/files/"
+        "__monoelectra-colbert__msmarco-passage-train-judged.run.gz?download=1",
+        checker=HashCheck("75c563b13c2b257374b5faee4133ce65", md5),
+    )
+
+    def config(self) -> ListwiseDistillationSamplesTSV:
+        return ListwiseDistillationSamplesTSV.C(
+            top_k=100,
+            with_docid=True,
+            with_queryid=True,
+            path=self.RUN.path,
+        )
