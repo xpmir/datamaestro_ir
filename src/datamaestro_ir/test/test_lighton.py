@@ -520,6 +520,21 @@ class TestEmbeddingsFineTuningPointwise:
             },
         ]
 
+    def test_listwise_samples_carry_teacher_scores(self, monkeypatch):
+        from datamaestro_ir.data.lighton import EmbeddingsFineTuningSamples
+
+        cfg = _fine_tuning(
+            EmbeddingsFineTuningSamples, monkeypatch, _fine_tuning_tables()
+        )
+        samples = list(cfg)
+        assert [d.score for d in samples[0].documents] == [9.0, 1.0, -2.0]
+        assert [d.score for d in samples[1].documents] == [7.5, 3.0, 0.5]
+        assert [d.document["text_item"].text for d in samples[1].documents] == [
+            "doc 1",
+            "doc 2",
+            "doc 3",
+        ]
+
     def test_format_axis(self):
         from datamaestro_ir.config.ai.lighton.embeddings_fine_tuning import (
             EmbeddingsFineTuning,

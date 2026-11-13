@@ -438,16 +438,15 @@ class EmbeddingsFineTuningSamples(
         return joined_ds
 
     def _build_sample(self, row: dict) -> ListwiseDistillationSample:
-        docs = [
-            ScoredDocument(TextRecord(text_item=SimpleTextItem(row["positive"])), 1.0)
+        """Documents carry their teacher score (``teacher_scores[i]``, positive first)."""
+        scores = row["teacher_scores"]
+        texts = [row["positive"]] + [
+            row[f"negative_{neg_idx}"] for neg_idx in range(self.num_negatives)
         ]
-        for neg_idx in range(self.num_negatives):
-            docs.append(
-                ScoredDocument(
-                    TextRecord(text_item=SimpleTextItem(row[f"negative_{neg_idx}"])),
-                    0.0,
-                )
-            )
+        docs = [
+            ScoredDocument(TextRecord(text_item=SimpleTextItem(text)), float(score))
+            for text, score in zip(texts, scores, strict=True)
+        ]
         return ListwiseDistillationSample(
             query=TextRecord(text_item=SimpleTextItem(row["query"])),
             documents=docs,
