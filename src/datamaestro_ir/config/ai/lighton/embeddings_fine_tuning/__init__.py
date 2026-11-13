@@ -6,9 +6,12 @@ as a parameterized variant family::
 
     datamaestro prepare 'ai.lighton.embeddings_fine_tuning[name=fiqa_en,streaming=false]'
     datamaestro prepare 'ai.lighton.embeddings_fine_tuning[name=fiqa_fr,streaming=false]'
+    datamaestro prepare 'ai.lighton.embeddings_fine_tuning[name=fiqa_fr,format=pointwise]'
 
 The ``name`` axis is ``<source>_<lang>``; the repository is derived from the
-``<lang>`` suffix.
+``<lang>`` suffix. ``format=pointwise`` gives one (query, document, teacher score) row per
+document instead of one listwise row per query (see
+:class:`~datamaestro_ir.data.lighton.EmbeddingsFineTuningPointwiseSamples`).
 """
 
 from __future__ import annotations
@@ -17,7 +20,11 @@ from typing import Optional
 
 from datamaestro.definitions import Dataset, dataset
 from datamaestro.variants import AxesVariants, Axis
-from datamaestro_ir.data.lighton import EmbeddingsFineTuningSamples
+from datamaestro_ir.data.lighton import (
+    EmbeddingsFineTuningBase,
+    EmbeddingsFineTuningPointwiseSamples,
+    EmbeddingsFineTuningSamples,
+)
 
 REPO_ID = "lightonai/embeddings-fine-tuning-filtered-en"
 URL = f"https://huggingface.co/datasets/{REPO_ID}"
@@ -58,7 +65,9 @@ SOURCES_BY_LANG = {
 
 # Every ``<source>_<lang>`` split across all language repositories
 LANGUAGE_CONFIGS = [
-    f"{source}_{lang}" for lang, sources in SOURCES_BY_LANG.items() for source in sources
+    f"{source}_{lang}"
+    for lang, sources in SOURCES_BY_LANG.items()
+    for source in sources
 ]
 
 
@@ -82,12 +91,17 @@ class EmbeddingsFineTuningVariants(AxesVariants):
     streaming = Axis([False, True], default=False, type=bool, in_id=False)
     """Streaming mode flag."""
 
+    format = Axis(["listwise", "pointwise"], default="listwise", elide_default=True)
+    """``listwise``: one row per query; ``pointwise``: one row per (query, document)
+    with its ``rerank_scores`` teacher score. Elided when ``listwise`` so existing
+    ids are unchanged."""
+
 
 @dataset(id="", url=URL, variants=EmbeddingsFineTuningVariants)
 class EmbeddingsFineTuning(Dataset):
     """LightOn ``embeddings-fine-tuning-filtered-<lang>`` contrastive fine-tuning dataset."""
 
-    def config(self, **kw) -> EmbeddingsFineTuningSamples:
+    def config(self, **kw) -> EmbeddingsFineTuningBase:
         import logging
 
         if kw.get("streaming", False):
@@ -95,7 +109,12 @@ class EmbeddingsFineTuning(Dataset):
                 "Using streaming mode, will not download the dataset. "
                 "Use streaming=false (e.g. ai.lighton.embeddings_fine_tuning[...,streaming=false]) to download."
             )
-        return EmbeddingsFineTuningSamples.C(
+        cls = (
+            EmbeddingsFineTuningPointwiseSamples
+            if kw.pop("format", "listwise") == "pointwise"
+            else EmbeddingsFineTuningSamples
+        )
+        return cls.C(
             repo_id=repo_id_for(kw.get("name")),
             **kw,
         )

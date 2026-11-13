@@ -394,3 +394,148 @@ def test_beir_decontaminated_registrations(dataset_name: str):
     ds = get_dataset(ds_id)
     assert ds is not None
     assert ds.id == ds_id
+
+
+# ---- Fine-tuning splits (embeddings-fine-tuning-filtered-<lang>) ----------
+
+
+def _fine_tuning_tables(rerank_scores="default"):
+    """Two queries with a positive and 2 hard negatives each, plus an unused document."""
+    from datasets import Dataset
+
+    scores = {
+        "query_id": ["q2", "q1"],
+        "document_ids": [["d3", "d1", "d4"], ["d1", "d2", "d3", "d5"]],
+        "scores": [[0.9, 0.5, 0.4], [0.8, 0.7, 0.6, 0.1]],
+    }
+    if rerank_scores == "default":
+        rerank_scores = [[9.0, 1.0, -2.0], [7.5, 3.0, 0.5, -1.0]]
+    if rerank_scores is not None:
+        scores["rerank_scores"] = rerank_scores
+    return {
+        "queries": Dataset.from_dict(
+            {"query_id": ["q1", "q2"], "query": ["query 1", "query 2"]}
+        ),
+        "documents": Dataset.from_dict(
+            {
+                "document_id": ["d1", "d2", "d3", "d4", "d5"],
+                "document": ["doc 1", "doc 2", "doc 3", "doc 4", "doc 5"],
+            }
+        ),
+        "scores": Dataset.from_dict(scores),
+    }
+
+
+def _fine_tuning(cls, monkeypatch, tables):
+    monkeypatch.setattr(cls, "_load_table", lambda self, table: tables[table])
+    return cls.C(repo_id="fake/fake", name="fiqa_fr", num_negatives=2)
+
+
+class TestEmbeddingsFineTuningPointwise:
+    def test_rows_and_teacher_scores(self, monkeypatch):
+        from datamaestro_ir.data.lighton import EmbeddingsFineTuningPointwiseSamples
+
+        cfg = _fine_tuning(
+            EmbeddingsFineTuningPointwiseSamples, monkeypatch, _fine_tuning_tables()
+        )
+        rows = cfg.data.to_list()
+        # position-major: the two positives, then the first negatives, ...
+        assert [
+            (r["query"], r["document"], r["score"], r["position"]) for r in rows
+        ] == [
+            ("query 2", "doc 3", 9.0, 0),
+            ("query 1", "doc 1", 7.5, 0),
+            ("query 2", "doc 1", 1.0, 1),
+            ("query 1", "doc 2", 3.0, 1),
+            ("query 2", "doc 4", -2.0, 2),
+            ("query 1", "doc 3", 0.5, 2),
+        ]
+        # the samples carry the rerank score, not a binary label
+        samples = list(cfg)
+        assert [s.document.score for s in samples] == [r["score"] for r in rows]
+        assert samples[0].query["text_item"].text == "query 2"
+        assert samples[0].document.document["text_item"].text == "doc 3"
+
+    def test_missing_rerank_column_raises(self, monkeypatch):
+        from datamaestro_ir.data.lighton import EmbeddingsFineTuningPointwiseSamples
+
+        cfg = _fine_tuning(
+            EmbeddingsFineTuningPointwiseSamples,
+            monkeypatch,
+            _fine_tuning_tables(rerank_scores=None),
+        )
+        with pytest.raises(KeyError, match="rerank_scores"):
+            cfg.data
+
+    @pytest.mark.parametrize(
+        "rerank",
+        [
+            [None, [7.5, 3.0, 0.5, -1.0]],  # whole row missing
+            [[9.0, None, -2.0], [7.5, 3.0, 0.5, -1.0]],  # one score missing
+        ],
+    )
+    def test_missing_rerank_scores_raise(self, monkeypatch, rerank):
+        from datamaestro_ir.data.lighton import EmbeddingsFineTuningPointwiseSamples
+
+        cfg = _fine_tuning(
+            EmbeddingsFineTuningPointwiseSamples,
+            monkeypatch,
+            _fine_tuning_tables(rerank_scores=rerank),
+        )
+        with pytest.raises(ValueError, match="missing rerank_scores"):
+            cfg.data
+
+    def test_short_rerank_row_raises(self, monkeypatch):
+        from datamaestro_ir.data.lighton import EmbeddingsFineTuningPointwiseSamples
+
+        cfg = _fine_tuning(
+            EmbeddingsFineTuningPointwiseSamples,
+            monkeypatch,
+            _fine_tuning_tables(rerank_scores=[[9.0, 1.0], [7.5, 3.0, 0.5, -1.0]]),
+        )
+        with pytest.raises(ValueError, match="fewer than 3 rerank_scores"):
+            cfg.data
+
+    def test_listwise_join_unchanged(self, monkeypatch):
+        """The listwise class still builds the same table from the shared join."""
+        from datamaestro_ir.data.lighton import EmbeddingsFineTuningSamples
+
+        cfg = _fine_tuning(
+            EmbeddingsFineTuningSamples, monkeypatch, _fine_tuning_tables()
+        )
+        assert cfg.data.to_list() == [
+            {
+                "query": "query 2",
+                "positive": "doc 3",
+                "teacher_scores": [9.0, 1.0, -2.0],
+                "negative_0": "doc 1",
+                "negative_1": "doc 4",
+            },
+            {
+                "query": "query 1",
+                "positive": "doc 1",
+                "teacher_scores": [7.5, 3.0, 0.5],
+                "negative_0": "doc 2",
+                "negative_1": "doc 3",
+            },
+        ]
+
+    def test_format_axis(self):
+        from datamaestro_ir.config.ai.lighton.embeddings_fine_tuning import (
+            EmbeddingsFineTuning,
+        )
+        from datamaestro_ir.data.lighton import (
+            EmbeddingsFineTuningPointwiseSamples,
+            EmbeddingsFineTuningSamples,
+        )
+
+        prepare = EmbeddingsFineTuning.__dataset__.prepare
+        listwise = prepare(variant_kwargs={"name": "fiqa_fr"})
+        pointwise = prepare(variant_kwargs={"name": "fiqa_fr", "format": "pointwise"})
+        assert type(listwise).__xpmtype__.value_type is EmbeddingsFineTuningSamples
+        assert (
+            type(pointwise).__xpmtype__.value_type
+            is EmbeddingsFineTuningPointwiseSamples
+        )
+        assert pointwise.repo_id == "lightonai/embeddings-fine-tuning-filtered-fr"
+        assert pointwise.score_field == "score"

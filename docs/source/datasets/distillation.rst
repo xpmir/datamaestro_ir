@@ -17,6 +17,11 @@ similarity score.
 
 .. dm:datasets:: ai.lighton.embeddings_pre_training.denseon_lateon ir
 
+LightOn's fine-tuning splits (one listwise row per query by default,
+``format=pointwise`` for one teacher-scored row per document):
+
+.. dm:datasets:: ai.lighton.embeddings_fine_tuning ir
+
 
 Pairwise Distillation
 ---------------------
